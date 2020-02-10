@@ -100,38 +100,10 @@ describe('Автотест на создание ДПГ. ', function () {
         return $h.form.getForm(['tasks'])
             .then(function (form) {
                 eventUid = form.uid;
-                console.log('eventUid', eventUid)
-                // console.log('countTask1',  element.all(by.css(' .k-grid-content [idea-field-name="tasks"]')).count())
-                // console.log('countTask2',  element.all(by.css('[idea-field-name="tasks"]')).count())
                 tasksBefore = form.tasks.length
-                console.log('tasksBefore',tasksBefore)
+                protractor.helpers.taksUid = Number(form.tasks[0].taskid)
                 expect(tasksBefore).toBe(1);    // проверяем что создалась одна запись
             })
-
-            // .then(function () {
-            //     element.all(by.css(' .k-grid-content [idea-field-name="tasks"]')).count().then(function (res) {
-            //         console.log('res00', res)
-            //         // expect(element.all(by.css('[data-uid]')).count()).toBe(res);
-            //     })
-            // })
-            .then(function () {
-                element.all(by.css('[idea-field-name="tasks"]')).count().then(function (res) {
-                    console.log('res11', res)
-                    // expect(element.all(by.css('[data-uid]')).count()).toBe(res);
-                })
-            })
-
-        // return element(by.css('.current-form h3 [editable-header-view] .editable-header__input')).getAttribute('value')
-
-            .then(function () {
-                element(by.css(' .idea-field-name="tasks"')).then(function (res) {
-                // element.all(by.css('[idea-field-name="tasks"]')).element.all(by.css('[role="grid"]')).count().then(function (res) {
-                    console.log('res22', res)
-                    // expect(element.all(by.css('[data-uid]')).count()).toBe(res);
-                })
-            })
-
-            // .then(console.log('Step 4++'))
             .then(expliciteWait)
             .then(function () {
                 return $h.form.processButton(['BACK']);

@@ -4,7 +4,7 @@ describe('Автотест на получение Титула. ', function () 
     var expliciteWait = $h.wait.expliciteWait;
     var angularWait = $h.wait.angularWait;
     var loginObject = {};
-    let taksUid;
+    // let taksUid;
 
     let buttonAdd = 'Добавить запись';
     let buttonUpdate = 'Сохранить';
@@ -56,10 +56,6 @@ describe('Автотест на получение Титула. ', function () 
             .then(done);
     }, skip);
 
-
-    // ОТКРЫТВАТЬ В СТАТУСЕ ЗАПЛАНИРОВАНА ДАЖЕ ЕСЛИ СКРЫТ
-    // ПОЧИНИТЬ, НЕ СНИМАЛАСБ ГАЛКА
-
     // Выбираем наряд "Получение титула ремонта" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить"
     it('2. Выбираем наряд "Получение титула ремонта" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".  ##can_continue', function (done) {
         return $h.grid.main.setSearch([
@@ -68,16 +64,29 @@ describe('Автотест на получение Титула. ', function () 
                 operator: 'contains',
                 field: 'displayname',
                 value: 'Получение титула ремонта'
+            },
+            {
+                type: 'int',
+                operator: 'eq',
+                field: 'taskid',
+                value: protractor.helpers.taksUid
             }
         ])
-            .then(angularWait)
-            .then(expliciteWait)
             .then(function () {
-                // console.log('openRow')
-                browser.actions().doubleClick(
-                    element.all(by.cssContainingText('[data-field="workflowstepid data-pkfieldid="]', 'Запланирован')).first()
-                ).perform()
+                element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid) + '\"]')).first().getWebElement()
+                // element(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid) + '\"]')).getWebElement()
+                    .then(function (event) {
+                        browser.actions().doubleClick(event).perform();
+                        return browser.waitForAngular();
+                    })
             })
+            // ВЫБОР Осуществляется по id задачи (согласно функции ниже, выбиралась первая задача в статусе "Запланирована")
+            // .then(function () {
+            //     // console.log('openRow')
+            //     browser.actions().doubleClick(
+            //         element.all(by.cssContainingText('[data-field="workflowstepid data-pkfieldid="]', 'Запланирован')).first()
+            //     ).perform()
+            // })
             .then(angularWait)
             .then(expliciteWait)
             .then(function (res) {
@@ -85,11 +94,12 @@ describe('Автотест на получение Титула. ', function () 
                 // expect(element(by.css('[data-button-name="UPDATE"]')).isPresent()).toBe(true);  //Убеждаемся, что есть кнопка "Сохранить"
                 expect(element(by.css('[data-button-name="UPDATE"]')).getText()).toBe(buttonUpdate);   // Проверить что есть кнопка Сохранить
             })
-            .then(function () {
-                element(by.className('editable-header__pk-value  ng-binding')).getText().then(function (text) {     // сохраняем id задачи
-                    taksUid = Number(text);
-                })
-            })
+            // .then(function () {
+            //     element(by.className('editable-header__pk-value  ng-binding')).getText().then(function (text) {     // сохраняем id задачи
+            //         // taksUid = Number(text);
+            //         taksUid = protractor.helpers.taksUid;
+            //     })
+            // })
             .then(angularWait)
             .then(expliciteWait)
             .then(done);
@@ -348,13 +358,13 @@ describe('Автотест на получение Титула. ', function () 
                 type: 'int',
                 operator: 'eq',
                 field: 'taskid',
-                value: taksUid
+                value: protractor.helpers.taksUid
             }
         ])
             .then(angularWait)
             .then(expliciteWait)
-            .then(function (taskId) {
-                browser.actions().doubleClick(taskId).perform()  // Открыть строку с указанным taskid
+            .then(function () {
+                browser.actions().doubleClick(protractor.helpers.taksUid).perform()  // Открыть строку с указанным taskid
             })
 
             .then(angularWait)

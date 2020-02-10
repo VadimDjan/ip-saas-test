@@ -4,7 +4,7 @@ globalConf.specs = [
  'specs/other/login-spec.js',
  'specs/managerScenario/project-with-tasks-spec.js',
  // 'specs/managerScenario/project-with-tasks-spec_old.js',
- // 'specs/other/title-spech.js'
+ 'specs/other/title-spech.js'
 
     // 'specs/registration/registration-spec.js',
     // 'specs/registration/invitation-spec.js',
