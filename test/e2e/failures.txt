@@ -1,0 +1,40 @@
+Failures:
+1) Idea Platform invitation should register invited users to existing workspace
+  Message:
+    Failed: unknown error: [$injector:modulerr] http://errors.angularjs.org/1.2.13/$injector/modulerr?p0=ideaPlatformApp&p1=Error%3A%20%5B%24injector%3Anomod%5D%20http%3A%2F%2Ferrors.angularjs.org%2F1.2.13%2F%24injector%2Fnomod%3Fp0%3DideaPlatformApp%0A%20%20%20%20at%20Error%20(native)%0A%20%20%20%20at%20http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A6%3A450%0A%20%20%20%20at%20http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A20%3A260%0A%20%20%20%20at%20http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A21%3A262%0A%20%20%20%20at%20http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A29%3A175%0A%20%20%20%20at%20Array.forEach%20(native)%0A%20%20%20%20at%20r%20(http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A7%3A280)%0A%20%20%20%20at%20e%20(http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A29%3A115)%0A%20%20%20%20at%20ac%20(http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A32%3A232)%0A%20%20%20%20at%20c%20(http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A17%3A431)
+      (Session info: chrome=48.0.2564.97)
+      (Driver info: chromedriver=2.20.353145 (343b531d31eeb933ec778dbcf7081628a1396067),platform=Windows NT 10.0 x86_64)
+  Stack:
+    UnknownError: unknown error: [$injector:modulerr] http://errors.angularjs.org/1.2.13/$injector/modulerr?p0=ideaPlatformApp&p1=Error%3A%20%5B%24injector%3Anomod%5D%20http%3A%2F%2Ferrors.angularjs.org%2F1.2.13%2F%24injector%2Fnomod%3Fp0%3DideaPlatformApp%0A%20%20%20%20at%20Error%20(native)%0A%20%20%20%20at%20http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A6%3A450%0A%20%20%20%20at%20http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A20%3A260%0A%20%20%20%20at%20http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A21%3A262%0A%20%20%20%20at%20http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A29%3A175%0A%20%20%20%20at%20Array.forEach%20(native)%0A%20%20%20%20at%20r%20(http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A7%3A280)%0A%20%20%20%20at%20e%20(http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A29%3A115)%0A%20%20%20%20at%20ac%20(http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A32%3A232)%0A%20%20%20%20at%20c%20(http%3A%2F%2F193.124.178.223%3A8081%2Fvendor%2Fangular.min.js%3A17%3A431)
+      (Session info: chrome=48.0.2564.97)
+      (Driver info: chromedriver=2.20.353145 (343b531d31eeb933ec778dbcf7081628a1396067),platform=Windows NT 10.0 x86_64)
+        at new bot.Error (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\selenium-webdriver\lib\atoms\error.js:108:18)
+        at Object.bot.response.checkResponse (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\selenium-webdriver\lib\atoms\response.js:109:9)
+        at C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\selenium-webdriver\lib\webdriver\webdriver.js:379:20
+        at goog.async.run.processWorkQueue (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\selenium-webdriver\lib\goog\async\run.js:124:15)
+        at process._tickCallback (node.js:377:9)
+    From: Task: Run it("should register invited users to existing workspace") in control flow
+        at Object.<anonymous> (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasminewd2\index.js:81:14)
+        at attemptAsync (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:1819:24)
+        at QueueRunner.run (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:1774:9)
+        at QueueRunner.execute (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:1762:10)
+        at Spec.Env.queueRunnerFactory (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:627:35)
+        at Spec.execute (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:353:10)
+        at Object.fn (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:2360:37)
+        at attemptAsync (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:1819:24)
+        at QueueRunner.run (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:1774:9)
+        at QueueRunner.execute (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:1762:10)
+    From asynchronous test:
+    Error
+        at Suite.<anonymous> (C:\Users\Victor\Documents\IP\IdeaPlatform_SAAS\test\e2e\specs\invitation-spec.js:20:2)
+        at addSpecsToSuite (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:743:25)
+        at Env.describe (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:713:7)
+        at jasmineInterface.describe (C:\Users\Victor\AppData\Roaming\npm\node_modules\protractor\node_modules\jasmine-core\lib\jasmine-core\jasmine.js:3219:18)
+        at Object.<anonymous> (C:\Users\Victor\Documents\IP\IdeaPlatform_SAAS\test\e2e\specs\invitation-spec.js:2:1)
+
+2 specs, 1 failure
+Finished in 419.67 seconds
+[launcher] 0 instance(s) of WebDriver still running
+[launcher] chrome #1 failed 1 test(s)
+[launcher] overall: 1 failed spec(s)
+[launcher] Process exited with error code 1

@@ -1,0 +1,44 @@
+=ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("static"; D3)); "STATIC";
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК(" Login Start"; D3)); "ROOT"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("post INIT"; D3)); "INIT"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("get CLIENT_UTILS"; D3)); "CLIENT_UTILS"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("Установка переменных"; D3)); "TMP"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("Следующий пользователь"; D3)); "TMP"; 	
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("Первый пользователь"; D3)); "TMP"; 	
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("post LOGIN"; D3)); "LOGIN"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("post CUSTOM"; D3)); "CUSTOM"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("put UPDATE CalendarEvent"; D3)); "UPDATE_CAL"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("post UPDATE"; D3)); "UPDATE"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("post CREATE"; D3)); "CREATE"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("get REPORT"; D3)); "REPORT"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("get ROW"; D3)); "ROW"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("get LINKED_LIST "; D3)); "LINKED_LIST"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("get MENU"; D3)); "MENU"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("get FF_LOOKUP"; D3)); "FF_LOOKUP"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("post ADD_COMMENT"; D3)); "ADD_COMMENT"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("get DASHBOARD"; D3)); "DASHBOARD"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("get LIST"; D3)); "LIST"; 
+ЕСЛИ(
+	ЕЧИСЛО(ПОИСК("logout"; D3)); "LOGOUT"; 
+	"")))))))))))))))))))))
+ 

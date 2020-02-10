@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="3.2" jmeter="3.2 r1790748">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Параметры сценария" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="numOfUsers" elementType="Argument">
+            <stringProp name="Argument.name">numOfUsers</stringProp>
+            <stringProp name="Argument.value">400</stringProp>
+            <stringProp name="Argument.desc">Число одновременных пользователей</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="numOfOrdersForUser" elementType="Argument">
+            <stringProp name="Argument.name">numOfOrdersForUser</stringProp>
+            <stringProp name="Argument.value">200</stringProp>
+            <stringProp name="Argument.desc">Количество циклов запись-чтение для каждого пользователя</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="rampUpPeriod" elementType="Argument">
+            <stringProp name="Argument.name">rampUpPeriod</stringProp>
+            <stringProp name="Argument.value">800</stringProp>
+            <stringProp name="Argument.desc">Время входа всех пользователей в систему</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="orderListPageSize" elementType="Argument">
+            <stringProp name="Argument.name">orderListPageSize</stringProp>
+            <stringProp name="Argument.value">100</stringProp>
+            <stringProp name="Argument.desc">Число запрашиваемых в списке заказов</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="orderListRowsSkip" elementType="Argument">
+            <stringProp name="Argument.name">orderListRowsSkip</stringProp>
+            <stringProp name="Argument.value">0</stringProp>
+            <stringProp name="Argument.desc">Отступ запрашиваемых в списке заказов</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Параметры запросов по умолчанию" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">185.22.62.91</stringProp>
+        <stringProp name="HTTPSampler.port">8080</stringProp>
+        <stringProp name="HTTPSampler.protocol"></stringProp>
+        <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+        <stringProp name="HTTPSampler.path"></stringProp>
+        <stringProp name="HTTPSampler.concurrentPool">4</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Основная ветка" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numOfUsers}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${rampUpPeriod}</stringProp>
+        <longProp name="ThreadGroup.start_time">1421313941000</longProp>
+        <longProp name="ThreadGroup.end_time">1421313941000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Переменные сценария" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="maxPositions" elementType="Argument">
+              <stringProp name="Argument.name">maxPositions</stringProp>
+              <stringProp name="Argument.value">5</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="test_user_id" elementType="Argument">
+              <stringProp name="Argument.name">test_user_id</stringProp>
+              <stringProp name="Argument.value"></stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="test_user_login" elementType="Argument">
+              <stringProp name="Argument.name">test_user_login</stringProp>
+              <stringProp name="Argument.value"></stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="test_user_password" elementType="Argument">
+              <stringProp name="Argument.name">test_user_password</stringProp>
+              <stringProp name="Argument.value"></stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="test_workspace_id" elementType="Argument">
+              <stringProp name="Argument.name">test_workspace_id</stringProp>
+              <stringProp name="Argument.value"></stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="order_list_details_view_id" elementType="Argument">
+              <stringProp name="Argument.name">order_list_details_view_id</stringProp>
+              <stringProp name="Argument.value">order_list_details</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="order_table_details_view_id" elementType="Argument">
+              <stringProp name="Argument.name">order_table_details_view_id</stringProp>
+              <stringProp name="Argument.value">order_table_details</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="ordertable__order_tableid" elementType="Argument">
+              <stringProp name="Argument.name">ordertable__order_tableid</stringProp>
+              <stringProp name="Argument.value"></stringProp>
+              <stringProp name="Argument.desc">id заказа</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="authToken" elementType="Argument">
+              <stringProp name="Argument.name">authToken</stringProp>
+              <stringProp name="Argument.value"></stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+              <stringProp name="Argument.desc">Токен авторизации для передачи в заголовке X-AUTH</stringProp>
+            </elementProp>
+            <elementProp name="PairSeparator" elementType="Argument">
+              <stringProp name="Argument.name">PairSeparator</stringProp>
+              <stringProp name="Argument.value">$&gt;$&gt;$</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="CreateButton" elementType="Argument">
+              <stringProp name="Argument.name">CreateButton</stringProp>
+              <stringProp name="Argument.value">2</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="UpdateButton" elementType="Argument">
+              <stringProp name="Argument.name">UpdateButton</stringProp>
+              <stringProp name="Argument.value">3</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="currentTimer" elementType="Argument">
+              <stringProp name="Argument.name">currentTimer</stringProp>
+              <stringProp name="Argument.value"></stringProp>
+              <stringProp name="Argument.desc">Продолжительность текущего простоя в мсек</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </Arguments>
+        <hashTree/>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Заголовки запросов по-умолчанию" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="Cache-Control" elementType="Header">
+              <stringProp name="Header.name">Cache-Control</stringProp>
+              <stringProp name="Header.value">no-cache</stringProp>
+            </elementProp>
+            <elementProp name="Accept-Language" elementType="Header">
+              <stringProp name="Header.name">Accept-Language</stringProp>
+              <stringProp name="Header.value">ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4,fr;q=0.2,uk;q=0.2</stringProp>
+            </elementProp>
+            <elementProp name="Accept" elementType="Header">
+              <stringProp name="Header.name">Accept</stringProp>
+              <stringProp name="Header.value">*/*</stringProp>
+            </elementProp>
+            <elementProp name="User-Agent" elementType="Header">
+              <stringProp name="Header.name">User-Agent</stringProp>
+              <stringProp name="Header.value">Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36</stringProp>
+            </elementProp>
+            <elementProp name="Accept-Encoding" elementType="Header">
+              <stringProp name="Header.name">Accept-Encoding</stringProp>
+              <stringProp name="Header.value">gzip, deflate, sdch</stringProp>
+            </elementProp>
+            <elementProp name="Referer" elementType="Header">
+              <stringProp name="Header.name">Referer</stringProp>
+              <stringProp name="Header.value">http://194.87.111.90:8080/</stringProp>
+            </elementProp>
+            <elementProp name="DNT" elementType="Header">
+              <stringProp name="Header.name">DNT</stringProp>
+              <stringProp name="Header.value">1</stringProp>
+            </elementProp>
+            <elementProp name="X-AUTH" elementType="Header">
+              <stringProp name="Header.name">X-AUTH</stringProp>
+              <stringProp name="Header.value">${authToken}</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Pragma</stringProp>
+              <stringProp name="Header.value">no-cache</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Создание заказов и товаров" enabled="true">
+          <stringProp name="IfController.condition">true</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GetAuthToken" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&quot;user&quot;:&quot;${test_user_login}&quot;,&quot;password&quot;:&quot;${test_user_password}&quot;}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain"></stringProp>
+            <stringProp name="HTTPSampler.port">8080</stringProp>
+            <stringProp name="HTTPSampler.protocol">http</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+            <stringProp name="HTTPSampler.path">/json/login?ts=${__javaScript(new Date().getTime();)}</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Content-Type" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="Content-Type" elementType="Header">
+                  <stringProp name="Header.name">Content-Type</stringProp>
+                  <stringProp name="Header.value">application/json;charset=UTF-8</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <BSFPreProcessor guiclass="TestBeanGUI" testclass="BSFPreProcessor" testname="BSF PreProcessor" enabled="true">
+              <stringProp name="scriptLanguage">javascript</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">vars.put(&quot;test_user_login&quot;, &quot;autotest&quot; + ctx.getThreadNum())
+vars.put(&quot;test_user_password&quot;, &quot;dev&quot;)</stringProp>
+            </BSFPreProcessor>
+            <hashTree/>
+            <BSFPostProcessor guiclass="TestBeanGUI" testclass="BSFPostProcessor" testname="Сохранение authToken" enabled="true">
+              <stringProp name="filename"></stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="script">prev.setDataEncoding(&quot;UTF-8&quot;)
+var response = eval(&apos;(&apos; + prev.getResponseDataAsString()+ &apos;)&apos;);
+vars.put(&quot;authToken&quot;, response.token.value);
+vars.put(&quot;test_user_id&quot;, response.token.userId);
+vars.put(&quot;test_workspace_id&quot;, response.token.workspaceId);
+</stringProp>
+              <stringProp name="scriptLanguage">javascript</stringProp>
+            </BSFPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Циклично создаем заказы" enabled="true">
+            <boolProp name="LoopController.continue_forever">true</boolProp>
+            <stringProp name="LoopController.loops">${numOfOrdersForUser}</stringProp>
+          </LoopController>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="CreateOrder" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <boolProp name="TransactionController.parent">true</boolProp>
+            </TransactionController>
+            <hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post CREATE /json/view/order_table/process/create" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&quot;date&quot;:&quot;${ordertable__date}&quot;,&quot;workflowstepname&quot;:null,&quot;cost&quot;:${ordertable__cost},&quot;isactive&quot;:null,&quot;createdbyid&quot;:null,&quot;order_tableid&quot;:null,&quot;shortname&quot;:null,&quot;createdtime&quot;:null,&quot;updatedtime&quot;:null,&quot;workflowstepid&quot;:null,&quot;displayname&quot;:&quot;${ordertable__displayname}&quot;,&quot;updatedbyid&quot;:null,&quot;customer&quot;:${ordertable__customer},&quot;order_list&quot;:null,&quot;workflowid&quot;:null}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol">http</stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/json/view/${order_table_details_view_id}/process/${CreateButton}?ts=${__javaScript(new Date().getTime();)}</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Content-Type" enabled="true">
+                  <collectionProp name="HeaderManager.headers">
+                    <elementProp name="Content-Type" elementType="Header">
+                      <stringProp name="Header.name">Content-Type</stringProp>
+                      <stringProp name="Header.value">application/json;charset=UTF-8</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </HeaderManager>
+                <hashTree/>
+                <BSFPreProcessor guiclass="TestBeanGUI" testclass="BSFPreProcessor" testname="BSF PreProcessor" enabled="true">
+                  <stringProp name="scriptLanguage">javascript</stringProp>
+                  <stringProp name="parameters"></stringProp>
+                  <stringProp name="filename"></stringProp>
+                  <stringProp name="script">function twoDigits(d) {
+	if (0 &lt;= d &amp;&amp; d &lt; 10)
+		return &quot;0&quot; + d.toString();
+	if (-10 &lt; d &amp;&amp; d &lt; 0)
+		return &quot;-0&quot; + (-1 * d).toString();
+	return d.toString();
+}
+
+function dateToServerFormat(date) {
+	return twoDigits(date.getDate()) + &apos;/&apos;
+		+ twoDigits(1 + date.getMonth()) + &apos;/&apos;
+		+ date.getFullYear() + &apos; &apos; + twoDigits(date.getHours())
+		+ &apos;:&apos; + twoDigits(date.getMinutes()) + &apos;:&apos;
+		+ twoDigits(date.getSeconds());
+}
+
+function getTomorrowDate(){
+	return new Date((new Date()).getTime() + 86400000)
+}
+
+function getRandomArbitrary(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+var customerIds =  [1,2]
+
+vars.put(&quot;ordertable__date&quot;, dateToServerFormat( getTomorrowDate() ))
+vars.put(&quot;ordertable__displayname&quot;, &quot;[&quot; + (ctx.getThreadNum() +1) + &quot;] Order [&quot; + dateToServerFormat(new Date()) + &quot;]&quot;) 
+vars.put(&quot;ordertable__cost&quot;, getRandomArbitrary(1, 100))
+vars.put(&quot;ordertable__customer&quot;, customerIds[getRandomArbitrary(0, customerIds.length)])</stringProp>
+                </BSFPreProcessor>
+                <hashTree/>
+                <BSFPostProcessor guiclass="TestBeanGUI" testclass="BSFPostProcessor" testname="Сохранение ID Заказа" enabled="true">
+                  <stringProp name="filename"></stringProp>
+                  <stringProp name="parameters"></stringProp>
+                  <stringProp name="script">prev.setDataEncoding(&quot;UTF-8&quot;);
+
+var data = eval(&apos;(&apos; + prev.getResponseDataAsString()+ &apos;)&apos;);
+prev.setDataEncoding(&quot;UTF-8&quot;);
+var response = eval(&apos;(&apos; + prev.getResponseDataAsString()+ &apos;)&apos;);
+vars.put(&quot;ordertable__order_tableid&quot;, response.data.order_tableid);
+
+vars.put(&quot;ordertable__createdbyid&quot;, response.data.createdbyid);
+vars.put(&quot;ordertable__createdtime&quot;, response.data.createdtime);
+vars.put(&quot;ordertable__isactive&quot;, response.data.isactive);
+vars.put(&quot;ordertable__shortname&quot;, response.data.shortname);
+</stringProp>
+                  <stringProp name="scriptLanguage">javascript</stringProp>
+                </BSFPostProcessor>
+                <hashTree/>
+                <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Ожидание 2-5 секунд" enabled="true">
+                  <stringProp name="ConstantTimer.delay">2000</stringProp>
+                  <stringProp name="RandomTimer.range">3000</stringProp>
+                </UniformRandomTimer>
+                <hashTree/>
+              </hashTree>
+              <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Вносим в заказ maxPositions позиций" enabled="true">
+                <boolProp name="LoopController.continue_forever">true</boolProp>
+                <stringProp name="LoopController.loops">${maxPositions}</stringProp>
+              </LoopController>
+              <hashTree>
+                <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post CREATE /json/view/order_list/process/create" enabled="true">
+                  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                  <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                    <collectionProp name="Arguments.arguments">
+                      <elementProp name="" elementType="HTTPArgument">
+                        <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                        <stringProp name="Argument.value">{&quot;amount&quot;:${orderlist__amount},&quot;workflowstepname&quot;:null,&quot;order_listid&quot;:null,&quot;isactive&quot;:null,&quot;createdbyid&quot;:null,&quot;shortname&quot;:null,&quot;createdtime&quot;:null,&quot;updatedtime&quot;:null,&quot;workflowstepid&quot;:null,&quot;displayname&quot;:&quot;${orderlist__amount}&quot;,&quot;id&quot;:${orderlist__id},&quot;updatedbyid&quot;:null,&quot;order_id&quot;:${orderlist__order_id},&quot;product&quot;:${orderlist__product},&quot;workflowid&quot;:null}</stringProp>
+                        <stringProp name="Argument.metadata">=</stringProp>
+                      </elementProp>
+                    </collectionProp>
+                  </elementProp>
+                  <stringProp name="HTTPSampler.domain"></stringProp>
+                  <stringProp name="HTTPSampler.port"></stringProp>
+                  <stringProp name="HTTPSampler.protocol">http</stringProp>
+                  <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                  <stringProp name="HTTPSampler.path">/json/view/${order_list_details_view_id}/process/${CreateButton}?ts=${__javaScript(new Date().getTime();)}</stringProp>
+                  <stringProp name="HTTPSampler.method">POST</stringProp>
+                  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                  <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                  <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                  <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                  <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                  <stringProp name="HTTPSampler.response_timeout"></stringProp>
+                </HTTPSamplerProxy>
+                <hashTree>
+                  <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Content-Type" enabled="true">
+                    <collectionProp name="HeaderManager.headers">
+                      <elementProp name="Content-Type" elementType="Header">
+                        <stringProp name="Header.name">Content-Type</stringProp>
+                        <stringProp name="Header.value">application/json;charset=UTF-8</stringProp>
+                      </elementProp>
+                    </collectionProp>
+                  </HeaderManager>
+                  <hashTree/>
+                  <BSFPreProcessor guiclass="TestBeanGUI" testclass="BSFPreProcessor" testname="BSF PreProcessor" enabled="true">
+                    <stringProp name="filename"></stringProp>
+                    <stringProp name="parameters"></stringProp>
+                    <stringProp name="script">function twoDigits(d) {
+	if (0 &lt;= d &amp;&amp; d &lt; 10)
+		return &quot;0&quot; + d.toString();
+	if (-10 &lt; d &amp;&amp; d &lt; 0)
+		return &quot;-0&quot; + (-1 * d).toString();
+	return d.toString();
+}
+
+function dateToServerFormat(date) {
+	return twoDigits(date.getDate()) + &apos;/&apos;
+		+ twoDigits(1 + date.getMonth()) + &apos;/&apos;
+		+ date.getFullYear() + &apos; &apos; + twoDigits(date.getHours())
+		+ &apos;:&apos; + twoDigits(date.getMinutes()) + &apos;:&apos;
+		+ twoDigits(date.getSeconds());
+}
+
+function getTomorrowDate(){
+	return new Date((new Date()).getTime() + 86400000)
+}
+
+function getRandomArbitrary(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+var productIds =  [1,2]
+
+vars.put(&quot;orderlist__amount&quot;, getRandomArbitrary(100, 300));
+vars.put(&quot;orderlist__id&quot;, getRandomArbitrary(1000, 5000));
+vars.put(&quot;orderlist__displayname&quot;, &quot;Order &quot; + vars.get(&quot;ordertable__displayname&quot;) + &quot;, position [&quot; + dateToServerFormat(new Date()) + &quot;]&quot;);
+vars.put(&quot;orderlist__order_id&quot;, vars.get(&quot;ordertable__order_tableid&quot;));
+vars.put(&quot;orderlist__product&quot;, productIds[getRandomArbitrary(0, productIds.length)])</stringProp>
+                    <stringProp name="scriptLanguage">javascript</stringProp>
+                  </BSFPreProcessor>
+                  <hashTree/>
+                </hashTree>
+              </hashTree>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GetOrdersList" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol">http</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/json/view/order_table?paging=%7B%22take%22%3A${orderListPageSize}%2C%22skip%22%3A${orderListRowsSkip}%2C%22sort%22%3A%5B%5D%2C%22partition_by%22%3A%5B%5D%2C%22partition_by_aggregates%22%3A%5B%5D%7D&amp;ts=${__javaScript(new Date().getTime();)}</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Ожидание 2-5 секунд" enabled="true">
+                <stringProp name="ConstantTimer.delay">2000</stringProp>
+                <stringProp name="RandomTimer.range">3000</stringProp>
+              </UniformRandomTimer>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultSaver guiclass="ResultSaverGui" testclass="ResultSaver" testname="Save Responses to a file" enabled="false">
+          <stringProp name="FileSaver.filename"></stringProp>
+          <boolProp name="FileSaver.errorsonly">false</boolProp>
+          <boolProp name="FileSaver.skipautonumber">false</boolProp>
+          <boolProp name="FileSaver.skipsuffix">false</boolProp>
+          <boolProp name="FileSaver.successonly">false</boolProp>
+        </ResultSaver>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+    <WorkBench guiclass="WorkBenchGui" testclass="WorkBench" testname="WorkBench" enabled="true">
+      <boolProp name="WorkBench.save">true</boolProp>
+    </WorkBench>
+    <hashTree/>
+  </hashTree>
+</jmeterTestPlan>
