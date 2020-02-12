@@ -20,23 +20,23 @@ describe('Автотест на получение Титула. ', function () 
         return !protractor.totalStatus.ok;
     }
 
-    it('1. Заходим в систему под пользователем КраснДРП. ##can_continue', (done) => {
-        // console.log('START - 1. Заходим в систему под пользователем КраснДРП');
-        loginObject = $h.login.getLoginObject();
-        // managerUser = 'Менеджер услуги ДРП' // 'Администратор Шаблонов'//loginObject.user
-        $h.login.loginToPage()
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                return expect(element(by.css('[ng-click=\"$ctrl.openAccount()\"]')).isPresent()).toBe(true);
-            })
-            .then(done);
-        // console.log('END - 1. Заходим в систему под пользователем КраснДРП');
-    }, skip);
+    // it('1. Заходим в систему под пользователем КраснДРП. ##can_continue', (done) => {
+    //     // console.log('START - 1. Заходим в систему под пользователем КраснДРП');
+    //     loginObject = $h.login.getLoginObject();
+    //     // managerUser = 'Менеджер услуги ДРП' // 'Администратор Шаблонов'//loginObject.user
+    //     $h.login.loginToPage()
+    //         .then(angularWait)
+    //         .then(expliciteWait)
+    //         .then(function () {
+    //             return expect(element(by.css('[ng-click=\"$ctrl.openAccount()\"]')).isPresent()).toBe(true);
+    //         })
+    //         .then(done);
+    //     // console.log('END - 1. Заходим в систему под пользователем КраснДРП');
+    // }, skip);
 
     // идем в пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
     it('1. Переходим по ссылке /#/my_tasks_wc. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача.  ##can_continue', (done) => {
-        console.log('Переходим по ссылке /#/my_tasks_wc.');
+        // console.log('Переходим по ссылке /#/my_tasks_wc.');
         browser.get(protractor.helpers.url + '/#/my_tasks_wc')
             .then(angularWait)
             .then(expliciteWait)
@@ -346,14 +346,20 @@ describe('Автотест на получение Титула. ', function () 
     }, skip);
 
     // Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось
-    it('11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось. ##can_continue', function (done) {
+    it('11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось.', function (done) {
         // console.log('11 Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось');
-        // console.log('taksUid', taksUid);
-        // console.log('taksUid111', typeof taksUid);
+        // console.log('protractor.helpers.taksUid', protractor.helpers.taksUid);
+        // console.log('protractor.helpers.taksUid', typeof protractor.helpers.taksUid);
         browser.waitForAngular().then(function () {
             browser.navigate().back();  // нажать кнопку Назад браузера
         });
         $h.grid.main.setSearch([    // найти фильтром нужную задачу
+            {
+                type: 'string',
+                operator: 'contains',
+                field: 'displayname',
+                value: 'Получение титула ремонта'
+            },
             {
                 type: 'int',
                 operator: 'eq',

@@ -29,7 +29,7 @@ describe('Автотест на создание ДПГ. ', function () {
     // }, skip);
 
     it('3. Переходим по URL /#/service. ##can_continue', (done) => {
-        // console.log('START - Go to path URL -> /#/service');
+        console.log('START - Go to path URL -> /#/service');
 
         return angularWait()
             .then(function () {
@@ -96,7 +96,7 @@ describe('Автотест на создание ДПГ. ', function () {
     }, skip);
 
     it('6. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', function (done) {
-        console.log('Переходим на вкладку Наряды и убеждаемся')
+        // console.log('Переходим на вкладку Наряды и убеждаемся')
         return $h.form.getForm(['tasks'])
             .then(function (form) {
                 eventUid = form.uid;
@@ -112,28 +112,28 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(done);
     }, skip);
 
-    it('7 Выходим из системы', function (done) {
-        // console.log('Step Выходим')
-
-        return angularWait()
-            .then(function () {
-                browser.actions().mouseMove(element(by.css('[ng-bind=\"$ctrl.currentUser()\"]'))).perform()
-                expect(element(by.css('[class="button-log-out"]')).isPresent()).toBe(true)  // Проверить что есть кнопка выйти
-                element(by.css('[class="button-log-out"]')).click()
-            })
-            .then(expliciteWait)
-            .then(function () {
-                // console.log('Step Выходим 1')
-                return browser.getCurrentUrl();
-            })
-            .then(function (url) {
-                // console.log('Step Выходим 2')
-                expect(url.indexOf('login') >= 0).toBe(true);      // Проверить что  #/login
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(done);
-    }, skip);
+    // it('7 Выходим из системы', function (done) {
+    //     // console.log('Step Выходим')
+    //
+    //     return angularWait()
+    //         .then(function () {
+    //             browser.actions().mouseMove(element(by.css('[ng-bind=\"$ctrl.currentUser()\"]'))).perform()
+    //             expect(element(by.css('[class="button-log-out"]')).isPresent()).toBe(true)  // Проверить что есть кнопка выйти
+    //             element(by.css('[class="button-log-out"]')).click()
+    //         })
+    //         .then(expliciteWait)
+    //         .then(function () {
+    //             // console.log('Step Выходим 1')
+    //             return browser.getCurrentUrl();
+    //         })
+    //         .then(function (url) {
+    //             // console.log('Step Выходим 2')
+    //             expect(url.indexOf('login') >= 0).toBe(true);      // Проверить что  #/login
+    //         })
+    //         .then(angularWait)
+    //         .then(expliciteWait)
+    //         .then(done);
+    // }, skip);
 
 }, !protractor.totalStatus.ok);
 

@@ -27,7 +27,7 @@ const config = {
         var $h = protractor.helpers;
         $h.workspaceDirectory = browser.params.jenkins.workspaceDirectory;
         $h._ = require('lodash');
-        $h.taksUid = 0;
+        $h.taksUid;
         $h.moment = require('moment');
         $h.url = 'http:' + browser.params.jenkins.host + ':' + browser.params.jenkins.port + '/';// 'http://sutrrpm.ru'
         $h.connectionString = 'postgres://system_user:ipDbP@$$w0rdd_1231' + (browser.params.jenkins.hostDB || browser.params.jenkins.host) + ':5432/galaktika_db';
