@@ -378,7 +378,6 @@ describe('Автотест на получение Титула. ', function () 
                 // console.log('taksUid', protractor.helpers.taksUid)
                 browser.actions().doubleClick(protractor.helpers.taksUid).perform()  // Открыть строку с указанным taskid
             })
-
             .then(angularWait)
             .then(expliciteWait)
             .then(function () {
