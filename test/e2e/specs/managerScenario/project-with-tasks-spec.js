@@ -29,8 +29,7 @@ describe('Автотест на создание ДПГ. ', function () {
     // }, skip);
 
     it('3. Переходим по URL /#/service. ##can_continue', (done) => {
-        console.log('START - Go to path URL -> /#/service');
-
+        console.log('Автотест на создание ДПГ.  START - Go to path URL -> /#/service');
         return angularWait()
             .then(function () {
                 browser.get(protractor.helpers.url + '/#/service')
@@ -92,6 +91,12 @@ describe('Автотест на создание ДПГ. ', function () {
                     expect(res >= 1).toBe(true);
                 })
             })
+            .then(function () {
+                element(by.css('[class="editable-header__pk-value  ng-binding"]')).getText().then(function (text) {     // Сохранить ID servicce
+                    protractor.helpers.serviceId = Number(text);
+                })
+            })
+
             .then(done);
     }, skip);
 
