@@ -19,7 +19,7 @@ const config = {
     onPrepare: function () {
         // console.log('onPrepare START');
 
-        var width = 1400; //1500;
+        var width = 1200; //1500;
         var height = 800; //1000;
         protractor.expliciteWaitTime = 500;
         browser.driver.manage().window().setSize(width, height);
