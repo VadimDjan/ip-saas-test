@@ -12,7 +12,7 @@ describe('Автотест на получение Титула. ', function () 
     let buttonIncludeInTitle = 'Включить в титул';
 
     var linesNumber;
-    var jackdawsCount = 2;  // установить 2 галочки
+    var jackdawsCount = 4;  // установить 4 галочки
     let number = 0;
     let isExistNewGroup = false;
 
@@ -36,7 +36,7 @@ describe('Автотест на получение Титула. ', function () 
 
     // идем в пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
     it('1. Переходим по ссылке /#/my_tasks_wc. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача.  ##can_continue', (done) => {
-        // console.log('Переходим по ссылке /#/my_tasks_wc.');
+        console.log('Автотест на получение Титула. Переходим по ссылке /#/my_tasks_wc.');
         browser.get(protractor.helpers.url + '/#/my_tasks_wc')
             .then(angularWait)
             .then(expliciteWait)
@@ -142,14 +142,14 @@ describe('Автотест на получение Титула. ', function () 
             .then(done);
     }, skip);
 
-    // 5) Переходим по ссылке "Перейти к Титулу ремонта ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"
-    it('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул" . ##can_continue', function (done) {
+    // 5) Переходим по ссылке "Перейти к Титулу ремонта ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 4 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"
+    it('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 4 записи и кнопки "Добавить запись", "Отменить", "Включить в титул" . ##can_continue', function (done) {
         return element(by.css('[class="glyphicon glyphicon-arrow-right"]')).click()
             .then(angularWait)
             .then(expliciteWait)
             .then(function () {
                 element.all(by.css('[data-uid]')).count().then(function (res) {
-                    expect(res >= jackdawsCount).toBe(true);  //убедиться, что имеются не менее 2х строк
+                    expect(res >= jackdawsCount).toBe(true);  //убедиться, что имеются не менее 4х строк
                 })
             })
             .then(function () {
@@ -185,9 +185,9 @@ describe('Автотест на получение Титула. ', function () 
             .then(done);
     }, skip);
 
-    // 7) Снять галку с 2-х ремонтов, убедиться, что галки снялись
-    it('7. Снять галку с 2-х ремонтов. ##can_continue', function (done) {
-        // console.log('Снять галку с 2-х ремонтов')
+    // 7) Снять галку с 4-х ремонтов, убедиться, что галки снялись
+    it('7. Снять галку с 4-х ремонтов. ##can_continue', function (done) {
+        // console.log('Снять галку с 4-х ремонтов')
         return angularWait()
             .then(function () {
                 var els = element.all(by.css(' .k-grid-content [class="idea-grid-select"]'));
@@ -225,9 +225,9 @@ describe('Автотест на получение Титула. ', function () 
             .then(done);
     }, skip);
 
-    // 9) Выбрать 2 записи (кликнуть по галкам) из группы "Не указано", нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу, которая называется "ДПГ..."
-    it('9. Выбрать 2 записи (кликнуть по галкам) из группы Не указано, нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу. ##can_continue', function (done) {
-        // console.log('Выбрать 2 записи (кликнуть по галкам)')
+    // 9) Выбрать 4 записи (кликнуть по галкам) из группы "Не указано", нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу, которая называется "ДПГ..."
+    it('9. Выбрать 4 записи (кликнуть по галкам) из группы Не указано, нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу. ##can_continue', function (done) {
+        // console.log('Выбрать 4 записи (кликнуть по галкам)')
         return angularWait()
             .then(function () {
                 let childElements = protractor.helpers.grid.main.rowsList();
@@ -244,7 +244,7 @@ describe('Автотест на получение Титула. ', function () 
                         // console.log('b4', isExistNewGroup)
                         return isExistNewGroup
                     })
-                        .then(function (isExistNewGroup) {    //Выбрать 2 записи (кликнуть по галкам) из группы "Не указано",
+                        .then(function (isExistNewGroup) {    //Выбрать 4 записи (кликнуть по галкам) из группы "Не указано",
                             // console.log('b after', isExistNewGroup)
                             // console.log('after', number)
                             expect(isExistNewGroup).toBe(true)
@@ -252,6 +252,8 @@ describe('Автотест на получение Титула. ', function () 
                                 // console.log('number', number)
                                 childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
                                 childElements.get(number + 2).element(by.css('[class="idea-grid-select"]')).click();
+                                childElements.get(number + 3).element(by.css('[class="idea-grid-select"]')).click();
+                                childElements.get(number + 4).element(by.css('[class="idea-grid-select"]')).click();
                                 // break
                             }// return
                             // console.log('b51', isExistNewGroup)
@@ -272,7 +274,7 @@ describe('Автотест на получение Титула. ', function () 
             })
             .then(angularWait)
             .then(expliciteWait)
-            .then(function () {     // выбираем 2 элемента из созданной группы
+            .then(function () {     // выбираем 4 элемента из созданной группы
                 let childElements = protractor.helpers.grid.main.rowsList();
                 for (let i = 0; i < linesNumber; ++i) {
                     isExistNewGroup = false;
@@ -284,11 +286,13 @@ describe('Автотест на получение Титула. ', function () 
                         }
                         return isExistNewGroup
                     })
-                        .then(function (isExistNewGroup) {    //проверить что есть 2 записи из группы "Услуга",
+                        .then(function (isExistNewGroup) {    //проверить что есть 4 записи из группы "Услуга",
                             expect(isExistNewGroup).toBe(true)
                             if (isExistNewGroup) {
                                 expect(childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).isPresent()).toBe(true);
                                 expect(childElements.get(number + 2).element(by.css('[class="idea-grid-select"]')).isPresent()).toBe(true);
+                                expect(childElements.get(number + 3).element(by.css('[class="idea-grid-select"]')).isPresent()).toBe(true);
+                                expect(childElements.get(number + 4).element(by.css('[class="idea-grid-select"]')).isPresent()).toBe(true);
                             }// return
                         })
                     // console.log('b5 - поиск группы Услуга', isExistNewGroup)
@@ -321,14 +325,15 @@ describe('Автотест на получение Титула. ', function () 
                     })
                         .then(function (isExistNewGroup) {
                             if (isExistNewGroup) {
-                                // console.log('isExistNewGroup2', isExistNewGroup)
-                                childElements.get(number + 2).element(by.css('[class="idea-grid-select"]')).click();    //Выбрать запись 1, нажать Отмена
+                                // console.log('Снять галку с 4ой записи')
+                                childElements.get(number + 4).element(by.css('[class="idea-grid-select"]')).click();    //Выбрать запись 4, нажать Отмена
+                                return isExistNewGroup;
                             }
                         })
-                        .then(function (isExistNewGroup) {  // убедится что Запись 2 исчезла
+                        .then(function (isExistNewGroup) {  // убедится что Запись 4 исчезла
                             if (isExistNewGroup) {
-                                expect(childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).isPresent()).toBe(true);
-                                expect(childElements.get(number + 2).element(by.css('[class="idea-grid-select"]')).isPresent()).toBe(true);
+                                // console.log('Убедится, что пропала 4ая запись')
+                                expect(childElements.get(number + 4).element(by.css('[class="k-group-footer"]')).isPresent()).toBe(false);
                             }
                         })
                     return isExistNewGroup;
@@ -346,7 +351,7 @@ describe('Автотест на получение Титула. ', function () 
     }, skip);
 
     // Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось
-    it('11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось.', function (done) {
+    it('11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось. ##can_continue', function (done) {
         // console.log('11 Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось');
         // console.log('protractor.helpers.taksUid', protractor.helpers.taksUid);
         // console.log('protractor.helpers.taksUid', typeof protractor.helpers.taksUid);
@@ -370,6 +375,7 @@ describe('Автотест на получение Титула. ', function () 
             .then(angularWait)
             .then(expliciteWait)
             .then(function () {
+                // console.log('taksUid', protractor.helpers.taksUid)
                 browser.actions().doubleClick(protractor.helpers.taksUid).perform()  // Открыть строку с указанным taskid
             })
 
@@ -399,9 +405,9 @@ describe('Автотест на получение Титула. ', function () 
 // 4) Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось
 // 5) Переходим по ссылке "Перейти к Титулу ремонта ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы одна запись и кнопки "Добавить запись", "Отменить", "Включить в титул"
 // 6) В открывшемся списке нажимаем на кнопку "Выбрать все", убедиться, что все галочки поставились
-// 7) Снять галку с 2-х ремонтов, убедиться, что галки снялись
+// 7) Снять галку с 4-х ремонтов, убедиться, что галки снялись
 // 8) Нажать на кнопку "Отменить все", убедиться, что все галки снялись
-// 9) Выбрать 2 записи (кликнуть по галкам) из группы "Не указано", нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу, которая называется "ДПГ..."
+// 9) Выбрать 4 записи (кликнуть по галкам) из группы "Не указано", нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу, которая называется "ДПГ..."
 // 10) Выбрать одну запись из группы "Не указано" и нажать на кнопку "Отменить". Убедиться, что запись пропадет из списка
 // 11) Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось
 
