@@ -374,11 +374,18 @@ describe('Автотест на получение Титула. ', function () 
         ])
             .then(angularWait)
             .then(expliciteWait)
+            // .then(function () {
+            //     // console.log('taksUid', protractor.helpers.taksUid)
+            //     browser.actions().doubleClick(protractor.helpers.taksUid).perform()  // Открыть строку с указанным taskid
+            // })
             .then(function () {
-                // console.log('taksUid', protractor.helpers.taksUid)
-                browser.actions().doubleClick(protractor.helpers.taksUid).perform()  // Открыть строку с указанным taskid
+                element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid) + '\"]')).first().getWebElement()
+                    // element(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid) + '\"]')).getWebElement()
+                    .then(function (event) {
+                        browser.actions().doubleClick(event).perform();
+                        return browser.waitForAngular();
+                    })
             })
-
             .then(angularWait)
             .then(expliciteWait)
             .then(function () {

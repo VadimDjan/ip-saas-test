@@ -22,14 +22,19 @@ var findFieldOnCurrentTab = function (name) {
 exports.getFieldSelector = getFieldSelector;
 
 function setField(name, value) {
+    console.log('setField name', name, ' value=', value);
     return findFieldOnCurrentTab(name)
         .then(function (field) {
             var fieldSelector = getFieldSelector(name),
                 selector,
                 selector2;
-            // console.log('field.type', field.type);
+            console.log('field.type', field.type);
             switch (field.type) {
                 case 'input':
+                    browser.executeScript('window.scrollTo(0,0);').then(function () {
+                        console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
+                    });
+                    return field.element.element(by.css('[data-input-name="' + name + '"]')).clear().sendKeys(value);
                 case 'input_pattern':
                 case 'password':
                     return field.element.element(by.css('[data-input-name="' + name + '"]')).clear().sendKeys(value);
@@ -89,9 +94,108 @@ function setField(name, value) {
                         }
                     });
                 case 'select':
+
+                    browser.executeScript('window.scrollTo(0,0);').then(function () {
+                        console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
+                    });
+
+                    console.log('setField11**', field.type)
+                    element(by.css(fieldSelector + ' .select2-choice')).click();
+                    val = value;
+                    selector = '#select2-drop:not([style*=\"display: none\"])';
+                    selector2 = selector + ' .select2-results li.select2-result-selectable';
+                    console.log('**selector**', selector)
+                    console.log('**selector2**', selector2)
+
+                    return angularWait()
+                        .then(expliciteWait)
+                        // .then(function () {
+                        //     return browser.wait(function () {
+                        //
+                        //         console.log('setField**browser.wait val', val)
+                        //         console.log('setField**browser.wait value', value)
+                        //         return browser.isElementPresent(by.css(selector2));
+                        //     });
+                        // })
+                        .then(function () {
+                            try {
+
+                                console.log('setField** else val', val)
+                                console.log('setField** else value', value)
+                                return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
+                            } catch (e) {
+                                console.error('Unknown value ' + value + ' for field ' + name);
+                                console.error(e);
+                            }
+                        })
+                        .then(() => {
+                            selector = fieldSelector + ' [ng-model]';
+                            return browser.executeScript(function (_selector, _value) {
+                                if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
+                                    console.error('Wrong selector = ' + _selector);
+                                }
+                                return $(_selector).isolateScope().$ctrl.update();
+                            }, selector, value)
+                        })
+
                 case 'addable_select':
                 case 'autocomplete':
                 case 'addable_autocomplete':
+                // case 'no_glass_autocomplete':
+
+                    // console.log('setField**', field.type)
+
+                    element(by.css(fieldSelector + ' .select2-choice')).click();
+                    selector = '#select2-drop:not([style*=\"display: none\"])';
+                    selector2 = selector + ' .select2-results li.select2-result-selectable';
+
+                    // console.log('!test!!setField**', field.type)
+
+                    if (field.type.indexOf('autocomplete') >= 0) {
+                        // console.log('!!!!setField**', field.type)
+                        const val = value && value.displayValue || value && value.value || value
+                        element(by.css(selector + ' .select2-input')).sendKeys(val)
+                    }
+
+                    return angularWait()
+                        .then(expliciteWait)
+                        // .then(function () {
+                        //     return browser.wait(function () {
+                        //
+                        //         console.log('setField**browser.wait val', val)
+                        //         console.log('setField**browser.wait value', value)
+                        //         return browser.isElementPresent(by.css(selector2));
+                        //     });
+                        // })
+                        .then(function () {
+                            try {
+                                if (field.type.indexOf('autocomplete') >= 0) {
+                                    return element.all(by.css(selector2)).first().click();
+                                } else {
+                                    console.log('setField** else val', val)
+                                    console.log('setField** else value', value)
+                                    return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
+                                }
+                            } catch (e) {
+                                console.error('Unknown value ' + value + ' for field ' + name);
+                                console.error(e);
+                            }
+                        })
+                        .then(() => {
+                            selector = fieldSelector + ' [ng-model]';
+                            return browser.executeScript(function (_selector, _value) {
+                                if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
+                                    console.error('Wrong selector = ' + _selector);
+                                }
+                                return $(_selector).isolateScope().$ctrl.update();
+                            }, selector, value)
+                        })
+
+                case 'no_glass_autocomplete':
+                    console.log('setField* no_glass_autocomplete*', field.type)
+                    browser.executeScript('window.scrollTo(0,0);').then(function () {
+                        console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
+                    });
                     element(by.css(fieldSelector + ' .select2-choice')).click();
                     selector = '#select2-drop:not([style*=\"display: none\"])';
                     selector2 = selector + ' .select2-results li.select2-result-selectable';
@@ -102,11 +206,11 @@ function setField(name, value) {
 
                     return angularWait()
                         .then(expliciteWait)
-                        .then(function () {
-                            return browser.wait(function () {
-                                return browser.isElementPresent(by.css(selector2));
-                            });
-                        })
+                        // .then(function () {
+                        //     return browser.wait(function () {
+                        //         return browser.isElementPresent(by.css(selector2));
+                        //     });
+                        // })
                         .then(function () {
                             try {
                                 if (field.type.indexOf('autocomplete') >= 0) {
@@ -128,6 +232,7 @@ function setField(name, value) {
                                 return $(_selector).isolateScope().$ctrl.update();
                             }, selector, value)
                         })
+
                 case 'subgrid':
                     var subRowValues = value.values instanceof Array ? value.values : [value.values];
                     var uniqueField = value['$unique'];
@@ -270,6 +375,8 @@ function getField(name) {
                 case 'addable_select':
                 case 'autocomplete':
                 case 'addable_autocomplete':
+                case 'no_glass_autocomplete':
+                    console.log('getField', field.type)
                     // console.log(field.type, '6')
                     selector = fieldSelector + ' [ng-model]';
                     return browser.executeScript(function (_selector) {
@@ -388,24 +495,25 @@ function processForm(_fieldsList, functionToProcess) {
     }
 
     function openFirstTabIfNeeded() {
-        var firstTabHeaderSelector = '.current-form .panel:first-child h4 span[uib-accordion-header]';
-       // console.log(firstTabHeaderSelector, 'firstTabHeaderSelector')
-       //  console.log( '************')
+        // var firstTabHeaderSelector = '.current-form .panel:first-child h4 span[uib-accordion-header]';
+        var firstTabHeaderSelector = '.current-form .MainForm h4 span[uib-accordion-header]';
+        console.log(firstTabHeaderSelector, 'firstTabHeaderSelector')
+        //  console.log( '************')
 
         return element(by.css('.current-form .panel.panel-open:first-child')).isPresent()
-            // .then(console.log( '**********!!!!**'))
+            .then(console.log( '**********!!!!**'))
             .then(function (isPresentFirstTab) {
                 if (isPresentFirstTab) {
-                // console.log( '*****isPresentFirstTab*******', isPresentFirstTab)
+                    console.log( '*****isPresentFirstTab*******', isPresentFirstTab)
                     return;
                 } else {
-                    // console.log( '*****isPresentFirstTab****FALSE***')
+                    console.log( '*****isPresentFirstTab****FALSE***')
                     return element(by.css(firstTabHeaderSelector)).isPresent()
                         .then(function (isPresentHeader) {
-                            // console.log( '*****function (isPresentHeader)***')
+                            console.log( '*****function (isPresentHeader)***')
                             if (isPresentHeader) {
                                 return $h.common.scrollToSelector(firstTabHeaderSelector)
-                                    // .then(console.log( '!!!!!!!!**********!!!!!!!!'))
+                                    .then(console.log( '!!!!!!!!**********!!!!!!!!'))
                                     .then(function () {
                                         return element(by.css(firstTabHeaderSelector)).click();
                                     })
@@ -419,8 +527,7 @@ function processForm(_fieldsList, functionToProcess) {
     return processHeader()
         // .then(console.log(openFirstTabIfNeeded, 'processHeader in openFirstTabIfNeeded*'))
         .then(openFirstTabIfNeeded)
-        .then(processSection).
-        then(() => {
+        .then(processSection).then(() => {
             // console.log(openFirstTabIfNeeded, 'openFirstTabIfNeeded 1*')
             // console.log(processSection, 'processSection 1*')
         })

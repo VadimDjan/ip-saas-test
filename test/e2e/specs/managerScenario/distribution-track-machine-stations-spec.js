@@ -6,13 +6,7 @@ describe('Автотест распределение по ПМС.', function ()
     var loginObject = {};
     // let taksUid = 38611;
 
-    let buttonAdd = 'Добавить запись';
-    let buttonUpdate = 'Сохранить';
-    let buttonCancel = 'Отменить';
-    let buttonIncludeInTitle = 'Включить в титул';
-
     var linesNumber;
-    var jackdawsCount = 2;  // установить 2 галочки
     let number = 0;
     let isExistNewGroup = false;
     let childElements;

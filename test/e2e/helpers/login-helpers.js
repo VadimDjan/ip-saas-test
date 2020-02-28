@@ -47,7 +47,7 @@ function getLoginObject(usr) {
     // var path = pathToFile || $h.workspaceDirectory + '/login.txt';
     var lines = // $h.file.readFileSync(path).split(/\r?\n/)
         // ['victor.follet@ideaplatform.ru;buktop;TEMPLATE', 'demo.user@ipdemo.ru;123;TEMPLATE'].map(line => line.split(';'))
-        ['краснДРП;Qwerty123!;itsm', 'demo;demo;itsm'].map(line => line.split(';'))
+        ['краснДРП;Qwerty123!;itsm', 'ПМС197_Менеджер;Qwerty123!;itsm'].map(line => line.split(';'))
     var loginObject = {
         user: lines[0][0],
         password: lines[0][1],
