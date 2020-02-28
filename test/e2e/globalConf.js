@@ -19,10 +19,11 @@ const config = {
     onPrepare: function () {
         // console.log('onPrepare START');
 
-        var width = 1200; //1500;
-        var height = 800; //1000;
+        // var width = 1200; //1500;
+        // var height = 800; //1000;
         protractor.expliciteWaitTime = 500;
-        browser.driver.manage().window().setSize(width, height);
+        // browser.driver.manage().window().setSize(width, height);
+        browser.driver.manage().window().maximize();
         protractor.helpers = {};
         var $h = protractor.helpers;
         $h.workspaceDirectory = browser.params.jenkins.workspaceDirectory;
@@ -190,7 +191,11 @@ const config = {
     },
     capabilities: {
         browserName: 'chrome',
-        // Number of times to run this set of capabilities (in parallel, unless 
+        // chromeOptions: {
+        //     args: [ "--start-maximized",
+        //     "--start-fullscreen"] // to start browser as maximixed
+        // },
+        // Number of times to run this set of capabilities (in parallel, unless
         // limited by maxSessions). Default is 1.
         count: 1,
     },
