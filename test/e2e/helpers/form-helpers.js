@@ -22,17 +22,17 @@ var findFieldOnCurrentTab = function (name) {
 exports.getFieldSelector = getFieldSelector;
 
 function setField(name, value) {
-    console.log('setField name', name, ' value=', value);
+    // console.log('setField name', name, ' value=', value);
     return findFieldOnCurrentTab(name)
         .then(function (field) {
             var fieldSelector = getFieldSelector(name),
                 selector,
                 selector2;
-            console.log('field.type', field.type);
+            // console.log('field.type', field.type);
             switch (field.type) {
                 case 'input':
                     browser.executeScript('window.scrollTo(0,0);').then(function () {
-                        console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
+                        // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
                     });
                     return field.element.element(by.css('[data-input-name="' + name + '"]')).clear().sendKeys(value);
                 case 'input_pattern':
@@ -96,16 +96,16 @@ function setField(name, value) {
                 case 'select':
 
                     browser.executeScript('window.scrollTo(0,0);').then(function () {
-                        console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
+                        // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
                     });
 
-                    console.log('setField11**', field.type)
+                    // console.log('setField11**', field.type)
                     element(by.css(fieldSelector + ' .select2-choice')).click();
                     val = value;
                     selector = '#select2-drop:not([style*=\"display: none\"])';
                     selector2 = selector + ' .select2-results li.select2-result-selectable';
-                    console.log('**selector**', selector)
-                    console.log('**selector2**', selector2)
+                    // console.log('**selector**', selector)
+                    // console.log('**selector2**', selector2)
 
                     return angularWait()
                         .then(expliciteWait)
@@ -120,8 +120,8 @@ function setField(name, value) {
                         .then(function () {
                             try {
 
-                                console.log('setField** else val', val)
-                                console.log('setField** else value', value)
+                                // console.log('setField** else val', val)
+                                // console.log('setField** else value', value)
                                 return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
                             } catch (e) {
                                 console.error('Unknown value ' + value + ' for field ' + name);
@@ -154,7 +154,7 @@ function setField(name, value) {
                     if (field.type.indexOf('autocomplete') >= 0) {
                         // console.log('!!!!setField**', field.type)
                         const val = value && value.displayValue || value && value.value || value
-                        element(by.css(selector + ' .select2-input')).sendKeys(val)
+                        element(by.css(selector + ' .select2-input')).clear().sendKeys(val)
                     }
 
                     return angularWait()
@@ -172,8 +172,8 @@ function setField(name, value) {
                                 if (field.type.indexOf('autocomplete') >= 0) {
                                     return element.all(by.css(selector2)).first().click();
                                 } else {
-                                    console.log('setField** else val', val)
-                                    console.log('setField** else value', value)
+                                    // console.log('setField** else val', val)
+                                    // console.log('setField** else value', value)
                                     return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
                                 }
                             } catch (e) {
@@ -192,16 +192,16 @@ function setField(name, value) {
                         })
 
                 case 'no_glass_autocomplete':
-                    console.log('setField* no_glass_autocomplete*', field.type)
+                    // console.log('setField* no_glass_autocomplete*', field.type)
                     browser.executeScript('window.scrollTo(0,0);').then(function () {
-                        console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
+                        // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
                     });
                     element(by.css(fieldSelector + ' .select2-choice')).click();
                     selector = '#select2-drop:not([style*=\"display: none\"])';
                     selector2 = selector + ' .select2-results li.select2-result-selectable';
                     if (field.type.indexOf('autocomplete') >= 0) {
                         const val = value && value.displayValue || value && value.value || value
-                        element(by.css(selector + ' .select2-input')).sendKeys(val)
+                        element(by.css(selector + ' .select2-input')).clear().sendKeys(val)
                     }
 
                     return angularWait()
@@ -376,7 +376,7 @@ function getField(name) {
                 case 'autocomplete':
                 case 'addable_autocomplete':
                 case 'no_glass_autocomplete':
-                    console.log('getField', field.type)
+                    // console.log('getField', field.type)
                     // console.log(field.type, '6')
                     selector = fieldSelector + ' [ng-model]';
                     return browser.executeScript(function (_selector) {
@@ -387,10 +387,10 @@ function getField(name) {
                     }, selector);
 
                 case 'subgrid':
-                    console.log(field.type, '7')
+                    // console.log(field.type, '7')
                     selector = fieldSelector + ' [ip-kendo-grid]'
                     return browser.executeScript(function (_selector) {
-                        console.log('_selector', _selector.toString())
+                        // console.log('_selector', _selector.toString())
                         return JSON.parse(JSON.stringify($(_selector).data('kendoGrid').dataSource.data()));
                     }, selector);
                 default:
@@ -497,23 +497,23 @@ function processForm(_fieldsList, functionToProcess) {
     function openFirstTabIfNeeded() {
         // var firstTabHeaderSelector = '.current-form .panel:first-child h4 span[uib-accordion-header]';
         var firstTabHeaderSelector = '.current-form .MainForm h4 span[uib-accordion-header]';
-        console.log(firstTabHeaderSelector, 'firstTabHeaderSelector')
+        // console.log(firstTabHeaderSelector, 'firstTabHeaderSelector')
         //  console.log( '************')
 
         return element(by.css('.current-form .panel.panel-open:first-child')).isPresent()
-            .then(console.log( '**********!!!!**'))
+            // .then(console.log( '**********!!!!**'))
             .then(function (isPresentFirstTab) {
                 if (isPresentFirstTab) {
-                    console.log( '*****isPresentFirstTab*******', isPresentFirstTab)
+                    // console.log( '*****isPresentFirstTab*******', isPresentFirstTab)
                     return;
                 } else {
-                    console.log( '*****isPresentFirstTab****FALSE***')
+                    // console.log( '*****isPresentFirstTab****FALSE***')
                     return element(by.css(firstTabHeaderSelector)).isPresent()
                         .then(function (isPresentHeader) {
-                            console.log( '*****function (isPresentHeader)***')
+                            // console.log( '*****function (isPresentHeader)***')
                             if (isPresentHeader) {
                                 return $h.common.scrollToSelector(firstTabHeaderSelector)
-                                    .then(console.log( '!!!!!!!!**********!!!!!!!!'))
+                                    // .then(console.log( '!!!!!!!!**********!!!!!!!!'))
                                     .then(function () {
                                         return element(by.css(firstTabHeaderSelector)).click();
                                     })
