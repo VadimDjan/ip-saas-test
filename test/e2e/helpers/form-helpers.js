@@ -141,7 +141,7 @@ function setField(name, value) {
                 case 'addable_select':
                 case 'autocomplete':
                 case 'addable_autocomplete':
-                // case 'no_glass_autocomplete':
+                    // case 'no_glass_autocomplete':
 
                     // console.log('setField**', field.type)
 
@@ -232,6 +232,10 @@ function setField(name, value) {
                                 return $(_selector).isolateScope().$ctrl.update();
                             }, selector, value)
                         })
+
+                case 'html':
+                    console.log('action not defined,  type =' + field.type)
+                    return;
 
                 case 'subgrid':
                     var subRowValues = value.values instanceof Array ? value.values : [value.values];
@@ -385,6 +389,10 @@ function getField(name) {
                         }
                         return $(_selector).isolateScope().$ctrl.getValueForTest();
                     }, selector);
+
+                case 'html':
+                    console.log('action not defined,  type =' + field.type)
+                    return;
 
                 case 'subgrid':
                     // console.log(field.type, '7')

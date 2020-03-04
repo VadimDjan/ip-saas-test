@@ -145,8 +145,8 @@ describe('Автотест на Осмотр участка. ', function () {
             .then(angularWait)
             .then(expliciteWait)
             .then(function () {
-                return $h.form.processButton(['CREATE', 'UPDATE']);
-                // return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
+                // return $h.form.processButton(['CREATE', 'UPDATE']);
+                return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
             })
             .then(function () {
                 expect(element(by.css('[class="ui-notification alert ng-scope alert-success killed"]')).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
