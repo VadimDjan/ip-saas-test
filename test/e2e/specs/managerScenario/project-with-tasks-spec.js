@@ -28,7 +28,8 @@ describe('Автотест на создание ДПГ. ', function () {
     //     console.log('END - 1. Заходим в систему под пользователем КраснДРП');
     // }, skip);
 
-    it('3. Переходим по URL /#/service. ##can_continue', (done) => {
+    // 1. Переходим по URL /#/service. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача, кнопка Добавить запись
+    it('1. Переходим по URL /#/service. ##can_continue', (done) => {
         console.log('Автотест на создание ДПГ.  START - Go to path URL -> /#/service');
         return angularWait()
             .then(function () {
@@ -55,8 +56,8 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(done);
     }, skip);
 
-    it('4. В открывшейся форме списка нажимаем на кнопку Добавить запись. ##can_continue', (done) => {
-        // console.log('3 START - Go to menu нажимаем на кнопку " Добавить запись"');
+    // 2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП"
+    it('2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП". ##can_continue', (done) => {
         return element(by.css('[class="k-button idea-button-add-row"]')).click()
             .then(angularWait)
             .then(expliciteWait)
@@ -68,7 +69,8 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(done);
     }, skip);
 
-    it('5. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ. ##can_continue', function (done) {
+    // 3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ.
+    it('3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ. ##can_continue', function (done) {
         const today = '[' + $h.common.getTodayStr() + '] - ';
         const year = $h.common.getFullYear();
         return $h.form.setForm({
@@ -77,20 +79,14 @@ describe('Автотест на создание ДПГ. ', function () {
             year: year,
             branch: 'Красноярская дирекция по ремонту пути'
         })
-            // .then(expliciteWait)
             .then(function () {
                 return $h.form.processButton(['CREATE', 'UPDATE']);
             })
-            // .then(angularWait)
-            // .then(expliciteWait)
-
-            .then(function () {
-                protractor.helpers.grid.main.rowsList().count().then(function (res) { //проверить что в выпадающем списке есть значение, хотя бы 1
-                    // let b = res > 1;
-                    // console.log('b', b);
-                    expect(res >= 1).toBe(true);
-                })
-            })
+            // .then(function () {
+            //     protractor.helpers.grid.main.rowsList().count().then(function (res) { //проверить что в выпадающем списке есть значение, хотя бы 1
+            //         expect(res >= 1).toBe(true);
+            //     })
+            // })
             .then(function () {
                 element(by.css('[class="editable-header__pk-value  ng-binding"]')).getText().then(function (text) {     // Сохранить ID servicce
                     protractor.helpers.serviceId = Number(text);
@@ -100,8 +96,8 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(done);
     }, skip);
 
-    it('6. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', function (done) {
-        // console.log('Переходим на вкладку Наряды и убеждаемся')
+    // 4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.
+    it('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', function (done) {
         return $h.form.getForm(['tasks'])
             .then(function (form) {
                 eventUid = form.uid;
@@ -117,7 +113,7 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(done);
     }, skip);
 
-    // it('7 Выходим из системы', function (done) {
+    // it('5 Выйти из системы (Проверить что есть кнопка "Выйти", после выхода проверить URL  #/login', function (done) {
     //     // console.log('Step Выходим')
     //
     //     return angularWait()
@@ -143,5 +139,9 @@ describe('Автотест на создание ДПГ. ', function () {
 }, !protractor.totalStatus.ok);
 
 
-
-
+// Автотест на создание ДПГ
+// 0. Выполняем сценарий по логин под КраснДРП
+// 1. Переходим по URL /#/service. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача, кнопка Добавить запись, доступны для редактирования поля "display", "Год", "ДРП", "Создать"
+// 2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП"
+// 3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ.
+// 4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.

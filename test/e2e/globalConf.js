@@ -10,15 +10,13 @@ const config = {
     params: {
         jenkins: {
             workspaceDirectory: '.',
-            host: '127.0.0.1', //45.67.57.231', //'http://localhost:8080', // 'isa.defcont.com'  '193.124.178.223'  'runidea.online'   '127.0.0.1' '94.142.142.227'
-            hostDB: '193.124.178.224',//null, //'193.124.178.224'  'isa.defcont.com'
+            host: '127.0.0.1',
+            // hostDB: null,
             port: 8080
         },
         specs: ''
     },
     onPrepare: function () {
-        // console.log('onPrepare START');
-
         // var width = 1200; //1500;
         // var height = 800; //1000;
         protractor.expliciteWaitTime = 500;
@@ -34,7 +32,6 @@ const config = {
         $h.url = 'http:' + browser.params.jenkins.host + ':' + browser.params.jenkins.port + '/';// 'http://sutrrpm.ru'
         $h.connectionString = 'postgres://system_user:ipDbP@$$w0rdd_1231' + (browser.params.jenkins.hostDB || browser.params.jenkins.host) + ':5432/galaktika_db';
 
-        // console.info('$h.connectionString = ' + $h.connectionString)
 
         protractor.libs = {
             pg: require('pg'),
@@ -57,7 +54,6 @@ const config = {
         $h.scheduler = require('./helpers/scheduler-helpers.js');
 
         protractor.constants = {};
-        // console.info('workspaceDirectory = ' + browser.params.jenkins.workspaceDirectory);
         var jasmineReporters = require('jasmine-reporters');
 
         var reportOutput = config.reportOutput || 'xmloutput';
@@ -66,7 +62,6 @@ const config = {
             savePath: $h.workspaceDirectory || 'testresults',
             filePrefix: reportOutput
         }));
-        // console.log('jasmineReporters END');
 
         var totalStatusPath = protractor.libs.path.join($h.workspaceDirectory, 'totalStatus.json');
         protractor.totalStatus = {
@@ -77,33 +72,23 @@ const config = {
 
         jasmine.getEnv().addReporter({
             jasmineStarted: function (suiteInfo) {
-                // console.log('1');
-                // console.log(suiteInfo);
             },
             suiteStarted: function (result) {
-                // console.log('2');
                 protractor.totalStatus.suits.push({
                     ok: true,
                     description: result.description,
                     fullName: result.fullName,
                     specs: []
                 });
-                // console.log(result.description);
-                // console.log(result.fullName);
             },
             specStarted: function (result) {
-                // console.log('3');
-                // console.log('result', result);
 
                 var suit = protractor.totalStatus.suits[protractor.totalStatus.suits.length - 1];
                 var canContinue = suit.description.endsWith('##can_continue') || result.description.endsWith('##can_continue');
                 jasmine.getEnv().throwOnExpectationFailure(!canContinue);
 
-                // console.log('suit', protractor.totalStatus.suits[protractor.totalStatus.suits.length - 1], 'canContinue', suit.description.endsWith('##can_continue') || result.description.endsWith('##can_continue'));
-                // console.log(' jasmine.getEnv().throwOnExpectationFailure(!canContinue);',  jasmine.getEnv().throwOnExpectationFailure(!canContinue));
             },
             specDone: function (result) {
-                // console.log('4');
                 var suit = protractor.totalStatus.suits[protractor.totalStatus.suits.length - 1];
                 var spec = {
                     ok: true,
@@ -111,29 +96,22 @@ const config = {
                     fullName: result.fullName,
                 };
                 if (result.status === 'failed') {
-                    // console.log('5');
                     var canContinue = suit.description.endsWith('##can_continue') || result.description.endsWith('##can_continue');
                     spec.ok = false;
                     if (canContinue) {
-                        // console.log(' protractor.totalStatus.withErrors');
                         protractor.totalStatus.withErrors = true;
                     }
                     else {
-                        // console.log(' protractor.totalStatus.ok = false;');
                         protractor.totalStatus.ok = false;
                     }
                 }
-                // console.log('6');
                 suit.specs.push(spec);
 
             },
             suiteDone: function (result) {
-                // console.log('7');
-                // console.log(result);
             },
 
             jasmineDone: function () {
-                // console.log('8');
                 $h.file.writeFileSync(totalStatusPath, JSON.stringify(protractor.totalStatus));
             }
         });
@@ -187,7 +165,6 @@ const config = {
             };
 
         }(global));
-        // console.log('onPrepare START');
     },
     capabilities: {
         browserName: 'chrome',
