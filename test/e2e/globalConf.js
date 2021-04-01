@@ -180,8 +180,8 @@ const config = {
 
 if (useLocal) {
     config.directConnect = true
-    config.params.jenkins.host = '127.0.0.1' //'94.142.142.227'
-    config.params.jenkins.port = '8080'
+    // config.params.jenkins.host = 'localhost' //'94.142.142.227'
+    // config.params.jenkins.port = '8080'
 }
 else {
     //config.directConnect = true

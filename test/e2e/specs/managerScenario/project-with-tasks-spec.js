@@ -9,6 +9,7 @@ describe('Автотест на создание ДПГ. ', function () {
     var eventStart = null,
         eventEnd = null,
         eventUid = null;
+    var EC = protractor.ExpectedConditions;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -44,6 +45,7 @@ describe('Автотест на создание ДПГ. ', function () {
                 });
             })
             .then(angularWait)
+            .then(browser.sleep(1500))
             .then(function () {
                 protractor.helpers.grid.main.rowsList().count().then(function (res) { //Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
                     let b = res > 0;
@@ -51,20 +53,23 @@ describe('Автотест на создание ДПГ. ', function () {
                 })
             })
             .then(function () {
-                expect(element(by.css('[class="k-button idea-button-add-row"]')).getText()).toBe('Добавить запись');    // Проверить что есть кнопка Добавить запись
+                expect(element(by.css('.k-button.idea-button-add-row')).getText()).toBe('Добавить запись');    // Проверить что есть кнопка Добавить запись
             })
             .then(done);
     }, skip);
 
     // 2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП"
     it('2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП". ##can_continue', (done) => {
-        return element(by.css('[class="k-button idea-button-add-row"]')).click()
+        return element(by.css('.k-button.idea-button-add-row')).click()
             .then(angularWait)
             .then(expliciteWait)
-            .then(() => expect(element(by.id('singleHeader')).element(by.css('[contenteditable="true"]')).isPresent()).toBe(true))  // Проверить что display доступен для редактирования
-            .then(() => expect(element(by.css('[data-input-name="year"]')).isEnabled()).toBe(true))  // Проверить что Год доступен для редактирования
-            .then(() => expect(element(by.css('[data-input-name="branch"]')).isEnabled()).toBe(true))  // Проверить что ДРП доступен для редактирования
-            .then(() => expect(element(by.css('[data-button-name="CREATE"]')).isPresent()).toBe(true))  //Прооверить что есть кнопка создать
+            .then(browser.sleep(1500))
+            .then(() => element(by.css('.displayname__icon.glyphicon.glyphicon-pencil')).click())
+            .then(browser.wait(EC.presenceOf(element(by.css('.displayname__name_active'))), 5000))
+            .then(() => expect(element(by.css('.displayname__name_active')).isPresent()).toBe(true))  // Проверить что display доступен для редактирования
+            .then(() => expect(element(by.css('.react-grid-item[data-field-name="year"]')).isEnabled()).toBe(true))  // Проверить что Год доступен для редактирования
+            .then(() => expect(element(by.css('.react-grid-item[data-field-name="branch"]')).isEnabled()).toBe(true))  // Проверить что ДРП доступен для редактирования
+            .then(() => expect(element(by.css('.header-button.btn-primary')).getText()).toBe('Создать'))  //Прооверить что есть кнопка создать
             .then(expliciteWait)
             .then(done);
     }, skip);
@@ -88,11 +93,10 @@ describe('Автотест на создание ДПГ. ', function () {
             //     })
             // })
             .then(function () {
-                element(by.css('[class="editable-header__pk-value  ng-binding"]')).getText().then(function (text) {     // Сохранить ID servicce
+                element(by.css('[class="form-header__title"]')).getText().then(function (text) {    // Сохранить ID servicce
                     protractor.helpers.serviceId = Number(text);
                 })
             })
-
             .then(done);
     }, skip);
 
@@ -107,7 +111,7 @@ describe('Автотест на создание ДПГ. ', function () {
             })
             .then(expliciteWait)
             .then(function () {
-                return $h.form.processButton(['BACK']);
+                return $h.form.processButton(['UPDATE']);
             })
             .then(expliciteWait)
             .then(done);

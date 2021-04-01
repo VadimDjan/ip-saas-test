@@ -11,3 +11,10 @@ exports.angularWait = function(originalData){
         return originalData;
     });
 };
+
+exports.tableLoadWait = function(originalData){
+    return browser.wait(EC.presenceOf(element(by.class(".k-grid-content"))))
+    .then(function(){
+        return originalData;
+    });
+};

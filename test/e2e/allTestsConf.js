@@ -2,7 +2,7 @@ var globalConf = require('./globalConf.js').config;
 globalConf.specs = [
  'specs/other/login-spec.js',
  'specs/managerScenario/project-with-tasks-spec.js',
- // 'specs/other/title-spech.js',
+ //'specs/other/title-spech.js',
  // 'specs/managerScenario/distribution-track-machine-stations-spec.js',
  // 'specs/managerScenario/site-inspection-spec.js'
 
