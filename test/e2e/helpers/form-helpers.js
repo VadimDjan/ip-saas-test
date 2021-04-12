@@ -64,7 +64,7 @@ function setField(name, value) {
                         $(_selector).val(_value).change();
                     }, selector, value);
                 case 'richtext':
-                    selector = fieldSelector + ' .ql-editor p';
+                    selector = fieldSelector + ' .se-wrapper p';
                     return field.element.element(by.css(selector)).clear().sendKeys(value);
                 case 'comments': //$('textarea.comment-view__editor').data('kendoEditor')
                     selector = fieldSelector + ' textarea.comment-view__editor';
@@ -342,7 +342,7 @@ function getField(name) {
                     return null;
                 case 'richtext':
                     // console.log(field.type, '4')
-                    selector = fieldSelector + ' .ql-editor p';
+                    selector = fieldSelector + ' .se-wrapper p';
                     return field.element.element(by.css(selector)).getText();
                 case 'comments':
                     // console.log(field.type, '5')
@@ -571,9 +571,9 @@ function processButton(name, fieldName, allowNoButton) {
                 if (name.length === 0) {
                     return;
                 } else {
-                    var selector = 'div .modal-content' + ' button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
+                    var selector = 'div.modal-content' + ' button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
                     return  $h.common.scrollToSelector(selector)
-                        .then(browser.wait(EC.presenceOf(element(by.css(selector))), 30000))
+                        .then(browser.wait(EC.presenceOf(element(by.css(selector))), 7000))
                         .then(() => element(by.css(selector)).isPresent())
                         .then(function (isPresent) {
                             if (isPresent) {
@@ -587,7 +587,7 @@ function processButton(name, fieldName, allowNoButton) {
                         });
                 }
             } else {
-                const selector = 'div .modal-content' + ' button[data-button-name=\"' + name + '\"]' + fieldSelector;   
+                const selector = 'div .modal-content' + ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
                 return browser.wait(EC.presenceOf(element(by.css(selector))), 5000)
                     .then(function(){
                         element(by.css(selector))

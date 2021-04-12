@@ -64,7 +64,7 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(angularWait)
             .then(expliciteWait)
             .then(browser.sleep(1500))
-            .then(() => element(by.css('.displayname__icon.glyphicon.glyphicon-pencil')).click())
+            //.then(() => element(by.css('.displayname__icon.glyphicon.glyphicon-pencil')).click())
             .then(browser.wait(EC.presenceOf(element(by.css('.displayname__name_active'))), 5000))
             .then(() => expect(element(by.css('.displayname__name_active')).isPresent()).toBe(true))  // Проверить что display доступен для редактирования
             .then(() => expect(element(by.css('.react-grid-item[data-field-name="year"]')).isEnabled()).toBe(true))  // Проверить что Год доступен для редактирования
@@ -78,6 +78,7 @@ describe('Автотест на создание ДПГ. ', function () {
     it('3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ. ##can_continue', function (done) {
         const today = '[' + $h.common.getTodayStr() + '] - ';
         const year = $h.common.getFullYear();
+        protractor.helpers.dpg = today + 'Услуга';
         return $h.form.setForm({
             displayname: today + 'Услуга',
             description: today + 'Описание услуги',
@@ -103,6 +104,7 @@ describe('Автотест на создание ДПГ. ', function () {
     // 4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.
     it('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', function (done) {
         return $h.form.getForm(['tasks'])
+            .then(browser.sleep(1000))
             .then(function (form) {
                 eventUid = form.uid;
                 tasksBefore = form.tasks.length
