@@ -81,9 +81,9 @@ describe('Автотест на создание ДПГ. ', function () {
         protractor.helpers.dpg = today + 'Услуга';
         return $h.form.setForm({
             displayname: today + 'Услуга',
-            description: today + 'Описание услуги',
             year: year,
-            branch: 'Красноярская дирекция по ремонту пути'
+            branch: 'Красноярская дирекция по ремонту пути',
+            description: today + 'Описание услуги',
         })
             .then(function () {
                 return $h.form.processButton(['CREATE', 'UPDATE']);
@@ -95,7 +95,7 @@ describe('Автотест на создание ДПГ. ', function () {
             // })
             .then(function () {
                 element(by.css('[class="form-header__title"]')).getText().then(function (text) {    // Сохранить ID servicce
-                    protractor.helpers.serviceId = Number(text);
+                    protractor.helpers.serviceId = parseInt(text.split('#')[1]);
                 })
             })
             .then(done);
@@ -104,7 +104,6 @@ describe('Автотест на создание ДПГ. ', function () {
     // 4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.
     it('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', function (done) {
         return $h.form.getForm(['tasks'])
-            .then(browser.sleep(1000))
             .then(function (form) {
                 eventUid = form.uid;
                 tasksBefore = form.tasks.length

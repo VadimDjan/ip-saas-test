@@ -3,12 +3,28 @@ var $h = protractor.helpers;
 var expliciteWait = $h.wait.expliciteWait;
 var angularWait = $h.wait.angularWait;
 var EC = protractor.ExpectedConditions;
+var Key = protractor.Key;
 
-function getFieldSelector(name) {
+function getFieldSelector(name, mode) {
+    if (mode === 'popup') {
+        return '.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]';
+    }
     return name === 'displayname' ? 'div.modal-content .displayname__name' : 'div.modal-content .card .react-grid-item[data-field-name="' + name + '"]'
 }
 
-var findFieldOnCurrentTab = function (name) {
+var findFieldOnCurrentTab = function (name, mode) {
+    if (mode === 'popup') {
+        return protractor.promise.all([
+            element(by.css('.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]')),
+            element(by.css('.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]')).getAttribute('data-widget')
+        ])
+            .then(function (a) {
+                return {
+                    element: a[0],
+                    type: a[1]
+                };
+            });
+    }
     return protractor.promise.all([
         element(by.css('div.modal-content .card .react-grid-item[data-field-name="' + name + '"]')),
         element(by.css('div.modal-content .card .react-grid-item[data-field-name="' + name + '"]')).getAttribute('data-widget')
@@ -22,17 +38,26 @@ var findFieldOnCurrentTab = function (name) {
 };
 exports.getFieldSelector = getFieldSelector;
 
-function setField(name, value) {
-    // console.log('setField name', name, ' value=', value);
-    return findFieldOnCurrentTab(name)
+function setField(name, value, mode) {
+    return findFieldOnCurrentTab(name, mode)
+        .then(browser.sleep(2000))
         .then(function (field) {
-            var fieldSelector = getFieldSelector(name),
+            console.log(name,value)
+            var fieldSelector = getFieldSelector(name, mode),
                 selector,
                 selector2;
             // console.log('field.type', field.type);
             switch (field.type) {
-                case 'number': 
-                    return field.element.element(by.css('div.numberfield__wrapper input')).clear().sendKeys(value)
+                case 'number':
+                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
+                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.DELETE);
+                    return field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(value)
+                // case 'text':
+                //     field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
+                //     field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.DELETE);
+                //     console.log('return')
+                //     return null
+                    //return field.element.element(by.css('div.textfield__wrapper input')).sendKeys(value)
                 case 'input':
                     browser.executeScript('window.scrollTo(0,0);').then(function () {
                         // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
@@ -133,21 +158,20 @@ function setField(name, value) {
 
                 case 'addable_select':
                 case 'autocomplete':
+                case 'combobox':
                 case 'addable_autocomplete':
                     // case 'no_glass_autocomplete':
 
-                    // console.log('setField**', field.type)
 
                     element(by.css(fieldSelector + ' .rw-widget-input')).click();
                     selector = ' .rw-popup';
                     selector2 = selector + ' li.rw-list-option';
-
                     if (field.type.indexOf('autocomplete') >= 0) {
                         // console.log('!!!!setField**', field.type)
                         const val = value && value.displayValue || value && value.value || value
                         element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
                     }
-                    
+
                     return angularWait()
                         .then(expliciteWait)
                         // .then(function () {
@@ -163,10 +187,33 @@ function setField(name, value) {
                             try {
                                 if (field.type.indexOf('autocomplete') >= 0) {
                                     return element.all(by.css(fieldSelector + selector2)).first().click();
+                                } else if (field.type.indexOf('combobox') >= 0) {
+                                    return element.all(by.css(fieldSelector + selector2)).then(function(arr) {
+                                        let i = 0;
+                                        let end = false;
+                                        async function* generate() {
+                                            while(!end) {
+                                               yield  await arr[i].getText();
+                                            }
+                                            return arr[i].click();
+                                        }
+                                        async function cycle() {
+                                            let generator = generate();
+                                            let text = await generator.next();
+                                            while ( text.value !== value && i < arr.length - 1) {
+                                                i += 1;
+                                                text = await generator.next();
+                                            }
+                                            end = true;
+                                            return await generator.next();
+                                        }
+                                        return cycle();
+                                    });
                                 } else {
                                     // console.log('setField** else val', val)
                                     // console.log('setField** else value', value)
-                                    return element.all(by.css(fieldSelector + selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
+                                    // return element.all(by.css(fieldSelector + selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
+                                    return element(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value)).click();
                                 }
                             } catch (e) {
                                 console.error('Unknown value ' + value + ' for field ' + name);
@@ -290,15 +337,16 @@ function setField(name, value) {
             }
         })
         .then(function () {
-            return getField(name);
+            return getField(name, mode);
         });
 }
+exports.setField = setField;
 
-function getField(name) {
+function getField(name, mode) {
 
-    return findFieldOnCurrentTab(name)
+    return findFieldOnCurrentTab(name, mode)
         .then(function (field) {
-            var fieldSelector = getFieldSelector(name),
+            var fieldSelector = getFieldSelector(name,mode),
                 selector;
             switch (field.type) {
                 case 'input':
@@ -325,7 +373,7 @@ function getField(name) {
                                     return m.isValid() ? m.toDate() : null;
                                 default:
                                     return val;
-                            }
+                            }6
                         });
                 case 'number':
                     // console.log(fieldSelector, field.type);
@@ -371,6 +419,7 @@ function getField(name) {
                 case 'select':
                 case 'addable_select':
                 case 'autocomplete':
+                case 'combobox':
                 case 'addable_autocomplete':
                 case 'no_glass_autocomplete':
                     // console.log('getField', field.type)
@@ -382,10 +431,13 @@ function getField(name) {
 
                 case 'subgrid':
                     selector = fieldSelector + ' [data-grid="ip-kendo-grid"]'
-                    return browser.executeScript(function (_selector) {
-                        // console.log('_selector', _selector.toString())
-                        return JSON.parse(JSON.stringify($(_selector).data('kendoGrid').dataSource.data()));
-                    }, selector);
+                     return browser.sleep(2000)
+                        .then( function() {
+                            return browser.executeScript(function (_selector) {
+                                // console.log('_selector', _selector.toString())
+                                return JSON.parse(JSON.stringify($(_selector).data('kendoGrid').dataSource.data()));
+                            }, selector);
+                        })
                 default:
                     // console.log(field.type, '8')
                     console.warn('Unimplemented field type = ' + field.type);
@@ -405,9 +457,9 @@ function openNextSection() {
 }
 
 function processForm(_fieldsList, functionToProcess) {
-    // console.log('processForm 1')
+    // console.log('processForm 1', _fieldsList);
     var result = {};
-    let fieldsList
+    let fieldsList = [];
     function processHeader() {
         // console.log('processHeader 1')
         if (_fieldsList.includes('displayname')) {
@@ -419,7 +471,8 @@ function processForm(_fieldsList, functionToProcess) {
                 })
 
         } else {
-            fieldsList = _fieldsList
+            fieldsList = _fieldsList;
+            // console.log('processHeader', fieldsList);
             let when = protractor.promise.when(null)
             // console.log('processHeader 3',_fieldsList)
             return when
@@ -449,14 +502,14 @@ function processForm(_fieldsList, functionToProcess) {
         return element.all(by.css(`div.modal-content .card[data-key="${key}"] .react-grid-item`)).map(function (elm, index) {
                 return elm.getAttribute('data-field-name');
         })
-            .then(function (_sectionFieldsList) { 
+            .then(function (_sectionFieldsList) {
                 sectionFieldsList = _sectionFieldsList;
                 currentFieldsList = _.intersection(sectionFieldsList, fieldsList);
                 return processNextField();
             })
             .then(function () {
                 fieldsList = _.difference(fieldsList, sectionFieldsList);
-                var selector = 'div.modal-content .card .show';
+                var selector = 'div.modal-content .card .collapse.show';
                 if (fieldsList.length) {
                     return browser.wait(EC.presenceOf(element(by.css(selector))), 30000)
                         .then(element(by.css(selector)).isPresent()
@@ -468,7 +521,7 @@ function processForm(_fieldsList, functionToProcess) {
                                                 .then(function () {
                                                     return element(by.css(nextTabHeaderSelector)).click();
                                                 })
-                                                .then(angularWait)
+                                                .then(browser.wait(EC.presenceOf(element(by.css(`div.modal-content .card[data-key="${key + 1}"] .collapse.show`))), 3000))
                                                 .then(function () {
                                                     return processSection(key+1);
                                                 });
@@ -489,11 +542,11 @@ function processForm(_fieldsList, functionToProcess) {
 
     function openFirstTabIfNeeded() {
         // var firstTabHeaderSelector = '.current-form .panel:first-child h4 span[uib-accordion-header]';
-        var firstTabHeaderSelector = '.current-form .MainForm h4 span[uib-accordion-header]';
+        var firstTabHeaderSelector = 'div.modal-content .card[data-key="0"] .card-header .accordion-panel';
         // console.log(firstTabHeaderSelector, 'firstTabHeaderSelector')
         //  console.log( '************')
 
-        return element(by.css('.current-form .panel.panel-open:first-child')).isPresent()
+        return element(by.css('div.modal-content .card[data-key="0"] .collapse.show')).isPresent()
             // .then(console.log( '**********!!!!**'))
             .then(function (isPresentFirstTab) {
                 if (isPresentFirstTab) {
@@ -520,7 +573,8 @@ function processForm(_fieldsList, functionToProcess) {
     return processHeader()
         // .then(console.log(openFirstTabIfNeeded, 'processHeader in openFirstTabIfNeeded*'))
         .then(openFirstTabIfNeeded)
-        .then(element(by.css('div.modal-content .card .show')).element(by.xpath('parent::div')).getAttribute('react-key')
+        .then(browser.wait(EC.presenceOf(element(by.css('div.modal-content .card .collapse.show'))), 5000))
+        .then(element(by.css('div.modal-content .card .collapse.show')).element(by.xpath('parent::div')).getAttribute('react-key')
             .then(function(key) { processSection(Number(key))}))
         .then(() => result)
 }
@@ -600,7 +654,7 @@ function processButton(name, fieldName, allowNoButton) {
 exports.processButton = processButton;
 
 function processPopup(action) {
-    const selector = '.modal-footer .btn-' + action
+    const selector = '.modal-footer .popup__dialog-btn_' + action
     return function () {
         return angularWait()
             .then(expliciteWait)
@@ -617,10 +671,10 @@ function processPopup(action) {
             .then(function () {
                 element(by.css(selector)).click();
             })
-            .then(angularWait);
+            .then(browser.sleep(2000));
     };
 }
-
+exports.processPopup = processPopup;
 exports.submitPopup = processPopup('submit');
 exports.cancelPopup = processPopup('cancel');
 

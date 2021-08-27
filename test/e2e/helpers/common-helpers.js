@@ -108,7 +108,7 @@ exports.scrollToSelector = function (selector) {
     return browser
         .executeScript(scrollToSelector, selector)
         .then(function () {
-            return browser.sleep(500);
+            return browser.sleep(1000);
         });
 };
 

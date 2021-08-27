@@ -11,7 +11,6 @@ describe('Автотест на получение Титула. ', function () 
     let buttonUpdate = 'Сохранить';
     let buttonCancel = 'Отменить участок';
     let buttonIncludeInTitle = 'Включить в титул';
-
     var linesNumber;
     var jackdawsCount = 4;  // установить 4 галочки
     let number = 0;
@@ -141,6 +140,7 @@ describe('Автотест на получение Титула. ', function () 
             .then(browser.driver.getAllWindowHandles().then(function(handles) {
                 browser.driver.switchTo().window(handles[1])})
             )
+            .then(browser.wait(EC.presenceOf(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]'))), 5000))
             .then(function () {
                 element.all(by.css('[data-uid]')).count().then(function (res) {
                     expect(res >= jackdawsCount).toBe(true);  //убедиться, что имеются не менее 4х записей
@@ -257,6 +257,7 @@ describe('Автотест на получение Титула. ', function () 
            .then(browser.sleep(3000))
              .then(function () {     // выбираем 4 элемента из созданной группы
                  let childElements = protractor.helpers.grid.main.rowsList();
+                 linesNumber = 1 // При тестировании чтобы одну запись добавлять в титул, чтобы потом не пересоздавать
                  for (let i = 0; i < linesNumber; i++) {
                      isExistNewGroup = false;
                      childElements.get(i).getText().then(function (text) {
@@ -334,12 +335,13 @@ describe('Автотест на получение Титула. ', function () 
             // return $h.form.processButton(['CREATE', 'UPDATE']);
             return $h.form.processButton(['Выполнить'], 'task');   //жмем на кнопку Сохранить
           })
-          .then(browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), 10000))
+          .then(browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), 5000))
           .then(expect(element(by.css(selector)).getAttribute('value').then(function(text) {
             if (text.trim() == 'Выполнен') {
               return text.trim()
             }
           })).toBe('Выполнен'))
+          .then(done);
      }, skip);
 }, !protractor.totalStatus.ok);
 
