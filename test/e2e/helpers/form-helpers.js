@@ -42,22 +42,21 @@ function setField(name, value, mode) {
     return findFieldOnCurrentTab(name, mode)
         .then(browser.sleep(2000))
         .then(function (field) {
-            console.log(name,value)
+            //console.log(name,value, field.type)
             var fieldSelector = getFieldSelector(name, mode),
                 selector,
                 selector2;
             // console.log('field.type', field.type);
             switch (field.type) {
+                case 'float':
                 case 'number':
                     field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
                     field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.DELETE);
                     return field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(value)
-                // case 'text':
-                //     field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
-                //     field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.DELETE);
-                //     console.log('return')
-                //     return null
-                    //return field.element.element(by.css('div.textfield__wrapper input')).sendKeys(value)
+                case 'text':
+                    field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
+                    field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.DELETE);
+                    return field.element.element(by.css('div.textfield__wrapper input')).sendKeys(value)
                 case 'input':
                     browser.executeScript('window.scrollTo(0,0);').then(function () {
                         // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
@@ -66,18 +65,18 @@ function setField(name, value, mode) {
                 case 'input_pattern':
                 case 'password':
                     return field.element.element(by.css('[data-field-name="' + name + '"]')).clear().sendKeys(value);
-                case 'float':
-                    selector = fieldSelector + '  [data-role=\"numerictextbox\"]';
-                    return browser.executeScript(function (_selector, _value) {
-                        var editor = $(_selector).data('kendoNumericTextBox');
-                        editor.value(_value);
-                        editor.trigger('change');
-                    }, selector, value)
-                        .then(angularWait)
-                        .then(expliciteWait)
-                        .then(function () {
-                            return browser.sleep(100);
-                        });
+                // case 'float':
+                //     selector = fieldSelector + '  [data-role=\"numerictextbox\"]';
+                //     return browser.executeScript(function (_selector, _value) {
+                //         var editor = $(_selector).data('kendoNumericTextBox');
+                //         editor.value(_value);
+                //         editor.trigger('change');
+                //     }, selector, value)
+                //         .then(angularWait)
+                //         .then(expliciteWait)
+                //         .then(function () {
+                //             return browser.sleep(100);
+                //         });
 
                 case 'button':
                     return field.element.element(by.css('[ng-click="processFieldButton()"]')).click();
@@ -159,6 +158,7 @@ function setField(name, value, mode) {
                 case 'addable_select':
                 case 'autocomplete':
                 case 'combobox':
+                case 'no_glass_autocomplete':
                 case 'addable_autocomplete':
                     // case 'no_glass_autocomplete':
 
@@ -232,47 +232,47 @@ function setField(name, value, mode) {
                         //     }, selector, value)
                         // })
 
-                case 'no_glass_autocomplete':
-                    // console.log('setField* no_glass_autocomplete*', field.type)
-                    browser.executeScript('window.scrollTo(0,0);').then(function () {
-                        // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
-                    });
-                    element(by.css(fieldSelector + ' .select2-choice')).click();
-                    selector = '#select2-drop:not([style*=\"display: none\"])';
-                    selector2 = selector + ' .select2-results li.select2-result-selectable';
-                    if (field.type.indexOf('autocomplete') >= 0) {
-                        const val = value && value.displayValue || value && value.value || value
-                        element(by.css(selector + ' .select2-input')).clear().sendKeys(val)
-                    }
-
-                    return angularWait()
-                        .then(expliciteWait)
-                        // .then(function () {
-                        //     return browser.wait(function () {
-                        //         return browser.isElementPresent(by.css(selector2));
-                        //     });
-                        // })
-                        .then(function () {
-                            try {
-                                if (field.type.indexOf('autocomplete') >= 0) {
-                                    return element.all(by.css(selector2)).first().click();
-                                } else {
-                                    return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
-                                }
-                            } catch (e) {
-                                console.error('Unknown value ' + value + ' for field ' + name);
-                                console.error(e);
-                            }
-                        })
-                        .then(() => {
-                            selector = fieldSelector + ' [ng-model]';
-                            return browser.executeScript(function (_selector, _value) {
-                                if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
-                                    console.error('Wrong selector = ' + _selector);
-                                }
-                                return $(_selector).isolateScope().$ctrl.update();
-                            }, selector, value)
-                        })
+                // case 'no_glass_autocomplete':
+                //     // console.log('setField* no_glass_autocomplete*', field.type)
+                //     browser.executeScript('window.scrollTo(0,0);').then(function () {
+                //         // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
+                //     });
+                //     element(by.css(fieldSelector + ' .select2-choice')).click();
+                //     selector = '#select2-drop:not([style*=\"display: none\"])';
+                //     selector2 = selector + ' .select2-results li.select2-result-selectable';
+                //     if (field.type.indexOf('autocomplete') >= 0) {
+                //         const val = value && value.displayValue || value && value.value || value
+                //         element(by.css(selector + ' .select2-input')).clear().sendKeys(val)
+                //     }
+                //
+                //     return angularWait()
+                //         .then(expliciteWait)
+                //         // .then(function () {
+                //         //     return browser.wait(function () {
+                //         //         return browser.isElementPresent(by.css(selector2));
+                //         //     });
+                //         // })
+                //         .then(function () {
+                //             try {
+                //                 if (field.type.indexOf('autocomplete') >= 0) {
+                //                     return element.all(by.css(selector2)).first().click();
+                //                 } else {
+                //                     return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
+                //                 }
+                //             } catch (e) {
+                //                 console.error('Unknown value ' + value + ' for field ' + name);
+                //                 console.error(e);
+                //             }
+                //         })
+                //         .then(() => {
+                //             selector = fieldSelector + ' [ng-model]';
+                //             return browser.executeScript(function (_selector, _value) {
+                //                 if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
+                //                     console.error('Wrong selector = ' + _selector);
+                //                 }
+                //                 return $(_selector).isolateScope().$ctrl.update();
+                //             }, selector, value)
+                //         })
 
                 case 'html':
                     console.log('action not defined,  type =' + field.type)
@@ -375,16 +375,17 @@ function getField(name, mode) {
                                     return val;
                             }6
                         });
+                case 'float':
                 case 'number':
                     // console.log(fieldSelector, field.type);
                     return field.element.element(by.css('input')).getAttribute('value');
-                case 'float':
-                    // console.log(field.type, '2')
-                    selector = fieldSelector + ' [data-role=\"numerictextbox\"]';
-                    return browser.executeScript(function (_selector) {
-                        return $(_selector).data('kendoNumericTextBox').value();
-                    }, selector)
-                        .then(angularWait);
+                // case 'float':
+                    // // console.log(field.type, '2')
+                    // selector = fieldSelector + ' [data-role=\"numerictextbox\"]';
+                    // return browser.executeScript(function (_selector) {
+                    //     return $(_selector).data('kendoNumericTextBox').value();
+                    // }, selector)
+                    //     .then(angularWait);
                 case 'button':
                     // console.log(field.type, '3')
                     return null;
@@ -428,7 +429,6 @@ function getField(name, mode) {
                 case 'html':
                     console.log('action not defined,  type =' + field.type)
                     return;
-
                 case 'subgrid':
                     selector = fieldSelector + ' [data-grid="ip-kendo-grid"]'
                      return browser.sleep(2000)
@@ -480,7 +480,19 @@ function processForm(_fieldsList, functionToProcess) {
     }
 
     function processSection(key) {
-        var nextTabHeaderSelector = `div.modal-content .card[data-key="${key + 1}"] .card-header .accordion-panel`;
+        let i = 1;
+        let nextTab = `div.modal-content .card[data-key="${key + i}"]`;
+        async function cycle() {
+            let isPres = await element(by.css(nextTab)).isPresent();
+            while ( !isPres) {
+                i = i + 1;
+                nextTab = `div.modal-content .card[data-key="${key + i}"]`;
+                isPres = await element(by.css(nextTab)).isPresent();
+            }
+            nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
+            return element(by.css(nextTabHeaderSelector)).isPresent();
+        };
+        let nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
         var currentFieldsList = [], sectionFieldsList = [];
         var processNextField = function () {
             if (currentFieldsList.length > 0) {
@@ -508,6 +520,9 @@ function processForm(_fieldsList, functionToProcess) {
                 return processNextField();
             })
             .then(function () {
+                return cycle();
+            })
+            .then(function () {
                 fieldsList = _.difference(fieldsList, sectionFieldsList);
                 var selector = 'div.modal-content .card .collapse.show';
                 if (fieldsList.length) {
@@ -521,9 +536,9 @@ function processForm(_fieldsList, functionToProcess) {
                                                 .then(function () {
                                                     return element(by.css(nextTabHeaderSelector)).click();
                                                 })
-                                                .then(browser.wait(EC.presenceOf(element(by.css(`div.modal-content .card[data-key="${key + 1}"] .collapse.show`))), 3000))
+                                                .then(browser.wait(EC.presenceOf(element(by.css(nextTab + ' .collapse.show'))), 3000))
                                                 .then(function () {
-                                                    return processSection(key+1);
+                                                    return processSection(key+i);
                                                 });
                                         } catch (e) {
                                             return null;

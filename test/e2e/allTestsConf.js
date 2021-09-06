@@ -1,10 +1,13 @@
 var globalConf = require('./globalConf.js').config;
 globalConf.specs = [
  'specs/other/login-spec.js',
- 'specs/managerScenario/project-with-tasks-spec.js',
- 'specs/other/title-spech.js',
+ //'specs/managerScenario/project-with-tasks-spec.js',
+ // 'specs/other/title-spech.js',
+ // 'specs/managerScenario/stages-and-mode-of-work.js',
+ // 'specs/managerScenario/set-stages-and-mode-of-work.js',
  // 'specs/managerScenario/distribution-track-machine-stations-spec.js',
- // 'specs/managerScenario/site-inspection-spec.js'
+ 'specs/managerScenario/site-inspection-spec.js',
+ //'specs/other/remove-service.js',
 
     // 'specs/registration/registration-spec.js',
     // 'specs/registration/invitation-spec.js',

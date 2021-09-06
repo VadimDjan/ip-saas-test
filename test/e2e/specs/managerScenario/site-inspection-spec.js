@@ -30,6 +30,12 @@ describe('Автотест на Осмотр участка. ', function () {
     let childElements;
 
     const buttonCalcMvsp = 'Расчет МВСП';
+    const updateInlineButton = 'toolbar-inline-buttons idea-button-modify idea-button-update k-grid-update';
+    const editInlineButton = 'toolbar-inline-buttons idea-button-modify idea-button-edit k-grid-edit';
+    const addInlineButton = 'pull-right toolbar-buttons k-button k-grid-add';
+    const alertSuccess = 'alert__wrapper alert__wrapper_success';
+    const alertDanger = 'alert__wrapper alert__wrapper_danger';
+
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -178,6 +184,10 @@ describe('Автотест на Осмотр участка. ', function () {
     it('2. Кликаем по ссылке и убеждаемся что отобразилась таблица и в ней имеются не менее 3х записей. ##can_continue', function (done) {
         // console.log('нажимаем на кнопку "Выбрать все"')
         return  element(by.css('[class="glyphicon glyphicon-road"]')).click()
+            .then(async () => await browser.sleep(1500))
+            .then(browser.driver.getAllWindowHandles().then(function(handles) {
+                browser.driver.switchTo().window(handles[handles.length-1]);
+            }))
             .then(angularWait)
             .then(expliciteWait)
             .then(browser.wait(EC.presenceOf(element(by.css('[data-button-name="request_cancel2"]'))), 5000))
@@ -212,44 +222,48 @@ describe('Автотест на Осмотр участка. ', function () {
             .then(done);
     }, skip);
 
-
         // 4. Перейти во вкладку "Верхнее строение пути" поля в разделе "До ремонта", заполнить обязательные поля.
     it('4. Перейти во вкладку "Верхнее строение пути" поля в разделе "До ремонта", заполнить обязательные поля. ##can_continue', function (done) {
         browser.sleep(1000);
-        return $h.form.getForm(['before_repair_label'])
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                return $h.form.setForm({
+        return $h.form.setForm({
                     rail_brand_br: 'Р65 СГ I',
-                    clips_br: 'W-30',
-                    sleeper_br: 'Ш АРС-МК/АРС-04.07.003-II-ПД',
-                    ballast_br: 'gravel',
-                    sep_layer_br: 'Георешетка',
-                    signal_system_br: 'semi_automatic',
+                    clips_br: 'АРС',
+                    sleeper_br: 'Ш АРС-МК',
+                    ballast_br: 'Щебень',
+                    //sep_layer_br: 'Георешетка',
+                    signal_system_br: 'Полуавтоматическая',
                     dirtyness: 34,
-                    trackform_br: 'course',
-                    rail_situation: 'new',
-                    sleeper_situation: 'new',
-                    clips_situation: 'new'
+                    trackform_br: 'Звеньевой',
+                    rail_situation: 'Новые',
+                    sleeper_situation: 'Новые',
+                    clips_situation: 'Новые',
+                    trackform_ar: 'Звеньевой',
                 })
-            })
             .then(angularWait)
             .then(expliciteWait)
             .then(done);
     }, skip);
 
-    // 5. Перейти во вкладку "Протяженность участка", заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок." в разделе "После ремонта". Нажать кнопку "Добавить запись"
+    it('4а. В Осмотре участка нажимаем на кнопку "Сохранить". Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', function (done) {
+        return angularWait()
+            .then(function () {
+                // return $h.form.processButton(['CREATE', 'UPDATE']);
+                return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
+            })
+            .then(function () {
+                expect(element(by.css(`[class="${alertSuccess}"]`)).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
+            })
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(done);
+    }, skip);
+//
+//     5. Перейти во вкладку "Протяженность участка", заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок." в разделе "После ремонта". Нажать кнопку "Добавить запись"
 // под таблицей "Нестандартные километры", убедится, что появилась строка с формами для ввода данных (количество записей в таблице увеличилось на 1).
 // Заполнить поля "км", "Количество пикетов" значениями "км. н." и нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1
 // Если запись в таблице уже существует, обновить значение "пк+ ок.". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
     it('5. Перейти во вкладку "Протяженность участка", заполнить открытые поля и строки таблиц: "Нестандартные километры"/"Нестандартные пикеты". ##can_continue', function (done) {
-        return $h.form.getForm(['before_repair_label_1'])
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                return $h.form.getForm(['start_km_br', 'start_pk_br', 'finish_km', 'finish_pk_before_repair', 'distance_before_repair']);
-            })
+        return $h.form.getForm(['start_km_br', 'start_pk_br', 'finish_km', 'finish_pk_before_repair', 'distance_before_repair'])
             .then(function (form) {
                 start_km_ar = form.start_km_br;
                 start_pk_ar = form.start_pk_br;
@@ -273,19 +287,18 @@ describe('Автотест на Осмотр участка. ', function () {
             })
             .then(function (count) {
                 numOfRows = count;
-
                 if (count > 0) {
                     return angularWait()
                         .then(function () {
                             browser.executeScript('window.scrollTo(0,0);');
                             isExistsRows = true;
-                            element.all(by.css('[data-field-name="unusual_km"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+                           element.all(by.css(`[data-field-name="unusual_km"] [class="${editInlineButton}"]`)).first().click();
                         })
                 } else {
                     return angularWait()
                         .then(function () {
                             browser.executeScript('window.scrollTo(0,0);');
-                            elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
+                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
                         })
                         .then(angularWait)
                         .then(function () {
@@ -311,7 +324,7 @@ describe('Автотест на Осмотр участка. ', function () {
                 elementMain.element(by.css('input[name="pk_count"]')).sendKeys(Math.ceil(finish_pk_after_repair + 1));
             })
             .then(function () {
-                elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
+                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             })
             .then(function () {
                 element.all(by.css('[class="alert__wrapper alert__wrapper_danger"]')).count().then(function (resCount) {
@@ -346,17 +359,17 @@ describe('Автотест на Осмотр участка. ', function () {
                         .then(function () {
                             browser.executeScript('window.scrollTo(0,0);');
                             isExistsRows = true;
-                            element.all(by.css('[data-field-name="unusual_pk"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+                           element.all(by.css(`[data-field-name="unusual_pk"] [class="${editInlineButton}"]`)).first().click();
                         })
                 } else {
                     return angularWait()
                         .then(function () {
                             browser.executeScript('window.scrollTo(0,0);');
-                            elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
+                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
                         })
                         .then(angularWait)
                         .then(function () {
-                            return $h.grid.subgrid('unusual_km').getTotalRows();
+                            return $h.grid.subgrid('unusual_pk').getTotalRows();
                         })
                         // .then(function (countAfterAdd) {
                         //     console.log('countAfterAdd_2 =', countAfterAdd)
@@ -384,7 +397,7 @@ describe('Автотест на Осмотр участка. ', function () {
 
             })
             .then(function () {
-                elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
+                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             })
             .then(function () {
                 element.all(by.css('[class="alert__wrapper alert__wrapper_danger"]')).count().then(function (resCount) {
@@ -496,7 +509,7 @@ describe('Автотест на Осмотр участка. ', function () {
 //                 return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
 //             })
 //             .then(function () {
-//                 expect(element(by.css('[class="ui-notification alert ng-scope alert-success killed"]')).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
+//                 expect(element(by.css(`[class="${alertSuccess}"]`)).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
 //             })
 //             .then(angularWait)
 //             .then(expliciteWait)
@@ -621,7 +634,7 @@ describe('Автотест на Осмотр участка. ', function () {
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
 //                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="unusual_km"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+//                            element.all(by.css(`[data-field-name="unusual_km"] [class="${editInlineButton}"]`)).first().click();
 //                         })
 //                 } else {
 //                     return angularWait()
@@ -656,7 +669,7 @@ describe('Автотест на Осмотр участка. ', function () {
 //                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
 //             })
 //             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
+//                 element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
 //                     // console.log('resCount1', resCount, 'countMistakes', countMistakes)
 //                     expect(resCount).toBe(countMistakes);
 //                     countMistakes = resCount;
@@ -688,7 +701,7 @@ describe('Автотест на Осмотр участка. ', function () {
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
 //                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="unusual_pk"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+//                            element.all(by.css(`[data-field-name="unusual_pk"] [class="${editInlineButton}"]`)).first().click();
 //                         })
 //                 } else {
 //                     return angularWait()
@@ -729,7 +742,7 @@ describe('Автотест на Осмотр участка. ', function () {
 //                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
 //             })
 //             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
+//                 element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
 //                     // console.log('resCount2', resCount, 'countMistakes', countMistakes)
 //                     expect(resCount).toBe(countMistakes);
 //                     countMistakes = resCount;
@@ -753,478 +766,478 @@ describe('Автотест на Осмотр участка. ', function () {
 //             .then(done);
 //     }, skip);
 //
-// // 10. Перейти во вкладку "Протяженность рельсов", нажать кнопку "Добавить запись" таблицы, убедится, что появилась строка с формами для ввода данных.
-// // Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок.", "Тип" (указать первый из выпадающего списка) и нажать кнопку "Сохранить". Проверить, что количество записей в таблице
-// // увеличилось на 1. Если запись в таблице уже существует, обновить поле "Тип" из выпадающего списка. Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
-//     it('10. Перейти во вкладку "Протяженность рельсов", заполнить данные по таблице". ##can_continue', function (done) {
-//         return $h.form.getForm(['track_rail_distance'])
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(function () {
-//                 elementMain = element(by.css('[data-field-name="track_rail_distance"]'));
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_rail_distance').getTotalRows();    //таблица "Протяженность рельсов"
-//             })
-//             .then(function (count) {
-//                 numOfRows = count;
-//
-//                 if (count > 0) {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_rail_distance"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
-//                         })
-//                 } else {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
-//                         })
-//                         .then(angularWait)
-//                         .then(function () {
-//                             return $h.grid.subgrid('track_rail_distance').getTotalRows();
-//                         })
-//                         // .then(function (countAfterAdd) {
-//                         //     console.log('countAfterAdd_3 =', countAfterAdd)
-//                         //     expect(countAfterAdd).toBe(numOfRows + 1);
-//                         // })
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_km"]')).click();
-//                             elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_pk"]')).click();
-//                             elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
-//
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_km"]')).click();
-//                             elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-//                             elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_pk_after_repair);
-//                         })
-//                 }
-//             })
-//
-//             .then(function () {
-//                 return element(by.css('[data-container-for="track_type.displayValue"]')).click()
-//                     .then(expliciteWait)
-//                     .then(function () {
-//                         return element.all(by.css('[class="select2-result-label"]')).last().click();
-//                     })
-//             })
-//             .then(expliciteWait)
-//             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
-//             })
-//             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
-//                     // console.log('resCount3', resCount, 'countMistakes', countMistakes)
-//                     expect(resCount).toBe(countMistakes);
-//                     countMistakes = resCount;
-//                 })
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_rail_distance').getTotalRows()
-//                     .then(function (countAfterAdd) {
-//                         // console.log('countAfterAdd4', countAfterAdd, 'numOfRows', numOfRows)
-//                         if (isExistsRows) {
-//                             expect(countAfterAdd).toBe(numOfRows);
-//                         } else {
-//                             expect(countAfterAdd).toBe(numOfRows + 1);
-//                         }
-//                         isExistsRows = false;
-//                     })
-//             })
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(done);
-//     }, skip);
-//
-//     // 11. Перейти во вкладку "План и профиль пути". Для таблицы План пути нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных.
-//     // Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок." значениями, сохраненными в п.9, также заполнить "Радиус", "Длина", Возвышение","Сторонность".
-//     // Если строка уже существует обновить поле "Сторонность". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
-//     // Для таблицы Профиль пути нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок.", "%0".
-//     // Если строка уже существует обновить поле "%0". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
-//     it('11. Перейти во вкладку "План и профиль пути". Редактировать/заполниь таблицы План пути и Профиль пути. ##can_continue', function (done) {
-//         return $h.form.getForm(['track_grading'])
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(function () {
-//                 elementMain = element(by.css('[data-field-name="track_grading"]'));
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_grading').getTotalRows();    //таблица "Профиль пути"
-//             })
-//             .then(function (count) {
-//                 numOfRows = count;
-//
-//                 if (count > 0) {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_grading"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
-//                         })
-//                 } else {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
-//                         })
-//                         .then(angularWait)
-//                         .then(function () {
-//                             return $h.grid.subgrid('track_grading').getTotalRows();
-//                         })
-//                         // .then(function (countAfterAdd) {
-//                         //     console.log('countAfterAdd_4 =', countAfterAdd)
-//                         //     expect(countAfterAdd).toBe(numOfRows + 1);
-//                         // })
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_km"]')).click();
-//                             elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_pk"]')).click();
-//                             elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_km"]')).click();
-//                             elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-//                             elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_km_after_repair);
-//                         })
-//                 }
-//             })
-//             .then(function () {
-//                 elementMain.element(by.css('[data-container-for="gradient"]')).click();
-//                 elementMain.element(by.css('input[name="gradient"]')).clear();
-//                 elementMain.element(by.css('[data-container-for="gradient"]')).click();
-//                 elementMain.element(by.css('input[name="gradient"]')).sendKeys(gradient);
-//             })
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
-//             })
-//             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
-//                     // console.log('resCount4', resCount, 'countMistakes', countMistakes)
-//                     expect(resCount).toBe(countMistakes);
-//                     countMistakes = resCount;
-//                 })
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_grading').getTotalRows()
-//                     .then(function (countAfterAdd) {
-//                         // console.log('countAfterAdd5', countAfterAdd, 'numOfRows', numOfRows)
-//                         if (isExistsRows) {
-//                             expect(countAfterAdd).toBe(numOfRows);
-//                         } else {
-//                             expect(countAfterAdd).toBe(numOfRows + 1);
-//                         }
-//                         isExistsRows = false;
-//                     })
-//             })
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(function () {
-//                 elementMain = element(by.css('[data-field-name="track_topology"]'));
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_topology').getTotalRows();    //таблица "План пути"
-//             })
-//             .then(function (count) {
-//                 numOfRows = count;
-//
-//                 if (count > 0) {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_topology"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
-//                         })
-//                 } else {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
-//                         })
-//                         .then(angularWait)
-//                         .then(function () {
-//                             return $h.grid.subgrid('track_topology').getTotalRows();
-//                         })
-//                         // .then(function (countAfterAdd) {
-//                         //     console.log('countAfterAdd_5 =', countAfterAdd)
-//                         //     expect(countAfterAdd).toBe(numOfRows + 1);
-//                         // })
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_km"]')).click();
-//                             elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_pk"]')).click();
-//                             elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_km"]')).click();
-//                             elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-//                             elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_pk_after_repair);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="radius"]')).click();
-//                             elementMain.element(by.css('input[name="radius"]')).clear().sendKeys(radius);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="length"]')).click();
-//                             elementMain.element(by.css('input[name="length"]')).clear().sendKeys(length);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="raising"]')).click();
-//                             elementMain.element(by.css('input[name="raising"]')).clear().sendKeys(raising);
-//                         })
-//                 }
-//             })
-//             .then(function () {
-//                 return element(by.css('[data-container-for="sidedness.displayValue"]')).click()
-//                     .then(expliciteWait)
-//                     .then(function () {
-//                         return element.all(by.css('[class="select2-result-label"]')).first().click();
-//                     })
-//             })
-//             .then(angularWait)
-//             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
-//             })
-//             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
-//                     // console.log('resCount5', resCount, 'countMistakes', countMistakes)
-//                     expect(resCount).toBe(countMistakes);
-//                     countMistakes = resCount;
-//                 })
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_topology').getTotalRows()
-//                     .then(function (countAfterAdd) {
-//                         // console.log('countAfterAdd6', countAfterAdd, 'numOfRows', numOfRows)
-//                         if (isExistsRows) {
-//                             expect(countAfterAdd).toBe(numOfRows);
-//                         } else {
-//                             expect(countAfterAdd).toBe(numOfRows + 1);
-//                         }
-//                         isExistsRows = false;
-//                     })
-//             })
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(done);
-//     }, skip);
-//
-// // 12. Перейти во вкладку "Ситуация". Для таблицы "Ситуация" нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данныхю.
-// // Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок." значениями, сохраненными в п.9, выбрать 1ое значение из выпадающего списка для поля "Тип", установать/снять флажки с полей
-// // "Потребность МКТ" и "Высота>4м", нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1.
-// // Если строка уже существует установать/снять флаг с поля "Высота>4м". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
-// // Для таблицы "Места выгрузки" нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок."
-// // значениями, сохраненными в п.9 и нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1.
-// // Если строка уже существует обновить поле "пк+ ок.". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
-//     it('12. Перейти во вкладку "Ситуация". Редактировать/заполниь таблицы "Ситуация" и "Места выгрузки". ##can_continue', function (done) {
-//         return $h.form.getForm(['track_situation'])
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(function () {
-//                 elementMain = element(by.css('[data-field-name="track_situation"]'));
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_situation').getTotalRows();    //таблица "Ситуация"
-//             })
-//             .then(function (count) {
-//                 numOfRows = count;
-//
-//                 if (count > 0) {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_situation"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
-//                         })
-//                 } else {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
-//                         })
-//                         .then(angularWait)
-//                         .then(function () {
-//                             return $h.grid.subgrid('track_situation').getTotalRows();
-//                         })
-//                         // .then(function (countAfterAdd) {
-//                         //     console.log('countAfterAdd_6 =', countAfterAdd)
-//                         //     expect(countAfterAdd).toBe(numOfRows + 1);
-//                         // })
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_km"]')).click();
-//                             elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_pk"]')).click();
-//                             elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_km"]')).click();
-//                             elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-//                             elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_pk_after_repair);
-//                         })
-//                         .then(function () {
-//                             return element(by.css('[data-container-for="situation_type.displayValue"]')).click()
-//                                 .then(expliciteWait)
-//                                 .then(function () {
-//                                     return element.all(by.css('[class="select2-result-label"]')).first().click();
-//                                 })
-//                         })
-//                         .then(function () {
-//                             return element(by.css('[data-container-for="is_ditch_machine_required"] [name="is_ditch_machine_required"]')).click();
-//                         })
-//                 }
-//             })
-//             .then(function () {
-//                 return element(by.css('[data-container-for="is_higher_then4m"] [name="is_higher_then4m"]')).click();
-//             })
-//             .then(angularWait)
-//             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
-//             })
-//             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
-//                     // console.log('resCount6', resCount, 'countMistakes', countMistakes)
-//                     expect(resCount).toBe(countMistakes);
-//                     countMistakes = resCount;
-//                 })
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_situation').getTotalRows()
-//                     .then(function (countAfterAdd) {
-//                         // console.log('countAfterAdd7', countAfterAdd, 'numOfRows', numOfRows)
-//                         if (isExistsRows) {
-//                             expect(countAfterAdd).toBe(numOfRows);
-//                         } else {
-//                             expect(countAfterAdd).toBe(numOfRows + 1);
-//                         }
-//                         isExistsRows = false;
-//                     })
-//             })
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(function () {
-//                 elementMain = element(by.css('[data-field-name="track_uploading_places"]'));
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_uploading_places').getTotalRows();    //таблица "Места выгрузки"
-//             })
-//             .then(function (count) {
-//                 numOfRows = count;
-//
-//                 if (count > 0) {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_uploading_places"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
-//                         })
-//                 } else {
-//                     return angularWait()
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
-//                         })
-//                         .then(angularWait)
-//                         .then(function () {
-//                             return $h.grid.subgrid('track_uploading_places').getTotalRows();
-//                         })
-//                         // .then(function (countAfterAdd) {
-//                         //     console.log('countAfterAdd_7 =', countAfterAdd)
-//                         //     expect(countAfterAdd).toBe(numOfRows + 1);
-//                         // })
-//                         .then(function () {
-//                             browser.executeScript('window.scrollTo(0,0);');
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_km"]')).click();
-//                             elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="start_pk"]')).click();
-//                             elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
-//                         })
-//                         .then(function () {
-//                             elementMain.element(by.css('[data-container-for="finish_km"]')).click();
-//                             elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
-//                         })
-//                 }
-//             })
-//             .then(function () {
-//                 elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-//                 elementMain.element(by.css('input[name="finish_pk"]')).clear();
-//                 elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-//                 elementMain.element(by.css('input[name="finish_pk"]')).sendKeys(finish_pk_after_repair);
-//             })
-//             .then(angularWait)
-//             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
-//             })
-//             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
-//                     // console.log('resCount7', resCount, 'countMistakes', countMistakes)
-//                     expect(resCount).toBe(countMistakes);
-//                     countMistakes = resCount;
-//                 })
-//             })
-//             .then(function () {
-//                 return $h.grid.subgrid('track_uploading_places').getTotalRows()
-//                     .then(function (countAfterAdd) {
-//                         if (isExistsRows) {
-//                             // console.log('if countAfterAdd8', countAfterAdd, 'numOfRows', numOfRows)
-//                             expect(countAfterAdd).toBe(numOfRows);
-//                         } else {
-//                             // console.log('else countAfterAdd8', countAfterAdd, 'numOfRows', numOfRows)
-//                             expect(countAfterAdd).toBe(numOfRows + 1);
-//                         }
-//                         isExistsRows = false;
-//                     })
-//             })
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(done);
-//     }, skip);
-//
-// // 13. Перейти во вкладку "Инженерные сооружения"  нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км. н", "пк+ н.",
+// 6. Перейти во вкладку "Протяженность рельсов", нажать кнопку "Добавить запись" таблицы, убедится, что появилась строка с формами для ввода данных.
+// Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок.", "Тип" (указать первый из выпадающего списка) и нажать кнопку "Сохранить". Проверить, что количество записей в таблице
+// увеличилось на 1. Если запись в таблице уже существует, обновить поле "Тип" из выпадающего списка. Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
+    it('6. Перейти во вкладку "Протяженность рельсов", заполнить данные по таблице". ##can_continue', function (done) {
+        return $h.form.getForm(['track_rail_distance'])
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(function () {
+                elementMain = element(by.css('[data-field-name="track_rail_distance"]'));
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_rail_distance').getTotalRows();    //таблица "Протяженность рельсов"
+            })
+            .then(function (count) {
+                numOfRows = count;
+
+                if (count > 0) {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            isExistsRows = true;
+                           element.all(by.css(`[data-field-name="track_rail_distance"] [class="${editInlineButton}"]`)).first().click();
+                        })
+                } else {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
+                        })
+                        .then(angularWait)
+                        .then(function () {
+                            return $h.grid.subgrid('track_rail_distance').getTotalRows();
+                        })
+                        // .then(function (countAfterAdd) {
+                        //     console.log('countAfterAdd_3 =', countAfterAdd)
+                        //     expect(countAfterAdd).toBe(numOfRows + 1);
+                        // })
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_km"]')).click();
+                            elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_pk"]')).click();
+                            elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
+
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_km"]')).click();
+                            elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
+                            elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_pk_after_repair);
+                        })
+                }
+            })
+
+            .then(function () {
+                return element(by.css('[data-container-for="track_type"] .k-select')).click()
+                    .then(expliciteWait)
+                    .then(function () {
+                        return element.all(by.css('[class="k-item"]')).last().click();
+                    })
+            })
+            .then(expliciteWait)
+            .then(function () {
+                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
+            })
+            .then(function () {
+                element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
+                    // console.log('resCount3', resCount, 'countMistakes', countMistakes)
+                    expect(resCount).toBe(countMistakes);
+                    countMistakes = resCount;
+                })
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_rail_distance').getTotalRows()
+                    .then(function (countAfterAdd) {
+                        // console.log('countAfterAdd4', countAfterAdd, 'numOfRows', numOfRows)
+                        if (isExistsRows) {
+                            expect(countAfterAdd).toBe(numOfRows);
+                        } else {
+                            expect(countAfterAdd).toBe(numOfRows + 1);
+                        }
+                        isExistsRows = false;
+                    })
+            })
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(done);
+    }, skip);
+
+    // 7. Перейти во вкладку "План и профиль пути". Для таблицы План пути нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных.
+    // Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок." значениями, сохраненными в п.9, также заполнить "Радиус", "Длина", Возвышение","Сторонность".
+    // Если строка уже существует обновить поле "Сторонность". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
+    // Для таблицы Профиль пути нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок.", "%0".
+    // Если строка уже существует обновить поле "%0". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
+    it('7. Перейти во вкладку "План и профиль пути". Редактировать/заполниь таблицы План пути и Профиль пути. ##can_continue', function (done) {
+        return $h.form.getForm(['track_grading'])
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(function () {
+                elementMain = element(by.css('[data-field-name="track_grading"]'));
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_grading').getTotalRows();    //таблица "Профиль пути"
+            })
+            .then(function (count) {
+                numOfRows = count;
+
+                if (count > 0) {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            isExistsRows = true;
+                           element.all(by.css(`[data-field-name="track_grading"] [class="${editInlineButton}"]`)).first().click();
+                        })
+                } else {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
+                        })
+                        .then(angularWait)
+                        .then(function () {
+                            return $h.grid.subgrid('track_grading').getTotalRows();
+                        })
+                        // .then(function (countAfterAdd) {
+                        //     console.log('countAfterAdd_4 =', countAfterAdd)
+                        //     expect(countAfterAdd).toBe(numOfRows + 1);
+                        // })
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_km"]')).click();
+                            elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_pk"]')).click();
+                            elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_km"]')).click();
+                            elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
+                            elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_km_after_repair);
+                        })
+                }
+            })
+            .then(function () {
+                elementMain.element(by.css('[data-container-for="gradient"]')).click();
+                elementMain.element(by.css('input[name="gradient"]')).clear();
+                elementMain.element(by.css('[data-container-for="gradient"]')).click();
+                elementMain.element(by.css('input[name="gradient"]')).sendKeys(gradient);
+            })
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(function () {
+                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
+            })
+            .then(function () {
+                element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
+                    // console.log('resCount4', resCount, 'countMistakes', countMistakes)
+                    expect(resCount).toBe(countMistakes);
+                    countMistakes = resCount;
+                })
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_grading').getTotalRows()
+                    .then(function (countAfterAdd) {
+                        // console.log('countAfterAdd5', countAfterAdd, 'numOfRows', numOfRows)
+                        if (isExistsRows) {
+                            expect(countAfterAdd).toBe(numOfRows);
+                        } else {
+                            expect(countAfterAdd).toBe(numOfRows + 1);
+                        }
+                        isExistsRows = false;
+                    })
+            })
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(function () {
+                elementMain = element(by.css('[data-field-name="track_topology"]'));
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_topology').getTotalRows();    //таблица "План пути"
+            })
+            .then(function (count) {
+                numOfRows = count;
+
+                if (count > 0) {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            isExistsRows = true;
+                           element.all(by.css(`[data-field-name="track_topology"] [class="${editInlineButton}"]`)).first().click();
+                        })
+                } else {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
+                        })
+                        .then(angularWait)
+                        .then(function () {
+                            return $h.grid.subgrid('track_topology').getTotalRows();
+                        })
+                        // .then(function (countAfterAdd) {
+                        //     console.log('countAfterAdd_5 =', countAfterAdd)
+                        //     expect(countAfterAdd).toBe(numOfRows + 1);
+                        // })
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_km"]')).click();
+                            elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_pk"]')).click();
+                            elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_km"]')).click();
+                            elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
+                            elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_pk_after_repair);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="radius"]')).click();
+                            elementMain.element(by.css('input[name="radius"]')).clear().sendKeys(radius);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="length"]')).click();
+                            elementMain.element(by.css('input[name="length"]')).clear().sendKeys(length);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="raising"]')).click();
+                            elementMain.element(by.css('input[name="raising"]')).clear().sendKeys(raising);
+                        })
+                }
+            })
+            .then(function () {
+                return element(by.css('[data-container-for="sidedness"] .k-select')).click()
+                    .then(expliciteWait)
+                    .then(function () {
+                        return element.all(by.css('[class="k-item"]')).first().click();
+                    })
+            })
+            .then(angularWait)
+            .then(function () {
+                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
+            })
+            .then(function () {
+                element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
+                    // console.log('resCount5', resCount, 'countMistakes', countMistakes)
+                    expect(resCount).toBe(countMistakes);
+                    countMistakes = resCount;
+                })
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_topology').getTotalRows()
+                    .then(function (countAfterAdd) {
+                        // console.log('countAfterAdd6', countAfterAdd, 'numOfRows', numOfRows)
+                        if (isExistsRows) {
+                            expect(countAfterAdd).toBe(numOfRows);
+                        } else {
+                            expect(countAfterAdd).toBe(numOfRows + 1);
+                        }
+                        isExistsRows = false;
+                    })
+            })
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(done);
+    }, skip);
+
+// 12. Перейти во вкладку "Ситуация". Для таблицы "Ситуация" нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данныхю.
+// Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок." значениями, сохраненными в п.9, выбрать 1ое значение из выпадающего списка для поля "Тип", установать/снять флажки с полей
+// "Потребность МКТ" и "Высота>4м", нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1.
+// Если строка уже существует установать/снять флаг с поля "Высота>4м". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
+// Для таблицы "Места выгрузки" нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок."
+// значениями, сохраненными в п.9 и нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1.
+// Если строка уже существует обновить поле "пк+ ок.". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
+    it('8. Перейти во вкладку "Ситуация". Редактировать/заполниь таблицы "Ситуация" и "Места выгрузки". ##can_continue', function (done) {
+        return $h.form.getForm(['track_situation'])
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(function () {
+                elementMain = element(by.css('[data-field-name="track_situation"]'));
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_situation').getTotalRows();    //таблица "Ситуация"
+            })
+            .then(function (count) {
+                numOfRows = count;
+
+                if (count > 0) {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            isExistsRows = true;
+                           element.all(by.css(`[data-field-name="track_situation"] [class="${editInlineButton}"]`)).first().click();
+                        })
+                } else {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
+                        })
+                        .then(angularWait)
+                        .then(function () {
+                            return $h.grid.subgrid('track_situation').getTotalRows();
+                        })
+                        // .then(function (countAfterAdd) {
+                        //     console.log('countAfterAdd_6 =', countAfterAdd)
+                        //     expect(countAfterAdd).toBe(numOfRows + 1);
+                        // })
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_km"]')).click();
+                            elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_pk"]')).click();
+                            elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_km"]')).click();
+                            elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
+                            elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_pk_after_repair);
+                        })
+                        .then(function () {
+                            return element(by.css('[data-container-for="situation_type"] .k-select')).click()
+                                .then(expliciteWait)
+                                .then(function () {
+                                    return element.all(by.css('[class="k-item"]')).first().click();
+                                })
+                        })
+                        .then(function () {
+                            return element(by.css('[data-container-for="is_ditch_machine_required"] [name="is_ditch_machine_required"]')).click();
+                        })
+                }
+            })
+            .then(function () {
+                return element(by.css('[data-container-for="is_higher_then4m"] [name="is_higher_then4m"]')).click();
+            })
+            .then(angularWait)
+            .then(function () {
+                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
+            })
+            .then(function () {
+                element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
+                    // console.log('resCount6', resCount, 'countMistakes', countMistakes)
+                    expect(resCount).toBe(countMistakes);
+                    countMistakes = resCount;
+                })
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_situation').getTotalRows()
+                    .then(function (countAfterAdd) {
+                        // console.log('countAfterAdd7', countAfterAdd, 'numOfRows', numOfRows)
+                        if (isExistsRows) {
+                            expect(countAfterAdd).toBe(numOfRows);
+                        } else {
+                            expect(countAfterAdd).toBe(numOfRows + 1);
+                        }
+                        isExistsRows = false;
+                    })
+            })
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(function () {
+                elementMain = element(by.css('[data-field-name="track_uploading_places"]'));
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_uploading_places').getTotalRows();    //таблица "Места выгрузки"
+            })
+            .then(function (count) {
+                numOfRows = count;
+
+                if (count > 0) {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            isExistsRows = true;
+                           element.all(by.css(`[data-field-name="track_uploading_places"] [class="${editInlineButton}"]`)).first().click();
+                        })
+                } else {
+                    return angularWait()
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
+                        })
+                        .then(angularWait)
+                        .then(function () {
+                            return $h.grid.subgrid('track_uploading_places').getTotalRows();
+                        })
+                        // .then(function (countAfterAdd) {
+                        //     console.log('countAfterAdd_7 =', countAfterAdd)
+                        //     expect(countAfterAdd).toBe(numOfRows + 1);
+                        // })
+                        .then(function () {
+                            browser.executeScript('window.scrollTo(0,0);');
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_km"]')).click();
+                            elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="start_pk"]')).click();
+                            elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
+                        })
+                        .then(function () {
+                            elementMain.element(by.css('[data-container-for="finish_km"]')).click();
+                            elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
+                        })
+                }
+            })
+            .then(function () {
+                elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
+                elementMain.element(by.css('input[name="finish_pk"]')).clear();
+                elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
+                elementMain.element(by.css('input[name="finish_pk"]')).sendKeys(finish_pk_after_repair);
+            })
+            .then(angularWait)
+            .then(function () {
+                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
+            })
+            .then(function () {
+                element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
+                    // console.log('resCount7', resCount, 'countMistakes', countMistakes)
+                    expect(resCount).toBe(countMistakes);
+                    countMistakes = resCount;
+                })
+            })
+            .then(function () {
+                return $h.grid.subgrid('track_uploading_places').getTotalRows()
+                    .then(function (countAfterAdd) {
+                        if (isExistsRows) {
+                            // console.log('if countAfterAdd8', countAfterAdd, 'numOfRows', numOfRows)
+                            expect(countAfterAdd).toBe(numOfRows);
+                        } else {
+                            // console.log('else countAfterAdd8', countAfterAdd, 'numOfRows', numOfRows)
+                            expect(countAfterAdd).toBe(numOfRows + 1);
+                        }
+                        isExistsRows = false;
+                    })
+            })
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(done);
+    }, skip);
+
+// // 9. Перейти во вкладку "Инженерные сооружения"  нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км. н", "пк+ н.",
 // // "км ок.", "пк+ ок.", "Протяженность", "Общая длина пролетов" значениями, сохраненными в п.9, выбрать 1ые значения из выпадающего списка для полей "Тип" и "Конструкция",
 // //  нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1. Если строка уже существует обновить поля "Тип", "Конструкция", "Общая длина пролетов"
 // //  Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
-//     it('13. Перейти во вкладку "Инженерные сооружения", заполнить данные по таблице. ##can_continue', function (done) {
+//     it('9. Перейти во вкладку "Инженерные сооружения", заполнить данные по таблице. ##can_continue', function (done) {
 //         return $h.form.getForm(['track_constructions'])
 //             .then(angularWait)
 //             .then(expliciteWait)
@@ -1242,13 +1255,13 @@ describe('Автотест на Осмотр участка. ', function () {
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
 //                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_constructions"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+//                            element.all(by.css(`[data-field-name="track_constructions"] [class="${editInlineButton}"]`)).first().click();
 //                         })
 //                 } else {
 //                     return angularWait()
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
+//                             elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
 //                         })
 //                         .then(angularWait)
 //                         .then(function () {
@@ -1290,17 +1303,17 @@ describe('Автотест на Осмотр участка. ', function () {
 //                 }
 //             })
 //             .then(function () {
-//                 return element(by.css('[data-container-for="construction_type.displayValue"]')).click()
+//                 return element(by.css('[data-container-for="construction_type"] .k-select')).click()
 //                     .then(expliciteWait)
 //                     .then(function () {
-//                         return element.all(by.css('[class="select2-result-label"]')).first().click();
+//                         return element.all(by.css('[class="k-item"]')).first().click();
 //                     })
 //             })
 //             .then(function () {
-//                 return element(by.css('[data-container-for="construction_type_sign.displayValue"]')).click()
+//                 return element(by.css('[data-container-for="construction_type_sign"] .k-select')).click()
 //                     .then(expliciteWait)
 //                     .then(function () {
-//                         return element.all(by.css('[class="select2-result-label"]')).last().click();
+//                         return element.all(by.css('[class="k-item"]')).last().click();
 //                     })
 //             })
 //             .then(function () {
@@ -1311,10 +1324,10 @@ describe('Автотест на Осмотр участка. ', function () {
 //             })
 //             .then(expliciteWait)
 //             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
+//                 elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
 //             })
 //             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
+//                 element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
 //                     // console.log('resCount8', resCount, 'countMistakes', countMistakes)
 //                     expect(resCount).toBe(countMistakes);
 //                     countMistakes = resCount;
@@ -1337,13 +1350,13 @@ describe('Автотест на Осмотр участка. ', function () {
 //             .then(done);
 //     }, skip);
 //
-// // 14. Перейти во вкладку "Балласт, разделительный слой". Для таблицы "Разделительный слой" нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных.
+// // 10. Перейти во вкладку "Балласт, разделительный слой". Для таблицы "Разделительный слой" нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных.
 // // Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок.", значениями сохраненными в п.9, выбрать 1ое значение из выпадающего списка для поля "Тип" и нажать кнопку "Сохранить"
 // // Проверить, что количество записей в таблице увеличилось на 1. Если строка уже существует обновить поле "Тип". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
 // // Для таблицы "Глубина очистки/вырезки балласта" нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля ""км. н", "пк+ н.", "км ок.",
 // // "пк+ ок.", "Глубина очистки" значениями сохраненными в п.9 и нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1.
 // // Если строка уже существует обновить поле "Глубина очистки". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
-//     it('14. Перейти во вкладку "Балласт, разделительный слой". Редактировать/заполниь таблицы "Разделительный слой" и "Глубина очистки/вырезки балласта". ##can_continue', function (done) {
+//     it('10. Перейти во вкладку "Балласт, разделительный слой". Редактировать/заполниь таблицы "Разделительный слой" и "Глубина очистки/вырезки балласта". ##can_continue', function (done) {
 //         return $h.form.getForm(['track_sep_layer'])
 //             .then(angularWait)
 //             .then(expliciteWait)
@@ -1361,13 +1374,13 @@ describe('Автотест на Осмотр участка. ', function () {
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
 //                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_sep_layer"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+//                            element.all(by.css(`[data-field-name="track_sep_layer"] [class="${editInlineButton}"]`)).first().click();
 //                         })
 //                 } else {
 //                     return angularWait()
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
+//                             elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
 //                         })
 //                         .then(angularWait)
 //                         .then(function () {
@@ -1399,18 +1412,18 @@ describe('Автотест на Осмотр участка. ', function () {
 //                 }
 //             })
 //             .then(function () {
-//                 return element(by.css('[data-container-for="sep_layer_type.displayValue"]')).click()
+//                 return element(by.css('[data-container-for="sep_layer_type"]')).click()
 //                     .then(expliciteWait)
 //                     .then(function () {
-//                         return element.all(by.css('[class="select2-result-label"]')).first().click();
+//                         return element.all(by.css('[class="k-item"]')).first().click();
 //                     })
 //             })
 //             .then(expliciteWait)
 //             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
+//                 elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
 //             })
 //             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
+//                 element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
 //                     // console.log('resCount9', resCount, 'countMistakes', countMistakes)
 //                     expect(resCount).toBe(countMistakes);
 //                     countMistakes = resCount;
@@ -1444,13 +1457,13 @@ describe('Автотест на Осмотр участка. ', function () {
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
 //                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_ballast_depth"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+//                            element.all(by.css(`[data-field-name="track_ballast_depth"] [class="${editInlineButton}"]`)).first().click();
 //                         })
 //                 } else {
 //                     return angularWait()
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
+//                             elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
 //                         })
 //                         .then(angularWait)
 //                         .then(function () {
@@ -1489,10 +1502,10 @@ describe('Автотест на Осмотр участка. ', function () {
 //             })
 //             .then(expliciteWait)
 //             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
+//                 elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
 //             })
 //             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
+//                 element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
 //                     // console.log('resCount10', resCount, 'countMistakes', countMistakes)
 //                     expect(resCount).toBe(countMistakes);
 //                     countMistakes = resCount;
@@ -1516,10 +1529,10 @@ describe('Автотест на Осмотр участка. ', function () {
 //             .then(done);
 //     }, skip);
 //
-// // 15. Перейти во вкладку "Точечные объекты"  нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км", "пк+", значениями
+// // 11. Перейти во вкладку "Точечные объекты"  нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км", "пк+", значениями
 // // сохраненными в п.9, выбрать 1ое значения из выпадающего списка для поля "Тип" и нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1
 // // Если строка уже существует обновить поле "Тип". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
-//     it('15. Перейти во вкладку "Точечные объекты", заполнить данные по таблице. ##can_continue', function (done) {
+//     it('11. Перейти во вкладку "Точечные объекты", заполнить данные по таблице. ##can_continue', function (done) {
 //         return $h.form.getForm(['track_point_object'])
 //             .then(angularWait)
 //             .then(expliciteWait)
@@ -1537,13 +1550,13 @@ describe('Автотест на Осмотр участка. ', function () {
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
 //                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_point_object"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+//                            element.all(by.css(`[data-field-name="track_point_object"] [class="${editInlineButton}"]`)).first().click();
 //                         })
 //                 } else {
 //                     return angularWait()
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
+//                             elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
 //                         })
 //                         .then(angularWait)
 //                         .then(function () {
@@ -1567,18 +1580,18 @@ describe('Автотест на Осмотр участка. ', function () {
 //                 }
 //             })
 //             .then(function () {
-//                 return element(by.css('[data-container-for="point_object_type.displayValue"]')).click()
+//                 return element(by.css('[data-container-for="point_object_type"]')).click()
 //                     .then(expliciteWait)
 //                     .then(function () {
-//                         return element.all(by.css('[class="select2-result-label"]')).first().click();
+//                         return element.all(by.css('[class="k-item"]')).first().click();
 //                     })
 //             })
 //             .then(expliciteWait)
 //             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
+//                 elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
 //             })
 //             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
+//                 element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
 //                     // console.log('resCount11', resCount, 'countMistakes', countMistakes)
 //                     // expect(resCount).toBe(countMistakes);
 //                     countMistakes = resCount;
@@ -1601,7 +1614,7 @@ describe('Автотест на Осмотр участка. ', function () {
 //             .then(done);
 //     }, skip);
 //
-// // 16. Перейти во вкладку "Стрелочные переводы и блокпосты"  нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км остряка",
+// // 12. Перейти во вкладку "Стрелочные переводы и блокпосты"  нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км остряка",
 // // "пк+ остряка", значениями сохраненными в п.9, "Номер проетка" установить равным 1683.00.000, выбрать 1ое значения из выпадающего списка для поля "Четоность" и нажать кнопку "Сохранить".
 // // Проверить, что количество записей в таблице увеличилось на 1. Если строка уже существует обновить поле "Четоность".
 // // Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
@@ -1623,13 +1636,13 @@ describe('Автотест на Осмотр участка. ', function () {
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
 //                             isExistsRows = true;
-//                             element.all(by.css('[data-field-name="track_turnout"] [class="k-button k-button-icontext k-grid-edit"]')).first().click();
+//                            element.all(by.css(`[data-field-name="track_turnout"] [class="${editInlineButton}"]`)).first().click();
 //                         })
 //                 } else {
 //                     return angularWait()
 //                         .then(function () {
 //                             browser.executeScript('window.scrollTo(0,0);');
-//                             elementMain.element(by.css('[class="k-button k-button-icontext k-grid-add"]')).click();
+//                             elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
 //                         })
 //                         .then(angularWait)
 //                         .then(function () {
@@ -1651,7 +1664,7 @@ describe('Автотест на Осмотр участка. ', function () {
 //                             elementMain.element(by.css('input[name="pk"]')).clear().sendKeys(start_pk_ar);
 //                         })
 //                         .then(function () {
-//                             element(by.css('[data-container-for="project_num.displayValue"]')).click();
+//                             element(by.css('[data-container-for="project_num"]')).click();
 //                         })
 //                         .then(angularWait)
 //                         .then(expliciteWait)
@@ -1673,7 +1686,7 @@ describe('Автотест на Осмотр участка. ', function () {
 //                 }
 //             })
 //             .then(function () {
-//                 return element(by.css('[data-container-for="odevity.displayValue"]')).click()
+//                 return element(by.css('[data-container-for="odevity"]')).click()
 //                     .then(expliciteWait)
 //                     .then(function () {
 //                         return element.all(by.css('[class="select2-result-label"]')).first().click();
@@ -1681,10 +1694,10 @@ describe('Автотест на Осмотр участка. ', function () {
 //             })
 //             .then(expliciteWait)
 //             .then(function () {
-//                 elementMain.element(by.css('[class="k-button k-button-icontext k-primary k-grid-update"]')).click();
+//                 elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
 //             })
 //             .then(function () {
-//                 element.all(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).count().then(function (resCount) {
+//                 element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
 //                     // console.log('resCount12', resCount, 'countMistakes', countMistakes)
 //                     expect(resCount).toBe(countMistakes);
 //                     countMistakes = resCount;
@@ -1707,9 +1720,9 @@ describe('Автотест на Осмотр участка. ', function () {
 //             .then(expliciteWait)
 //             .then(done);
 //     }, skip);
-//
-//     // 17) Открыть номер проекта - НЕ НУЖЕН, заполняем вручную, тк справочник
-//     // it('17. Открыть номер проекта. ##can_continue', function (done) {
+// //
+//     // ) Открыть номер проекта - НЕ НУЖЕН, заполняем вручную, тк справочник
+//     // it(' Открыть номер проекта. ##can_continue', function (done) {
 //     //     browser.waitForAngular()
 //     //         .then(function () {
 //     //             return element(by.css('[data-field="project_num data-pkfieldid="]')).getText().then(function (text) {
@@ -1755,20 +1768,20 @@ describe('Автотест на Осмотр участка. ', function () {
 //     //         .then(done);
 //     // }, skip);
 //
-//     // 17. В Осмотре участка нажимаем на кнопку "Сохранить". Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
-//     it('17. В Осмотре участка нажимаем на кнопку "Сохранить". Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', function (done) {
-//         return angularWait()
-//             .then(function () {
-//                 // return $h.form.processButton(['CREATE', 'UPDATE']);
-//                 return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
-//             })
-//             .then(function () {
-//                 expect(element(by.css('[class="ui-notification alert ng-scope alert-success killed"]')).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
-//             })
-//             .then(angularWait)
-//             .then(expliciteWait)
-//             .then(done);
-//     }, skip);
+    // 13. В Осмотре участка нажимаем на кнопку "Сохранить". Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
+    it('13. В Осмотре участка нажимаем на кнопку "Сохранить". Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', function (done) {
+        return angularWait()
+            .then(function () {
+                // return $h.form.processButton(['CREATE', 'UPDATE']);
+                return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
+            })
+            .then(function () {
+                expect(element(by.css(`[class="${alertSuccess}"]`)).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
+            })
+            .then(angularWait)
+            .then(expliciteWait)
+            .then(done);
+    }, skip);
 //
 //
 // // 18. Вернуться к задаче в Моих нарядах (отфильтровать и открыть нужное по Id сохранненному в п.3) и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось на "Выполнен",
