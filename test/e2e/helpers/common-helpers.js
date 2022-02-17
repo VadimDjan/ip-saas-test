@@ -119,3 +119,11 @@ exports.scrollUp = function () {
             return browser.sleep(500);
         });
 };
+
+exports.scrollDown = function () {
+    return browser
+      .executeScript('document.getElementsByClassName("railway-repair__wrap")[0].scrollTo(0,document.body.scrollHeight);')
+      .then(function () {
+          return browser.sleep(500);
+      });
+}

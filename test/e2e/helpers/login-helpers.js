@@ -15,16 +15,13 @@ function loginToPage(loginPageUrl, user, password) {
     console.info('user =', user)
     console.info('password =', password)
     return browser.get(loginPageUrl)
-        .then(console.log('loginPageUrl', loginPageUrl))
-        .then(angularWait)
-        .then(expliciteWait)
+        .then(browser.sleep(1000))
         .then(function () {
             element(by.css('input[name="user"]')).clear().sendKeys(user);
             element(by.css('input[name="password"]')).clear().sendKeys(password);
             element(by.css('form[name="NormalForm"] button[value="Войти в систему"]')).click();
             browser.sleep(100); // if your test is outrunning the browser
         })
-        .then(angularWait)
         .then(expliciteWait);
 }
 
@@ -47,11 +44,18 @@ function getLoginObject(usr) {
     // var path = pathToFile || $h.workspaceDirectory + '/login.txt';
     var lines = // $h.file.readFileSync(path).split(/\r?\n/)
         // ['victor.follet@ideaplatform.ru;buktop;TEMPLATE', 'demo.user@ipdemo.ru;123;TEMPLATE'].map(line => line.split(';'))
-        ['КраснДРП;Qwerty1234!;itsm', 'demo;Qwerty123!;itsm', 'anastasya;I127d410e!;itsm', 'ПМС-20_Фомин;Qwerty1!;itsm'].map(line => line.split(';'))
+        [
+            'КраснДРП;Qwerty1234!;itsm',
+            'seri0zha;Qwerty123!',
+            'demo;Qwerty123!;itsm',
+            'anastasya;I127d410e!;itsm',
+            'ПМС-20_Фомин;Qwerty1!;itsm',
+            'ПМС197_Менед;Qwerty123!;',
+        ].map(line => line.split(';'))
     var loginObject = {
-        user: lines[0][0],
-        password: lines[0][1],
-        workspace: lines[0][2],
+        user: lines[5][0],
+        password: lines[5][1],
+        workspace: lines[5][2],
         users: lines.slice(1).filter(function (line) {
             return line.length >= 3;
         }).map(function (line) {

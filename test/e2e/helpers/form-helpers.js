@@ -25,9 +25,11 @@ var findFieldOnCurrentTab = function (name, mode) {
                 };
             });
     }
+    const lastModal = element.all(by.css('.modal-dialog')).last();
+    const currentTab = lastModal.element(by.css('.card .show'));
     return protractor.promise.all([
-        element(by.css('div.modal-content .card .react-grid-item[data-field-name="' + name + '"]')),
-        element(by.css('div.modal-content .card .react-grid-item[data-field-name="' + name + '"]')).getAttribute('data-widget')
+        currentTab.element(by.css('.react-grid-item[data-field-name="' + name + '"]')),
+        currentTab.element(by.css('.react-grid-item[data-field-name="' + name + '"]')).getAttribute('data-widget')
     ])
         .then(function (a) {
             return {
@@ -83,10 +85,11 @@ function setField(name, value, mode) {
                 case 'datetime':
                 case 'date':
                 case 'time':
-                    selector = fieldSelector + ' .input-group.date input';
-                    return browser.executeScript(function (_selector, _value) {
+                    selector = fieldSelector + ' input';
+                    return field.element.element(by.css(selector)).clear().sendKeys(value);
+                    /* return browser.executeScript(function (_selector, _value) {
                         $(_selector).val(_value).change();
-                    }, selector, value);
+                    }, selector, value);*/
                 case 'richtext':
                     selector = fieldSelector + ' .se-wrapper p';
                     return field.element.element(by.css(selector)).clear().sendKeys(value);
@@ -104,7 +107,7 @@ function setField(name, value, mode) {
                         })
                         .then(angularWait);
                 case 'checkbox':
-                    var checkbox = element(by.css(fieldSelector + ' input[type="checkbox"]'));
+                    var checkbox = field.element.element(by.css(fieldSelector + ' input[type="checkbox"]'));
                     return checkbox.isSelected().then(function (selected) {
                         if (selected !== value) {
                             checkbox.click();
@@ -163,13 +166,13 @@ function setField(name, value, mode) {
                     // case 'no_glass_autocomplete':
 
 
-                    element(by.css(fieldSelector + ' .rw-widget-input')).click();
+                    field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click();
                     selector = ' .rw-popup';
                     selector2 = selector + ' li.rw-list-option';
                     if (field.type.indexOf('autocomplete') >= 0) {
                         // console.log('!!!!setField**', field.type)
                         const val = value && value.displayValue || value && value.value || value
-                        element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
+                        field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
                     }
 
                     return angularWait()
@@ -213,7 +216,7 @@ function setField(name, value, mode) {
                                     // console.log('setField** else val', val)
                                     // console.log('setField** else value', value)
                                     // return element.all(by.css(fieldSelector + selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
-                                    return element(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value)).click();
+                                    return field.element.element(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value)).click();
                                 }
                             } catch (e) {
                                 console.error('Unknown value ' + value + ' for field ' + name);
@@ -358,7 +361,8 @@ function getField(name, mode) {
                 case 'time':
                     // console.log(field.type, '1')
                     var valAttr = field.type === 'checkbox' ? 'checked' : 'value';
-                    return field.element.element(by.css('[data-field-name=\"' + name + '\"]'))
+                    // return field.element.element(by.css('[data-field-name=\"' + name + '\"]'))
+                    return field.element.element(by.tagName('input'))
                         .getAttribute(valAttr)
                         .then(function (val) {
                             var m;
@@ -438,6 +442,18 @@ function getField(name, mode) {
                                 return JSON.parse(JSON.stringify($(_selector).data('kendoGrid').dataSource.data()));
                             }, selector);
                         })
+                case 'progressBar':
+                    const progressSelector = fieldSelector + ' .progress__current-text';
+                    return field.element.element(by.css(progressSelector)).getText()
+                      .then(progress => {
+                          const result = { progress };
+                          const statusSelector = fieldSelector + ' .progress__status';
+                          return field.element.element(by.css(statusSelector)).getText()
+                            .then(status => {
+                                result.status = status;
+                                return result;
+                            })
+                      })
                 default:
                     // console.log(field.type, '8')
                     console.warn('Unimplemented field type = ' + field.type);
@@ -445,7 +461,7 @@ function getField(name, mode) {
             }
         });
 }
-
+exports.getField = getField;
 
 function openNextSection() {
     var elem = element(by.css('.current-form .panel.panel-open + .panel'));
@@ -693,3 +709,17 @@ exports.processPopup = processPopup;
 exports.submitPopup = processPopup('submit');
 exports.cancelPopup = processPopup('cancel');
 
+exports.clickOnLink = async function (fieldName) {
+    await browser.sleep(1500);
+    const link = await element(by.css(`[data-field-name=${fieldName}] .linkfield__link`));
+    await link.click();
+    const handles = await browser.getAllWindowHandles();
+    await browser.driver.switchTo().window(handles[handles.length - 1]);
+    return browser.sleep(1500);
+}
+
+exports.closeLastModal = async function() {
+    await browser.sleep(1500);
+    const lastModalCloseButton = await element.all(by.css('.details__modal .details__close-btn')).last();
+    return await lastModalCloseButton.click();
+}

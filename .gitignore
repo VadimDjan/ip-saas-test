@@ -2,3 +2,7 @@
 ###################
 package-lock.json
 node_modules
+.idea
+test/e2e/report.xml
+test/e2e/totalStatus.json
+test/e2e/downloads
