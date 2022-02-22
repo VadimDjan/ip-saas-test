@@ -1,4 +1,23 @@
-const useLocal = false
+const useLocal = false;
+const path = require('path');
+const fs = require('fs');
+const downloadsPath = path.resolve(__dirname, './downloads');
+
+const clearDownloads = () => {
+    const directory = 'downloads';
+    try {
+        fs.readdir(directory, (err, files) => {
+            if (err) throw err;
+            for (const file of files) {
+                fs.unlink(path.join(directory, file), err => {
+                    if (err) throw err;
+                });
+            }
+        });
+    } catch (e) {
+        console.log(e);
+    }
+}
 const config = {
     framework: 'jasmine2',
     jasmineNodeOpts: {
@@ -10,7 +29,7 @@ const config = {
     params: {
         jenkins: {
             workspaceDirectory: '.',
-            host: '127.0.0.1',
+            host: 'localhost',
             // hostDB: null,
             port: 8080
         },
@@ -22,6 +41,7 @@ const config = {
         protractor.expliciteWaitTime = 500;
         // browser.driver.manage().window().setSize(width, height);
         browser.driver.manage().window().maximize();
+        browser.ignoreSynchronization = true;
         protractor.helpers = {};
         var $h = protractor.helpers;
         $h.workspaceDirectory = browser.params.jenkins.workspaceDirectory;
@@ -165,6 +185,8 @@ const config = {
             };
 
         }(global));
+
+        clearDownloads();
     },
     capabilities: {
         browserName: 'chrome',
@@ -174,14 +196,21 @@ const config = {
         // },
         // Number of times to run this set of capabilities (in parallel, unless
         // limited by maxSessions). Default is 1.
+        chromeOptions: {
+            prefs: {
+                download: {
+                    default_directory: downloadsPath,
+                }
+            }
+        },
         count: 1,
     },
 };
 
 if (useLocal) {
     config.directConnect = true
-    config.params.jenkins.host = '127.0.0.1' //'94.142.142.227'
-    config.params.jenkins.port = '8080'
+    // config.params.jenkins.host = 'localhost' //'94.142.142.227'
+    // config.params.jenkins.port = '8080'
 }
 else {
     //config.directConnect = true

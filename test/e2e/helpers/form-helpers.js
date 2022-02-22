@@ -2,15 +2,34 @@ var _ = protractor.helpers._;
 var $h = protractor.helpers;
 var expliciteWait = $h.wait.expliciteWait;
 var angularWait = $h.wait.angularWait;
+var EC = protractor.ExpectedConditions;
+var Key = protractor.Key;
 
-function getFieldSelector(name) {
-    return name === 'displayname' ? '.current-form h3 [editable-header-view]' : '.current-form idea-field-view[data-field-name="' + name + '"]'
+function getFieldSelector(name, mode) {
+    if (mode === 'popup') {
+        return '.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]';
+    }
+    return name === 'displayname' ? 'div.modal-content .displayname__name' : 'div.modal-content .card .react-grid-item[data-field-name="' + name + '"]'
 }
 
-var findFieldOnCurrentTab = function (name) {
+var findFieldOnCurrentTab = function (name, mode) {
+    if (mode === 'popup') {
+        return protractor.promise.all([
+            element(by.css('.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]')),
+            element(by.css('.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]')).getAttribute('data-widget')
+        ])
+            .then(function (a) {
+                return {
+                    element: a[0],
+                    type: a[1]
+                };
+            });
+    }
+    const lastModal = element.all(by.css('.modal-dialog')).last();
+    const currentTab = lastModal.element(by.css('.card .show'));
     return protractor.promise.all([
-        element(by.css('.current-form idea-field-view[data-field-name="' + name + '"]')),
-        element(by.css('.current-form idea-field-view[data-field-name="' + name + '"]')).getAttribute('data-widget')
+        currentTab.element(by.css('.react-grid-item[data-field-name="' + name + '"]')),
+        currentTab.element(by.css('.react-grid-item[data-field-name="' + name + '"]')).getAttribute('data-widget')
     ])
         .then(function (a) {
             return {
@@ -21,58 +40,59 @@ var findFieldOnCurrentTab = function (name) {
 };
 exports.getFieldSelector = getFieldSelector;
 
-function setField(name, value) {
-    // console.log('setField name', name, ' value=', value);
-    return findFieldOnCurrentTab(name)
+function setField(name, value, mode) {
+    return findFieldOnCurrentTab(name, mode)
+        .then(browser.sleep(2000))
         .then(function (field) {
-            var fieldSelector = getFieldSelector(name),
+            //console.log(name,value, field.type)
+            var fieldSelector = getFieldSelector(name, mode),
                 selector,
                 selector2;
             // console.log('field.type', field.type);
             switch (field.type) {
+                case 'float':
+                case 'number':
+                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
+                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.DELETE);
+                    return field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(value)
+                case 'text':
+                    field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
+                    field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.DELETE);
+                    return field.element.element(by.css('div.textfield__wrapper input')).sendKeys(value)
                 case 'input':
                     browser.executeScript('window.scrollTo(0,0);').then(function () {
                         // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
                     });
-                    return field.element.element(by.css('[data-input-name="' + name + '"]')).clear().sendKeys(value);
+                    return field.element.element(by.css('.react-grid-item[data-field-name="' + name + '"] input')).clear().sendKeys(value);
                 case 'input_pattern':
                 case 'password':
-                    return field.element.element(by.css('[data-input-name="' + name + '"]')).clear().sendKeys(value);
-                case 'float':
-                    selector = fieldSelector + '  [data-role=\"numerictextbox\"]';
-                    return browser.executeScript(function (_selector, _value) {
-                        var editor = $(_selector).data('kendoNumericTextBox');
-                        editor.value(_value);
-                        editor.trigger('change');
-                    }, selector, value)
-                        .then(angularWait)
-                        .then(expliciteWait)
-                        .then(function () {
-                            return browser.sleep(100);
-                        });
+                    return field.element.element(by.css('[data-field-name="' + name + '"]')).clear().sendKeys(value);
+                // case 'float':
+                //     selector = fieldSelector + '  [data-role=\"numerictextbox\"]';
+                //     return browser.executeScript(function (_selector, _value) {
+                //         var editor = $(_selector).data('kendoNumericTextBox');
+                //         editor.value(_value);
+                //         editor.trigger('change');
+                //     }, selector, value)
+                //         .then(angularWait)
+                //         .then(expliciteWait)
+                //         .then(function () {
+                //             return browser.sleep(100);
+                //         });
 
                 case 'button':
                     return field.element.element(by.css('[ng-click="processFieldButton()"]')).click();
                 case 'datetime':
                 case 'date':
                 case 'time':
-                    selector = fieldSelector + ' .input-group.date input';
-                    return browser.executeScript(function (_selector, _value) {
+                    selector = fieldSelector + ' input';
+                    return field.element.element(by.css(selector)).clear().sendKeys(value);
+                    /* return browser.executeScript(function (_selector, _value) {
                         $(_selector).val(_value).change();
-                    }, selector, value);
+                    }, selector, value);*/
                 case 'richtext':
-                    selector = fieldSelector + ' textarea.ip-editor';
-                    return browser.executeScript(function (_selector, _value) {
-                        var editor = $(_selector).data('kendoEditor');
-                        editor.value(_value);
-                        editor.trigger('keydown')
-                        editor.trigger('change');
-                    }, selector, value)
-                        .then(angularWait)
-                        .then(expliciteWait)
-                        .then(function () {
-                            return browser.sleep(100);
-                        });
+                    selector = fieldSelector + ' .se-wrapper p';
+                    return field.element.element(by.css(selector)).clear().sendKeys(value);
                 case 'comments': //$('textarea.comment-view__editor').data('kendoEditor')
                     selector = fieldSelector + ' textarea.comment-view__editor';
                     selector2 = fieldSelector + ' [ng-click="writeComment(comment)"]';
@@ -87,7 +107,7 @@ function setField(name, value) {
                         })
                         .then(angularWait);
                 case 'checkbox':
-                    var checkbox = element(by.css(fieldSelector + ' input[type="checkbox"]'));
+                    var checkbox = field.element.element(by.css(fieldSelector + ' input[type="checkbox"]'));
                     return checkbox.isSelected().then(function (selected) {
                         if (selected !== value) {
                             checkbox.click();
@@ -140,21 +160,19 @@ function setField(name, value) {
 
                 case 'addable_select':
                 case 'autocomplete':
+                case 'combobox':
+                case 'no_glass_autocomplete':
                 case 'addable_autocomplete':
                     // case 'no_glass_autocomplete':
 
-                    // console.log('setField**', field.type)
 
-                    element(by.css(fieldSelector + ' .select2-choice')).click();
-                    selector = '#select2-drop:not([style*=\"display: none\"])';
-                    selector2 = selector + ' .select2-results li.select2-result-selectable';
-
-                    // console.log('!test!!setField**', field.type)
-
+                    field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click();
+                    selector = ' .rw-popup';
+                    selector2 = selector + ' li.rw-list-option';
                     if (field.type.indexOf('autocomplete') >= 0) {
                         // console.log('!!!!setField**', field.type)
                         const val = value && value.displayValue || value && value.value || value
-                        element(by.css(selector + ' .select2-input')).clear().sendKeys(val)
+                        field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
                     }
 
                     return angularWait()
@@ -167,71 +185,97 @@ function setField(name, value) {
                         //         return browser.isElementPresent(by.css(selector2));
                         //     });
                         // })
+                        .then(browser.wait(EC.presenceOf(element(by.css(fieldSelector + selector2))), 7000))
                         .then(function () {
                             try {
                                 if (field.type.indexOf('autocomplete') >= 0) {
-                                    return element.all(by.css(selector2)).first().click();
+                                    return element.all(by.css(fieldSelector + selector2)).first().click();
+                                } else if (field.type.indexOf('combobox') >= 0) {
+                                    return element.all(by.css(fieldSelector + selector2)).then(function(arr) {
+                                        let i = 0;
+                                        let end = false;
+                                        async function* generate() {
+                                            while(!end) {
+                                               yield  await arr[i].getText();
+                                            }
+                                            return arr[i].click();
+                                        }
+                                        async function cycle() {
+                                            let generator = generate();
+                                            let text = await generator.next();
+                                            while ( text.value !== value && i < arr.length - 1) {
+                                                i += 1;
+                                                text = await generator.next();
+                                            }
+                                            end = true;
+                                            return await generator.next();
+                                        }
+                                        return cycle();
+                                    });
                                 } else {
                                     // console.log('setField** else val', val)
                                     // console.log('setField** else value', value)
-                                    return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
+                                    // return element.all(by.css(fieldSelector + selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
+                                    return field.element.element(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value)).click();
                                 }
                             } catch (e) {
                                 console.error('Unknown value ' + value + ' for field ' + name);
                                 console.error(e);
                             }
                         })
-                        .then(() => {
-                            selector = fieldSelector + ' [ng-model]';
-                            return browser.executeScript(function (_selector, _value) {
-                                if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
-                                    console.error('Wrong selector = ' + _selector);
-                                }
-                                return $(_selector).isolateScope().$ctrl.update();
-                            }, selector, value)
-                        })
-
-                case 'no_glass_autocomplete':
-                    // console.log('setField* no_glass_autocomplete*', field.type)
-                    browser.executeScript('window.scrollTo(0,0);').then(function () {
-                        // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
-                    });
-                    element(by.css(fieldSelector + ' .select2-choice')).click();
-                    selector = '#select2-drop:not([style*=\"display: none\"])';
-                    selector2 = selector + ' .select2-results li.select2-result-selectable';
-                    if (field.type.indexOf('autocomplete') >= 0) {
-                        const val = value && value.displayValue || value && value.value || value
-                        element(by.css(selector + ' .select2-input')).clear().sendKeys(val)
-                    }
-
-                    return angularWait()
-                        .then(expliciteWait)
-                        // .then(function () {
-                        //     return browser.wait(function () {
-                        //         return browser.isElementPresent(by.css(selector2));
-                        //     });
+                        // .then(() => {
+                        //     selector = fieldSelector;
+                        //     console.log('selector', fieldSelector)
+                        //     return browser.executeScript(function (_selector, _value) {
+                        //         console.log('selector', _selector, _value)
+                        //         if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
+                        //             console.error('Wrong selector = ' + _selector);
+                        //         }
+                        //         return $(_selector).isolateScope().$ctrl.update();
+                        //     }, selector, value)
                         // })
-                        .then(function () {
-                            try {
-                                if (field.type.indexOf('autocomplete') >= 0) {
-                                    return element.all(by.css(selector2)).first().click();
-                                } else {
-                                    return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
-                                }
-                            } catch (e) {
-                                console.error('Unknown value ' + value + ' for field ' + name);
-                                console.error(e);
-                            }
-                        })
-                        .then(() => {
-                            selector = fieldSelector + ' [ng-model]';
-                            return browser.executeScript(function (_selector, _value) {
-                                if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
-                                    console.error('Wrong selector = ' + _selector);
-                                }
-                                return $(_selector).isolateScope().$ctrl.update();
-                            }, selector, value)
-                        })
+
+                // case 'no_glass_autocomplete':
+                //     // console.log('setField* no_glass_autocomplete*', field.type)
+                //     browser.executeScript('window.scrollTo(0,0);').then(function () {
+                //         // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
+                //     });
+                //     element(by.css(fieldSelector + ' .select2-choice')).click();
+                //     selector = '#select2-drop:not([style*=\"display: none\"])';
+                //     selector2 = selector + ' .select2-results li.select2-result-selectable';
+                //     if (field.type.indexOf('autocomplete') >= 0) {
+                //         const val = value && value.displayValue || value && value.value || value
+                //         element(by.css(selector + ' .select2-input')).clear().sendKeys(val)
+                //     }
+                //
+                //     return angularWait()
+                //         .then(expliciteWait)
+                //         // .then(function () {
+                //         //     return browser.wait(function () {
+                //         //         return browser.isElementPresent(by.css(selector2));
+                //         //     });
+                //         // })
+                //         .then(function () {
+                //             try {
+                //                 if (field.type.indexOf('autocomplete') >= 0) {
+                //                     return element.all(by.css(selector2)).first().click();
+                //                 } else {
+                //                     return element.all(by.css(selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
+                //                 }
+                //             } catch (e) {
+                //                 console.error('Unknown value ' + value + ' for field ' + name);
+                //                 console.error(e);
+                //             }
+                //         })
+                //         .then(() => {
+                //             selector = fieldSelector + ' [ng-model]';
+                //             return browser.executeScript(function (_selector, _value) {
+                //                 if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
+                //                     console.error('Wrong selector = ' + _selector);
+                //                 }
+                //                 return $(_selector).isolateScope().$ctrl.update();
+                //             }, selector, value)
+                //         })
 
                 case 'html':
                     console.log('action not defined,  type =' + field.type)
@@ -296,17 +340,17 @@ function setField(name, value) {
             }
         })
         .then(function () {
-            return getField(name);
+            return getField(name, mode);
         });
 }
+exports.setField = setField;
 
-function getField(name) {
+function getField(name, mode) {
 
-    return findFieldOnCurrentTab(name)
+    return findFieldOnCurrentTab(name, mode)
         .then(function (field) {
-            var fieldSelector = getFieldSelector(name),
+            var fieldSelector = getFieldSelector(name,mode),
                 selector;
-
             switch (field.type) {
                 case 'input':
                 case 'input_pattern':
@@ -317,7 +361,8 @@ function getField(name) {
                 case 'time':
                     // console.log(field.type, '1')
                     var valAttr = field.type === 'checkbox' ? 'checked' : 'value';
-                    return field.element.element(by.css('[data-input-name=\"' + name + '\"]'))
+                    // return field.element.element(by.css('[data-field-name=\"' + name + '\"]'))
+                    return field.element.element(by.tagName('input'))
                         .getAttribute(valAttr)
                         .then(function (val) {
                             var m;
@@ -332,25 +377,26 @@ function getField(name) {
                                     return m.isValid() ? m.toDate() : null;
                                 default:
                                     return val;
-                            }
+                            }6
                         });
                 case 'float':
-                    // console.log(field.type, '2')
-                    selector = fieldSelector + ' [data-role=\"numerictextbox\"]';
-                    return browser.executeScript(function (_selector) {
-                        return $(_selector).data('kendoNumericTextBox').value();
-                    }, selector)
-                        .then(angularWait);
+                case 'number':
+                    // console.log(fieldSelector, field.type);
+                    return field.element.element(by.css('input')).getAttribute('value');
+                // case 'float':
+                    // // console.log(field.type, '2')
+                    // selector = fieldSelector + ' [data-role=\"numerictextbox\"]';
+                    // return browser.executeScript(function (_selector) {
+                    //     return $(_selector).data('kendoNumericTextBox').value();
+                    // }, selector)
+                    //     .then(angularWait);
                 case 'button':
                     // console.log(field.type, '3')
                     return null;
                 case 'richtext':
                     // console.log(field.type, '4')
-                    selector = fieldSelector + ' textarea.ip-editor';
-                    return browser.executeScript(function (_selector) {
-                        return $(_selector).data('kendoEditor').value();
-                    }, selector)
-                        .then(angularWait);
+                    selector = fieldSelector + ' .se-wrapper p';
+                    return field.element.element(by.css(selector)).getText();
                 case 'comments':
                     // console.log(field.type, '5')
                     selector = fieldSelector + ' ul.list-group li';
@@ -378,29 +424,36 @@ function getField(name) {
                 case 'select':
                 case 'addable_select':
                 case 'autocomplete':
+                case 'combobox':
                 case 'addable_autocomplete':
                 case 'no_glass_autocomplete':
                     // console.log('getField', field.type)
                     // console.log(field.type, '6')
-                    selector = fieldSelector + ' [ng-model]';
-                    return browser.executeScript(function (_selector) {
-                        if (!($(_selector).scope()) || !($(_selector).isolateScope().$ctrl.getValueForTest())) {
-                            console.error('Wrong selector = ' + _selector);
-                        }
-                        return $(_selector).isolateScope().$ctrl.getValueForTest();
-                    }, selector);
-
+                    return field.element.element(by.css('input')).getAttribute('value');
                 case 'html':
                     console.log('action not defined,  type =' + field.type)
                     return;
-
                 case 'subgrid':
-                    // console.log(field.type, '7')
-                    selector = fieldSelector + ' [ip-kendo-grid]'
-                    return browser.executeScript(function (_selector) {
-                        // console.log('_selector', _selector.toString())
-                        return JSON.parse(JSON.stringify($(_selector).data('kendoGrid').dataSource.data()));
-                    }, selector);
+                    selector = fieldSelector + ' [data-grid="ip-kendo-grid"]'
+                     return browser.sleep(2000)
+                        .then( function() {
+                            return browser.executeScript(function (_selector) {
+                                // console.log('_selector', _selector.toString())
+                                return JSON.parse(JSON.stringify($(_selector).data('kendoGrid').dataSource.data()));
+                            }, selector);
+                        })
+                case 'progressBar':
+                    const progressSelector = fieldSelector + ' .progress__current-text';
+                    return field.element.element(by.css(progressSelector)).getText()
+                      .then(progress => {
+                          const result = { progress };
+                          const statusSelector = fieldSelector + ' .progress__status';
+                          return field.element.element(by.css(statusSelector)).getText()
+                            .then(status => {
+                                result.status = status;
+                                return result;
+                            })
+                      })
                 default:
                     // console.log(field.type, '8')
                     console.warn('Unimplemented field type = ' + field.type);
@@ -408,7 +461,7 @@ function getField(name) {
             }
         });
 }
-
+exports.getField = getField;
 
 function openNextSection() {
     var elem = element(by.css('.current-form .panel.panel-open + .panel'));
@@ -420,31 +473,42 @@ function openNextSection() {
 }
 
 function processForm(_fieldsList, functionToProcess) {
-    // console.log('processForm 1')
+    // console.log('processForm 1', _fieldsList);
     var result = {};
-    let fieldsList
-
+    let fieldsList = [];
     function processHeader() {
         // console.log('processHeader 1')
         if (_fieldsList.includes('displayname')) {
             fieldsList = _fieldsList.filter(f => f !== 'displayname')
             return $h.common.scrollToSelector(getFieldSelector('displayname'))
                 .then(() => functionToProcess('displayname'))
-                .then(fieldResult => {
+                .then(fieldResult => { 
                     result['displayname'] = fieldResult
                 })
 
         } else {
-            fieldsList = _fieldsList
-            // console.log('processHeader 2',_fieldsList)
+            fieldsList = _fieldsList;
+            // console.log('processHeader', fieldsList);
             let when = protractor.promise.when(null)
             // console.log('processHeader 3',_fieldsList)
             return when
         }
     }
 
-    function processSection() {
-        var nextTabHeaderSelector = '.current-form .panel.panel-open + .panel h4 span[uib-accordion-header]';
+    function processSection(key) {
+        let i = 1;
+        let nextTab = `div.modal-content .card[data-key="${key + i}"]`;
+        async function cycle() {
+            let isPres = await element(by.css(nextTab)).isPresent();
+            while ( !isPres) {
+                i = i + 1;
+                nextTab = `div.modal-content .card[data-key="${key + i}"]`;
+                isPres = await element(by.css(nextTab)).isPresent();
+            }
+            nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
+            return element(by.css(nextTabHeaderSelector)).isPresent();
+        };
+        let nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
         var currentFieldsList = [], sectionFieldsList = [];
         var processNextField = function () {
             if (currentFieldsList.length > 0) {
@@ -463,8 +527,8 @@ function processForm(_fieldsList, functionToProcess) {
             }
         };
 
-        return element.all(by.css('.current-form .panel-open idea-field-view')).map(function (elm, index) {
-            return elm.getAttribute('data-field-name');
+        return element.all(by.css(`div.modal-content .card[data-key="${key}"] .react-grid-item`)).map(function (elm, index) {
+                return elm.getAttribute('data-field-name');
         })
             .then(function (_sectionFieldsList) {
                 sectionFieldsList = _sectionFieldsList;
@@ -472,30 +536,35 @@ function processForm(_fieldsList, functionToProcess) {
                 return processNextField();
             })
             .then(function () {
+                return cycle();
+            })
+            .then(function () {
                 fieldsList = _.difference(fieldsList, sectionFieldsList);
+                var selector = 'div.modal-content .card .collapse.show';
                 if (fieldsList.length) {
-                    return element(by.css('.current-form .panel.panel-open + .panel')).isPresent()
-                        .then(function (isPresent) {
-                            if (isPresent) {
-                                return angularWait().then(function () {
-                                    try {
-                                        return $h.common.scrollToSelector(nextTabHeaderSelector)
-                                            .then(function () {
-                                                return element(by.css(nextTabHeaderSelector)).click();
-                                            })
-                                            .then(angularWait)
-                                            .then(function () {
-                                                return processSection();
-                                            });
-                                    } catch (e) {
-                                        return null;
-                                    }
-                                });
+                    return browser.wait(EC.presenceOf(element(by.css(selector))), 30000)
+                        .then(element(by.css(selector)).isPresent()
+                            .then(function (isPresent) {
+                                if (isPresent) {
+                                    return angularWait().then(function () {
+                                        try {
+                                            return $h.common.scrollToSelector(nextTabHeaderSelector)
+                                                .then(function () {
+                                                    return element(by.css(nextTabHeaderSelector)).click();
+                                                })
+                                                .then(browser.wait(EC.presenceOf(element(by.css(nextTab + ' .collapse.show'))), 3000))
+                                                .then(function () {
+                                                    return processSection(key+i);
+                                                });
+                                        } catch (e) {
+                                            return null;
+                                        }
+                                    });
 
-                            } else {
-                                return console.error('Fields ' + fieldsList.toString() + ' were not found on form');
-                            }
-                        });
+                                } else {
+                                    return console.error('Fields ' + fieldsList.toString() + ' were not found on form');
+                                }
+                            }));
                 } else {
                     return false;
                 }
@@ -504,11 +573,11 @@ function processForm(_fieldsList, functionToProcess) {
 
     function openFirstTabIfNeeded() {
         // var firstTabHeaderSelector = '.current-form .panel:first-child h4 span[uib-accordion-header]';
-        var firstTabHeaderSelector = '.current-form .MainForm h4 span[uib-accordion-header]';
+        var firstTabHeaderSelector = 'div.modal-content .card[data-key="0"] .card-header .accordion-panel';
         // console.log(firstTabHeaderSelector, 'firstTabHeaderSelector')
         //  console.log( '************')
 
-        return element(by.css('.current-form .panel.panel-open:first-child')).isPresent()
+        return element(by.css('div.modal-content .card[data-key="0"] .collapse.show')).isPresent()
             // .then(console.log( '**********!!!!**'))
             .then(function (isPresentFirstTab) {
                 if (isPresentFirstTab) {
@@ -535,10 +604,9 @@ function processForm(_fieldsList, functionToProcess) {
     return processHeader()
         // .then(console.log(openFirstTabIfNeeded, 'processHeader in openFirstTabIfNeeded*'))
         .then(openFirstTabIfNeeded)
-        .then(processSection).then(() => {
-            // console.log(openFirstTabIfNeeded, 'openFirstTabIfNeeded 1*')
-            // console.log(processSection, 'processSection 1*')
-        })
+        .then(browser.wait(EC.presenceOf(element(by.css('div.modal-content .card .collapse.show'))), 5000))
+        .then(element(by.css('div.modal-content .card .collapse.show')).element(by.xpath('parent::div')).getAttribute('react-key')
+            .then(function(key) { processSection(Number(key))}))
         .then(() => result)
 }
 
@@ -546,7 +614,7 @@ exports.setForm = function (record) {
     return processForm(Object.keys(record), fieldName => {
         const fieldValue = record[fieldName]
         if (fieldName === 'displayname') {
-            return element(by.id('formHeader')).sendKeys(fieldValue)
+            return element(by.css('.displayname__name')).sendKeys(fieldValue)
                 .then(angularWait)
         } else {
             return setField(fieldName, fieldValue);
@@ -583,17 +651,19 @@ function processButton(name, fieldName, allowNoButton) {
     return angularWait()
         .then(expliciteWait)
         .then(function () {
-            var fieldSelector = (fieldName != null ? ' idea-field-view [data-field-name=\"' + fieldName + '\"]' : '');
+            var fieldSelector = (fieldName != null ? '[data-button-detail=\"' + fieldName + '\"]' : '');
             if (name instanceof Array) {
                 if (name.length === 0) {
                     return;
                 } else {
-                    var selector = '.current-form' + fieldSelector + ' [data-button-name=\"' + name[0] + '\"]';
-                    return element(by.css(selector)).isPresent()
+                    var selector = 'div.modal-content' + ' button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
+                    return  $h.common.scrollToSelector(selector)
+                        .then(browser.wait(EC.presenceOf(element(by.css(selector))), 7000))
+                        .then(() => element(by.css(selector)).isPresent())
                         .then(function (isPresent) {
                             if (isPresent) {
                                 return processButton(name[0], fieldName);
-                            } else if (!allowNoButton) {
+                            } else if (!allowNoButton) { 
                                 console.error('Can\'t find on form button with name = ' + name[0] + ' and selector = ' + selector);
                             }
                         })
@@ -602,10 +672,12 @@ function processButton(name, fieldName, allowNoButton) {
                         });
                 }
             } else {
-                return element(by.css('.current-form' + fieldSelector + ' [data-button-name=\"' + name + '\"]'))
-                    .click()
-                    .then(angularWait)
-                    .then(expliciteWait);
+                const selector = 'div .modal-content' + ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
+                return browser.wait(EC.presenceOf(element(by.css(selector))), 5000)
+                    .then(function(){
+                        element(by.css(selector))
+                        .click()
+                    });
             }
         });
 }
@@ -613,7 +685,7 @@ function processButton(name, fieldName, allowNoButton) {
 exports.processButton = processButton;
 
 function processPopup(action) {
-    const selector = '.modal-footer .btn-' + action
+    const selector = '.modal-footer .popup__dialog-btn_' + action
     return function () {
         return angularWait()
             .then(expliciteWait)
@@ -630,10 +702,24 @@ function processPopup(action) {
             .then(function () {
                 element(by.css(selector)).click();
             })
-            .then(angularWait);
+            .then(browser.sleep(2000));
     };
 }
-
+exports.processPopup = processPopup;
 exports.submitPopup = processPopup('submit');
 exports.cancelPopup = processPopup('cancel');
 
+exports.clickOnLink = async function (fieldName) {
+    await browser.sleep(1500);
+    const link = await element(by.css(`[data-field-name=${fieldName}] .linkfield__link`));
+    await link.click();
+    const handles = await browser.getAllWindowHandles();
+    await browser.driver.switchTo().window(handles[handles.length - 1]);
+    return browser.sleep(1500);
+}
+
+exports.closeLastModal = async function() {
+    await browser.sleep(1500);
+    const lastModalCloseButton = await element.all(by.css('.details__modal .details__close-btn')).last();
+    return await lastModalCloseButton.click();
+}

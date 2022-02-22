@@ -3,8 +3,10 @@ describe('Автотест распределение по ПМС.', function ()
     var $h = protractor.helpers;
     var expliciteWait = $h.wait.expliciteWait;
     var angularWait = $h.wait.angularWait;
+    var EC = protractor.ExpectedConditions;
     var loginObject = {};
-    // let taksUid = 47728;
+    var modalPointPMS = 'Укажите ПМС';
+    let buttonUpdate = 'Сохранить';
 
     var linesNumber;
     let number = 0;
@@ -28,130 +30,88 @@ describe('Автотест распределение по ПМС.', function ()
     //         .then(done);
     //     // console.log('END - 1. Заходим в систему под пользователем КраснДРП');
     // }, skip);
-
-    //1. Переходим в пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
-    it('1. Переходим по ссылке /#/my_tasks_wc. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача.  ##can_continue', (done) => {
-        console.log('Автотест распределение по ПМС. Переходим по ссылке /#/my_tasks_wc.');
-        browser.get(protractor.helpers.url + '/#/my_tasks_wc')
-            .then(angularWait)
-            .then(expliciteWait)
-
-        browser.getCurrentUrl().then(function (url) {       // проверяем URL
-            // let s = url.substring(url.indexOf('#') + 1);
-            expect(url.substring(url.indexOf('#') + 1)).toBe('/my_tasks_wc');
-        });
-
-        return angularWait()
+    it('2. Закрываем модальное окно. Выбираем наряд "Распределить участки ремонта пути по ПМС" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".  ##can_continue', function (done) {
+        const selector = '.details__close-btn';
+        browser.sleep(1000)
             .then(function () {
-                protractor.helpers.grid.main.rowsList().count().then(function (res) { //Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
-                    // console.log('res', res);
-                    expect(res >= 1).toBe(true);
-                })
+                element.all(by.css(selector)).then( function(items) {
+                    items[1].click();
+                    return browser.sleep(1500)
+                });
             })
-            .then(done);
-    }, skip);
-
-    //2. Выбираем наряд «Распределение участков КРП по ПМС». Убеждаемся, что запись открылась,поля и кнопка "Сохранить", "Назад".
-    it('2. Выбираем наряд "Распределить участки КРП по ПМС" и открываем его. Убеждаемся, что запись открылась, поля и кнопка "Сохранить", "Назад".  ##can_continue', function (done) {
-        return $h.grid.main.setSearch([
-            {
-                type: 'string',
-                operator: 'contains',
-                field: 'displayname',
-                value: 'Распределить участки КРП по ПМС'
-            },
-            {
-                type: 'int',
-                operator: 'eq',
-                field: 'taskid',
-                value: Number(protractor.helpers.taksUid + 1)
-                // value: taksUid
-            }
-        ])
+        return $h.form.getForm(['tasks'])
+            .then(function (form) {
+                eventUid = form.uid;
+                tasksBefore = form.tasks.length
+                const index = form.tasks.findIndex(item => item.displayname === 'Распределить участки ремонта пути по ПМС');
+                protractor.helpers.taksUid = Number(form.tasks[index].taskid)
+            })
             .then(function () {
-                // return element.all(by.css('[data-pkfieldid=\"' + String(taksUid) + '\"]')).first().getWebElement()
-                return element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid + 1) + '\"]')).first().getWebElement()
+                element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid) + '\"]')).first().getWebElement()
                     .then(function (event) {
                         browser.actions().doubleClick(event).perform();
-                        return browser.waitForAngular();
+                        return browser.sleep(1000);
                     })
             })
-            .then(angularWait)
-            .then(expliciteWait)
+            .then(browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), 30000))
             .then(function (res) {
-                // console.log("Проверка кнопок")
-                expect(element(by.css('[data-button-name="UPDATE"]')).isPresent()).toBe(true);   // Проверить что есть кнопка Сохранить
-                expect(element(by.css('[data-button-name="BACK"]')).isPresent()).toBe(true);   // Проверить что есть кнопка Назад
-                expect(element(by.css('[data-input-name="assignedto"]')).isEnabled()).toBe(true)    // Проверить Исполнитель доступен для заподнения
+                expect(element(by.css('[data-button-name="UPDATE"]')).getText()).toBe(buttonUpdate);   // Проверить что есть кнопка Сохранить
             })
-            .then(function () {
-                return $h.form.getForm(['workflowstepid']);
-            })
-            .then(function (form) {
-                expect(form.workflowstepid.displayValue).toBe('Запланирован');  // Проверить Стутус
-            })
-            .then(angularWait)
-            .then(expliciteWait)
             .then(done);
-    }, skip);
+    }, skip)
 
-    //3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
-    it('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Справа наверху возникло зеленое сообщение. ##can_continue', function (done) {
+    // 3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
+    it('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', function (done) {
         return $h.form.setForm({
             assignedto: 'Вернер А.А.'
         })
-            .then(angularWait)
-            .then(expliciteWait)
             .then(function () {
-                // return $h.form.processButton(['CREATE', 'UPDATE']);
-                return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
+                return $h.form.processButton(['UPDATE'], 'task');   //жмем на кнопку Сохранить
             })
+            .then(browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), 5000))
             .then(function () {
-                expect(element(by.css('[class="ui-notification alert ng-scope alert-success killed"]')).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
+                expect(element(by.css('[class="alert__wrapper alert__wrapper_success"]')).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
             })
-            .then(angularWait)
-            .then(expliciteWait)
             .then(done);
     }, skip);
 
     // 4. Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось
     it('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось. ##can_continue', function (done) {
+        const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
         return $h.form.processButton(['В работу'])
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                return $h.form.getForm(['workflowstepid']);
-            })
-            .then(function (form) {
-                expect(form.workflowstepid.displayValue).toBe('В работе ');
-            })
-            .then(angularWait)
-            .then(expliciteWait)
+            .then(browser.wait(EC.presenceOf(element(by.css(selector))), 5000))
+            .then(browser.sleep(2000))
+            .then(expect(element(by.css(selector)).getAttribute('value').then(function(text) {
+                if (text.trim() == 'В работе') {
+                    return text.trim()
+                }
+            })).toBe('В работе'))
             .then(done);
     }, skip);
 
-    // 5. Переходим по ссылке "Перейти к ДПГ ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 1 записи и кнопки "Добавить запись", "Назначить ПМС"
-    it('5. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 1 запись и кнопки "Добавить запись", "Назначить ПМС". ##can_continue', function (done) {
-        return element(by.css('[class="glyphicon glyphicon-arrow-right"]')).click()
-            .then(angularWait)
-            .then(expliciteWait)
+    // 5. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "Добавить запись" и нажимаем на неё .
+    it('5. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "+Добавить" и нажимаем на неё . ##can_continue', function (done) {
+        return element(by.css('[data-detail="task"] [class="glyphicon glyphicon-arrow-right"]')).click()
+            .then(async () => await browser.sleep(1500))
+            .then(browser.driver.getAllWindowHandles().then(function(handles) {
+                browser.driver.switchTo().window(handles[handles.length-1]);
+            }))
+            .then(browser.wait(EC.presenceOf(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]'))), 5000))
+            .then(function () {
+                expect(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]')).getText()).toBe('Добавить запись');   // Проверить что есть кнопка Добавить запись
+            })
             .then(function () {
                 protractor.helpers.grid.main.rowsList().count().then(function (res) { //Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
-                    // console.log('res', res);
                     linesNumber = res;
                     expect(res >= 1).toBe(true);
                 })
             })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                expect(element(by.css('[class="k-button idea-button-add-row"]')).getText()).toBe('Добавить запись');   // Проверить что есть кнопка Добавить запись
-            })
             .then(function () {
                 expect(element(by.css('[data-button-id="1187"]')).getText()).toBe('Назначить ПМС');   // Проверить что есть кнопка Назначить ПМС
             })
-            .then(angularWait)
-            .then(expliciteWait)
+            .then(function () {
+                expect(element(by.css('[data-button-id="1370"]')).getText()).toBe('Отменить участки');   // Проверить что есть кнопка Отменить
+            })
             .then(done);
     }, skip);
 
@@ -170,7 +130,7 @@ describe('Автотест распределение по ПМС.', function ()
                         }
                         return isExistNewGroup
                     })
-                        .then(function (isExistNewGroup) {    //Выбрать 3 запись (кликнуть по галкам) из группы "Не указано",
+                        .then(function (isExistNewGroup) {    //Выбрать 2 запись (кликнуть по галкам) из группы "Не указано",
                             expect(isExistNewGroup).toBe(true)
                             if (isExistNewGroup) {
                                 childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
@@ -192,31 +152,30 @@ describe('Автотест распределение по ПМС.', function ()
             .then(done);
     }, skip);
 
-    // 7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок"
+        // 7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок"
     it('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок". ##can_continue', function (done) {
-        return angularWait()
+        const popupTitleSelector = '.uipopup__title.modal-title';
+        const popupSelector = '.uipopup__title.modal-title';
+        const departmentInGridSelector = 'span[data-field="department"]';
+        return browser.sleep(100)
+            .then(browser.wait(EC.presenceOf(element(by.css(popupSelector))), 5000))
             .then(function () {
-                return element(by.css('[class="modal-content"]'))
+                expect(element(by.css(popupTitleSelector)).getText()).toBe(modalPointPMS);   // Проверить название окна
             })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function (res) {
-                expect(res.element(by.css('[idea-field-name="p_dept"]')).isPresent()).toBe(true)     // Проверить что есть поле ПМС
-                expect(res.element(by.css('[ng-click="submit()"]')).isPresent()).toBe(true)     // Проверить что есть кнопка "ОК"
-                expect(res.element(by.css('[ng-click="cancel()"]')).isPresent()).toBe(true)     // Проверить что есть кнопка "Отмена"
-            })
+            // .then(function () {
+            //     expect(element(by.css(popupSelector + ' [data-field-name="p_dept"]')).isPresent()).toBe(true)     // Проверить что есть поле ПМС
+            // })
+            // .then(function () {
+            //     expect(element(by.css(popupSelector + ' .popup__dialog-btn_primary')).isPresent()).toBe(true)     // Проверить что есть кнопка "ОК"
+            // })
+            // .then(function () {
+            //     expect(element(by.css(popupSelector + ' .popup__dialog-btn_secondary')).isPresent()).toBe(true)     // Проверить что есть кнопка "Отмена"
+            // })
             .then(function () {
-                return $h.form.setForm({
-                    p_dept: 3702        //Выбрать ПМС-181
-                })
+                $h.form.setField('p_dept','ПМС-181', 'popup'); // Выбираем ПМС-181
             })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                element(by.css('[ng-click="submit()"]')).click();
-            })
-            .then(angularWait)
-            .then(expliciteWait)
+            .then($h.form.processPopup('primary')) // Жмём на кнопку "Да")
+            .then(browser.sleep(3000))
             .then(done);
     }, skip);
 
@@ -239,8 +198,8 @@ describe('Автотест распределение по ПМС.', function ()
             .then(function () {    //Выбрать 2 запись (кликнуть по галкам) из группы "ПМС...",
                 expect(isExistNewGroup).toBe(true)
                 if (isExistNewGroup) {
+                    childElements.get(number).element(by.css('[class="idea-grid-select"]')).click();
                     childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
-                    childElements.get(number + 2).element(by.css('[class="idea-grid-select"]')).click();
                 }// return
                 return isExistNewGroup
             })
@@ -252,74 +211,59 @@ describe('Автотест распределение по ПМС.', function ()
             .then(angularWait)
             .then(expliciteWait)
             .then(function () {
-                // element.all(by.css('[class="select2-result-label"]')).last().click();  //Нажать на последний ПМС из выпадающего списка
-                return $h.form.setForm({
-                    p_dept: 10  //Выбрать ПМС-197
+                $h.form.setField('p_dept','ПМС-197', 'popup'); // Выбираем ПМС-181
+            })
+            .then($h.form.processPopup('primary')) // Жмём на кнопку "Да")
+            .then(browser.sleep(3000))
+            .then(done);
+    }, skip);
+
+    it('9. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что появилось предупреждение, что не всем участкам назначены пмс. ##can_continue', function (done) {
+        const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
+        return browser.driver.getAllWindowHandles()
+            .then(function(handles) {browser.driver.switchTo().window(handles[0])})
+            .then(browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), 5000))
+            .then(function () {
+                // return $h.form.processButton(['CREATE', 'UPDATE']);
+                return $h.form.processButton(['Выполнить'], 'task');   //жмем на кнопку Сохранить
+            })
+            .then(function () {
+                expect(element(by.css('[class="alert__wrapper alert__wrapper_danger"]')).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
+            })
+            .then(done);
+    }, skip);
+
+    // 10. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "Добавить запись" и нажимаем на неё .
+    it('10. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "+Добавить" и нажимаем на неё . ##can_continue', function (done) {
+        return element(by.css('[data-detail="task"] [class="glyphicon glyphicon-arrow-right"]')).click()
+            .then(async () => await browser.sleep(1500))
+            .then(browser.driver.getAllWindowHandles().then(function(handles) {
+                browser.driver.switchTo().window(handles[handles.length-1]);
+            }))
+            .then(browser.wait(EC.presenceOf(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]'))), 5000))
+            .then(function () {
+                expect(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]')).getText()).toBe('Добавить запись');   // Проверить что есть кнопка Добавить запись
+            })
+            .then(function () {
+                protractor.helpers.grid.main.rowsList().count().then(function (res) { //Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
+                    linesNumber = res;
+                    expect(res >= 1).toBe(true);
                 })
             })
-            .then(angularWait)
-            .then(expliciteWait)
             .then(function () {
-                element(by.css('[ng-click="submit()"]')).click();
+                expect(element(by.css('[data-button-id="1187"]')).getText()).toBe('Назначить ПМС');   // Проверить что есть кнопка Назначить ПМС
             })
-            .then(angularWait)
-            .then(expliciteWait)
+            .then(function () {
+                expect(element(by.css('[data-button-id="1370"]')).getText()).toBe('Отменить участки');   // Проверить что есть кнопка Отменить
+            })
             .then(done);
     }, skip);
 
-// 9. Вернуться к задаче и нажать "Выполнить". Убедиться, что система показала ошибку (не все участки распределены по ПМС, красное сообщение в правом верхнем углу).
-    it('9. Вернуться к задаче и нажать "Выполнить". Убедиться, что система показала ошибку (не все участки распределены по ПМС, красное сообщение в правом верхнем углу). ##can_continue', function (done) {
-        browser.waitForAngular()
+    // 11. Выбрать оставшуюся запись из группы "Не указано", нажать на кнопку "Назначить ПМС"
+    it('11. Выбрать оставшуюся запись из группы "Не указано", нажать на кнопку "Назначить ПМС". ##can_continue', function (done) {
+        return angularWait()
             .then(function () {
-                return browser.get(protractor.helpers.url + '/#/my_tasks_wc')
-                    .then(angularWait)
-                    .then(expliciteWait)
-            })
-            .then(function () {
-                return $h.grid.main.setSearch([
-                    {
-                        type: 'string',
-                        operator: 'contains',
-                        field: 'displayname',
-                        value: 'Распределить участки КРП по ПМС'
-                    },
-                    {
-                        type: 'int',
-                        operator: 'eq',
-                        field: 'taskid',
-                        value: Number(protractor.helpers.taksUid + 1)
-                    }
-                ])
-            })
-            .then(function () {
-                return element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid + 1) + '\"]')).first().getWebElement()
-                    .then(function (event) {
-                        browser.actions().doubleClick(event).perform();
-                        return browser.waitForAngular();
-                    })
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                return $h.form.processButton(['Выполнить']);    // нажать Выполнить
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                expect(element(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).isPresent()).toBe(true)  // Справа наверху возникло красное сообщение об ошибке
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(done);
-    }, skip);
-
-    // 10. Переходим по ссылке "Перейти к ДПГ ". Назначить последний участок из группы "не указано" на последний ПМС из выпадающего списка
-    it('10. Переходим по ссылке "Перейти к ДПГ ". Назначить последний участок из группы "не указано" на  ПМС - 197 из выпадающего списка. ##can_continue', function (done) {
-        return element(by.css('[class="glyphicon glyphicon-arrow-right"]')).click()
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                childElements = protractor.helpers.grid.main.rowsList();
+                let childElements = protractor.helpers.grid.main.rowsList();
                 for (let i = 0; i < linesNumber; ++i) {
                     isExistNewGroup = false;
                     childElements.get(i).getText().then(function (text) {
@@ -328,13 +272,16 @@ describe('Автотест распределение по ПМС.', function ()
                             isExistNewGroup = true;
                             return isExistNewGroup;
                         }
+                        return isExistNewGroup
                     })
-                }
-            })
-            .then(function () {    //Выбрать 1 запись (кликнуть по галкам) из группы "Не указано",
-                expect(isExistNewGroup).toBe(true)
-                if (isExistNewGroup) {
-                    childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
+                        .then(function (isExistNewGroup) {    //Выбрать 1 оставшуюся запись (кликнуть по галкам) из группы "Не указано",
+                            expect(isExistNewGroup).toBe(true)
+                            if (isExistNewGroup) {
+                                childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
+                            }
+                            return isExistNewGroup
+                        })
+                    return isExistNewGroup
                 }
                 return isExistNewGroup
             })
@@ -345,79 +292,440 @@ describe('Автотест распределение по ПМС.', function ()
             })
             .then(angularWait)
             .then(expliciteWait)
-            .then(function () {
-                return $h.form.setForm({
-                    p_dept: 10  //Выбрать ПМС-197
-                })
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                element(by.css('[ng-click="submit()"]')).click();
-            })
-            .then(angularWait)
-            .then(expliciteWait)
             .then(done);
     }, skip);
 
-    // 11) Перейти в Мои наряды. Выбираем наряд "Распределить участки КРП по ПМС" и открываем его. Убеждаемся, что запись открылась, в ней есть поля и кнопка "Сохранить", "Назад" и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось. Нажать кнопку "Назад"
-    it('11. Выбираем наряд "Распределить участки КРП по ПМС", открываем его, жмем "Выполнить". ##can_continue', function (done) {
-        return browser.get(protractor.helpers.url + '/#/my_tasks_wc')
-            .then(angularWait)
-            .then(expliciteWait)
+    it('12. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок". ##can_continue', function (done) {
+        const popupTitleSelector = '.uipopup__title.modal-title';
+        const popupSelector = '.uipopup__title.modal-title';
+        const departmentInGridSelector = 'span[data-field="department"]';
+        return browser.sleep(100)
+            .then(browser.wait(EC.presenceOf(element(by.css(popupSelector))), 5000))
             .then(function () {
-                $h.grid.main.setSearch([
-                    {
-                        type: 'string',
-                        operator: 'contains',
-                        field: 'displayname',
-                        value: 'Распределить участки КРП по ПМС'
-                    },
-                    {
-                        type: 'int',
-                        operator: 'eq',
-                        field: 'taskid',
-                        value: Number(protractor.helpers.taksUid + 1)
-                        // value: taksUid
-                    }
-                ])
+                expect(element(by.css(popupTitleSelector)).getText()).toBe(modalPointPMS);   // Проверить название окна
             })
+            // .then(function () {
+            //     expect(element(by.css(popupSelector + ' [data-field-name="p_dept"]')).isPresent()).toBe(true)     // Проверить что есть поле ПМС
+            // })
+            // .then(function () {
+            //     expect(element(by.css(popupSelector + ' .popup__dialog-btn_primary')).isPresent()).toBe(true)     // Проверить что есть кнопка "ОК"
+            // })
+            // .then(function () {
+            //     expect(element(by.css(popupSelector + ' .popup__dialog-btn_secondary')).isPresent()).toBe(true)     // Проверить что есть кнопка "Отмена"
+            // })
             .then(function () {
-                // return element.all(by.css('[data-pkfieldid=\"' + String(taksUid) + '\"]')).first().getWebElement()
-                return element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid + 1) + '\"]')).first().getWebElement()
-                    .then(function (event) {
-                        browser.actions().doubleClick(event).perform();
-                        return browser.waitForAngular();
-                    })
+                $h.form.setField('p_dept','ПМС-48', 'popup'); // Выбираем ПМС-181
             })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function (res) {
-                // console.log("Проверка кнопок")
-                expect(element(by.css('[data-button-name="UPDATE"]')).isPresent()).toBe(true);   // Проверить что есть кнопка Сохранить
-                expect(element(by.css('[data-button-name="BACK"]')).isPresent()).toBe(true);   // Проверить что есть кнопка Назад
-                expect(element(by.css('[data-input-name="assignedto"]')).isEnabled()).toBe(true)    // Проверить Исполнитель доступен для заподнения
-            })
-            .then(function () {
-                return $h.form.processButton(['Выполнить']);    // нажать Выполнить
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                return $h.form.getForm(['workflowstepid']);
-            })
-            .then(function (form) {
-                expect(form.workflowstepid.displayValue).toBe('Выполнен');  // Проверить Стутус
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                return $h.form.processButton(['BACK']);    // нажать Назад
-            })
-            .then(angularWait)
-            .then(expliciteWait)
+            .then($h.form.processPopup('primary')) // Жмём на кнопку "Да"
+            .then(expect(element(by.css(departmentInGridSelector)).getText()).toBe('ПМС-48'))
             .then(done);
     }, skip);
+
+    it('13. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен". ##can_continue', function (done) {
+        const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
+        return browser.driver.getAllWindowHandles()
+            .then(function(handles) {browser.driver.switchTo().window(handles[0])})
+            .then(browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), 5000))
+            .then(function () {
+                // return $h.form.processButton(['CREATE', 'UPDATE']);
+                return $h.form.processButton(['Выполнить'], 'task');   //жмем на кнопку Сохранить
+            })
+            .then(browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), 10000))
+            .then(expect(element(by.css(selector)).getAttribute('value').then(function(text) {
+                if (text.trim() == 'Выполнен') {
+                    return text.trim()
+                }
+            })).toBe('Выполнен'))
+            .then(done);
+    }, skip);
+
+//     it('1. Переходим по ссылке /#/my_tasks_wc. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача.  ##can_continue', (done) => {
+//         console.log('Автотест распределение по ПМС. Переходим по ссылке /#/my_tasks_wc.');
+//         browser.get(protractor.helpers.url + '/#/my_tasks_wc')
+//             .then(browser.sleep(3000))
+//
+//         browser.getCurrentUrl().then(function (url) {       // проверяем URL
+//             // let s = url.substring(url.indexOf('#') + 1);
+//             expect(url.substring(url.indexOf('#') + 1)).toBe('/my_tasks_wc');
+//         });
+//
+//         return angularWait()
+//             .then(function () {
+//                 protractor.helpers.grid.main.rowsList().count().then(function (res) { //Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
+//                     // console.log('res', res);
+//                     expect(res >= 1).toBe(true);
+//                 })
+//             })
+//             .then(done);
+//     }, skip);
+//
+//     //2. Выбираем наряд «Распределение участков КРП по ПМС». Убеждаемся, что запись открылась,поля и кнопка "Сохранить", "Назад".
+//     it('2. Выбираем наряд "Распределить участки КРП по ПМС" и открываем его. Убеждаемся, что запись открылась, поля и кнопка "Сохранить", "Назад".  ##can_continue', function (done) {
+//         return $h.grid.main.setSearch([
+//             {
+//                 type: 'string',
+//                 operator: 'contains',
+//                 field: 'displayname',
+//                 value: 'Распределить участки КРП по ПМС'
+//             },
+//             {
+//                 type: 'int',
+//                 operator: 'eq',
+//                 field: 'taskid',
+//                 value: Number(protractor.helpers.taksUid )
+//                 // value: taksUid
+//             }
+//         ])
+//             .then(function () {
+//                 // return element.all(by.css('[data-pkfieldid=\"' + String(taksUid) + '\"]')).first().getWebElement()
+//                 return element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid + 1) + '\"]')).first().getWebElement()
+//                     .then(function (event) {
+//                         browser.actions().doubleClick(event).perform();
+//                         return browser.waitForAngular();
+//                     })
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function (res) {
+//                 // console.log("Проверка кнопок")
+//                 expect(element(by.css('[data-button-name="UPDATE"]')).isPresent()).toBe(true);   // Проверить что есть кнопка Сохранить
+//                 expect(element(by.css('[data-button-name="BACK"]')).isPresent()).toBe(true);   // Проверить что есть кнопка Назад
+//                 expect(element(by.css('[data-input-name="assignedto"]')).isEnabled()).toBe(true)    // Проверить Исполнитель доступен для заподнения
+//             })
+//             .then(function () {
+//                 return $h.form.getForm(['workflowstepid']);
+//             })
+//             .then(function (form) {
+//                 expect(form.workflowstepid.displayValue).toBe('Запланирован');  // Проверить Стутус
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+//     //3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
+//     it('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Справа наверху возникло зеленое сообщение. ##can_continue', function (done) {
+//         return $h.form.setForm({
+//             assignedto: 'Вернер А.А.'
+//         })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 // return $h.form.processButton(['CREATE', 'UPDATE']);
+//                 return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
+//             })
+//             .then(function () {
+//                 expect(element(by.css('[class="ui-notification alert ng-scope alert-success killed"]')).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+//     // 4. Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось
+//     it('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось. ##can_continue', function (done) {
+//         return $h.form.processButton(['В работу'])
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 return $h.form.getForm(['workflowstepid']);
+//             })
+//             .then(function (form) {
+//                 expect(form.workflowstepid.displayValue).toBe('В работе ');
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+//     // 5. Переходим по ссылке "Перейти к ДПГ ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 1 записи и кнопки "Добавить запись", "Назначить ПМС"
+//     it('5. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 1 запись и кнопки "Добавить запись", "Назначить ПМС". ##can_continue', function (done) {
+//         return element(by.css('[class="glyphicon glyphicon-arrow-right"]')).click()
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 protractor.helpers.grid.main.rowsList().count().then(function (res) { //Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
+//                     // console.log('res', res);
+//                     linesNumber = res;
+//                     expect(res >= 1).toBe(true);
+//                 })
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 expect(element(by.css('[class="k-button idea-button-add-row"]')).getText()).toBe('Добавить запись');   // Проверить что есть кнопка Добавить запись
+//             })
+//             .then(function () {
+//                 expect(element(by.css('[data-button-id="1187"]')).getText()).toBe('Назначить ПМС');   // Проверить что есть кнопка Назначить ПМС
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+//     // 6. Выбрать 2 запись из группы "Не указано", нажать на кнопку "Назначить ПМС"
+//     it('6. Выбрать 2 запись из группы "Не указано", нажать на кнопку "Назначить ПМС". ##can_continue', function (done) {
+//         return angularWait()
+//             .then(function () {
+//                 let childElements = protractor.helpers.grid.main.rowsList();
+//                 for (let i = 0; i < linesNumber; ++i) {
+//                     isExistNewGroup = false;
+//                     childElements.get(i).getText().then(function (text) {
+//                         if (text.match('Не указано')) { //убедиться, что есть группа "Не указано"
+//                             number = i;
+//                             isExistNewGroup = true;
+//                             return isExistNewGroup;
+//                         }
+//                         return isExistNewGroup
+//                     })
+//                         .then(function (isExistNewGroup) {    //Выбрать 3 запись (кликнуть по галкам) из группы "Не указано",
+//                             expect(isExistNewGroup).toBe(true)
+//                             if (isExistNewGroup) {
+//                                 childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
+//                                 childElements.get(number + 2).element(by.css('[class="idea-grid-select"]')).click();
+//                             }
+//                             return isExistNewGroup
+//                         })
+//                     return isExistNewGroup
+//                 }
+//                 return isExistNewGroup
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 return element(by.css('[data-button-id="1187"]')).click();   // нажать Назначить ПМС
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+//     // 7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок"
+//     it('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок". ##can_continue', function (done) {
+//         return angularWait()
+//             .then(function () {
+//                 return element(by.css('[class="modal-content"]'))
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function (res) {
+//                 expect(res.element(by.css('[idea-field-name="p_dept"]')).isPresent()).toBe(true)     // Проверить что есть поле ПМС
+//                 expect(res.element(by.css('[ng-click="submit()"]')).isPresent()).toBe(true)     // Проверить что есть кнопка "ОК"
+//                 expect(res.element(by.css('[ng-click="cancel()"]')).isPresent()).toBe(true)     // Проверить что есть кнопка "Отмена"
+//             })
+//             .then(function () {
+//                 return $h.form.setForm({
+//                     p_dept: 3702        //Выбрать ПМС-181
+//                 })
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 element(by.css('[ng-click="submit()"]')).click();
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+//     // 8. Выбрать 2 записи из списка уже назначенных на ПМС-181 и переназначить на ПМС-197. Оставить один участок без ПМС, в группе "не указано"
+//     it('8. Выбрать 2 записи из списка уже назначенных на ПМС-181 и переназначить на ПМС-197. Оставить один участок без ПМС, в группе "не указано". ##can_continue', function (done) {
+//         return angularWait()
+//             .then(function () {
+//                 childElements = protractor.helpers.grid.main.rowsList();
+//                 for (let i = 0; i < linesNumber; ++i) {
+//                     isExistNewGroup = false;
+//                     childElements.get(i).getText().then(function (text) {
+//                         if (text.match('ПМС')) { //убедиться, что есть группа "ПМС..."
+//                             number = i;
+//                             isExistNewGroup = true;
+//                             return isExistNewGroup;
+//                         }
+//                     })
+//                 }
+//             })
+//             .then(function () {    //Выбрать 2 запись (кликнуть по галкам) из группы "ПМС...",
+//                 expect(isExistNewGroup).toBe(true)
+//                 if (isExistNewGroup) {
+//                     childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
+//                     childElements.get(number + 2).element(by.css('[class="idea-grid-select"]')).click();
+//                 }// return
+//                 return isExistNewGroup
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 return element(by.css('[data-button-id="1187"]')).click();   // нажать Назначить ПМС
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 // element.all(by.css('[class="select2-result-label"]')).last().click();  //Нажать на последний ПМС из выпадающего списка
+//                 return $h.form.setForm({
+//                     p_dept: 10  //Выбрать ПМС-197
+//                 })
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 element(by.css('[ng-click="submit()"]')).click();
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+// // 9. Вернуться к задаче и нажать "Выполнить". Убедиться, что система показала ошибку (не все участки распределены по ПМС, красное сообщение в правом верхнем углу).
+//     it('9. Вернуться к задаче и нажать "Выполнить". Убедиться, что система показала ошибку (не все участки распределены по ПМС, красное сообщение в правом верхнем углу). ##can_continue', function (done) {
+//         browser.waitForAngular()
+//             .then(function () {
+//                 return browser.get(protractor.helpers.url + '/#/my_tasks_wc')
+//                     .then(angularWait)
+//                     .then(expliciteWait)
+//             })
+//             .then(function () {
+//                 return $h.grid.main.setSearch([
+//                     {
+//                         type: 'string',
+//                         operator: 'contains',
+//                         field: 'displayname',
+//                         value: 'Распределить участки КРП по ПМС'
+//                     },
+//                     {
+//                         type: 'int',
+//                         operator: 'eq',
+//                         field: 'taskid',
+//                         value: Number(protractor.helpers.taksUid + 1)
+//                     }
+//                 ])
+//             })
+//             .then(function () {
+//                 return element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid + 1) + '\"]')).first().getWebElement()
+//                     .then(function (event) {
+//                         browser.actions().doubleClick(event).perform();
+//                         return browser.waitForAngular();
+//                     })
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 return $h.form.processButton(['Выполнить']);    // нажать Выполнить
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 expect(element(by.css('[class="ui-notification alert ng-scope alert-danger killed"]')).isPresent()).toBe(true)  // Справа наверху возникло красное сообщение об ошибке
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+//     // 10. Переходим по ссылке "Перейти к ДПГ ". Назначить последний участок из группы "не указано" на последний ПМС из выпадающего списка
+//     it('10. Переходим по ссылке "Перейти к ДПГ ". Назначить последний участок из группы "не указано" на  ПМС - 197 из выпадающего списка. ##can_continue', function (done) {
+//         return element(by.css('[class="glyphicon glyphicon-arrow-right"]')).click()
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 childElements = protractor.helpers.grid.main.rowsList();
+//                 for (let i = 0; i < linesNumber; ++i) {
+//                     isExistNewGroup = false;
+//                     childElements.get(i).getText().then(function (text) {
+//                         if (text.match('Не указано')) { //убедиться, что есть группа "Не указано"
+//                             number = i;
+//                             isExistNewGroup = true;
+//                             return isExistNewGroup;
+//                         }
+//                     })
+//                 }
+//             })
+//             .then(function () {    //Выбрать 1 запись (кликнуть по галкам) из группы "Не указано",
+//                 expect(isExistNewGroup).toBe(true)
+//                 if (isExistNewGroup) {
+//                     childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
+//                 }
+//                 return isExistNewGroup
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 return element(by.css('[data-button-id="1187"]')).click();   // нажать Назначить ПМС
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 return $h.form.setForm({
+//                     p_dept: 10  //Выбрать ПМС-197
+//                 })
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 element(by.css('[ng-click="submit()"]')).click();
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
+//
+//     // 11) Перейти в Мои наряды. Выбираем наряд "Распределить участки КРП по ПМС" и открываем его. Убеждаемся, что запись открылась, в ней есть поля и кнопка "Сохранить", "Назад" и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменилось. Нажать кнопку "Назад"
+//     it('11. Выбираем наряд "Распределить участки КРП по ПМС", открываем его, жмем "Выполнить". ##can_continue', function (done) {
+//         return browser.get(protractor.helpers.url + '/#/my_tasks_wc')
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 $h.grid.main.setSearch([
+//                     {
+//                         type: 'string',
+//                         operator: 'contains',
+//                         field: 'displayname',
+//                         value: 'Распределить участки КРП по ПМС'
+//                     },
+//                     {
+//                         type: 'int',
+//                         operator: 'eq',
+//                         field: 'taskid',
+//                         value: Number(protractor.helpers.taksUid + 1)
+//                         // value: taksUid
+//                     }
+//                 ])
+//             })
+//             .then(function () {
+//                 // return element.all(by.css('[data-pkfieldid=\"' + String(taksUid) + '\"]')).first().getWebElement()
+//                 return element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid + 1) + '\"]')).first().getWebElement()
+//                     .then(function (event) {
+//                         browser.actions().doubleClick(event).perform();
+//                         return browser.waitForAngular();
+//                     })
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function (res) {
+//                 // console.log("Проверка кнопок")
+//                 expect(element(by.css('[data-button-name="UPDATE"]')).isPresent()).toBe(true);   // Проверить что есть кнопка Сохранить
+//                 expect(element(by.css('[data-button-name="BACK"]')).isPresent()).toBe(true);   // Проверить что есть кнопка Назад
+//                 expect(element(by.css('[data-input-name="assignedto"]')).isEnabled()).toBe(true)    // Проверить Исполнитель доступен для заподнения
+//             })
+//             .then(function () {
+//                 return $h.form.processButton(['Выполнить']);    // нажать Выполнить
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 return $h.form.getForm(['workflowstepid']);
+//             })
+//             .then(function (form) {
+//                 expect(form.workflowstepid.displayValue).toBe('Выполнен');  // Проверить Стутус
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(function () {
+//                 return $h.form.processButton(['BACK']);    // нажать Назад
+//             })
+//             .then(angularWait)
+//             .then(expliciteWait)
+//             .then(done);
+//     }, skip);
 
     // 8) Открыть двойным кликом созданную запись из группы "ПМС-181", убедится что есть кнопки "Расчет МВСП", "Сохранить", "Назад",
     // поля: "Статус", "ДПГ", "Класс, группа, категория пути"
@@ -585,27 +893,27 @@ describe('Автотест распределение по ПМС.', function ()
 // 12) Выйти из системы (Проверить что есть кнопка "Выйти", после выхода проверить URL  #/login
 
     // 12) Выйти из системы (Проверить что есть кнопка "Выйти", после выхода проверить URL  #/login
-    it('12 Выходим из системы (Проверить что есть кнопка "Выйти", после выхода проверить URL  #/login). ##can_continue', function (done) {
-        // console.log('Step Выходим')
-        return angularWait()
-            .then(function () {
-                browser.actions().mouseMove(element(by.css('[ng-bind=\"$ctrl.currentUser()\"]'))).perform()
-                expect(element(by.css('[class="button-log-out"]')).isPresent()).toBe(true)  // Проверить что есть кнопка выйти
-                element(by.css('[class="button-log-out"]')).click()
-            })
-            .then(expliciteWait)
-            .then(function () {
-                // console.log('Step Выходим 1')
-                return browser.getCurrentUrl();
-            })
-            .then(function (url) {
-                // console.log('Step Выходим 2')
-                expect(url.indexOf('login') >= 0).toBe(true);      // Проверить что  #/login
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(done);
-    }, skip);
+    // it('12 Выходим из системы (Проверить что есть кнопка "Выйти", после выхода проверить URL  #/login). ##can_continue', function (done) {
+    //     // console.log('Step Выходим')
+    //     return angularWait()
+    //         .then(function () {
+    //             browser.actions().mouseMove(element(by.css('[ng-bind=\"$ctrl.currentUser()\"]'))).perform()
+    //             expect(element(by.css('[class="button-log-out"]')).isPresent()).toBe(true)  // Проверить что есть кнопка выйти
+    //             element(by.css('[class="button-log-out"]')).click()
+    //         })
+    //         .then(expliciteWait)
+    //         .then(function () {
+    //             // console.log('Step Выходим 1')
+    //             return browser.getCurrentUrl();
+    //         })
+    //         .then(function (url) {
+    //             // console.log('Step Выходим 2')
+    //             expect(url.indexOf('login') >= 0).toBe(true);      // Проверить что  #/login
+    //         })
+    //         .then(angularWait)
+    //         .then(expliciteWait)
+    //         .then(done);
+    // }, skip);
 }, !protractor.totalStatus.ok);
 
 

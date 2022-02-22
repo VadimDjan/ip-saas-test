@@ -87,8 +87,18 @@ exports.toClientDate = function (d) {
 exports.scrollToSelector = function (selector) {
     function scrollToSelector(_selector) {
         var el = $(_selector);
+        function findPos(obj) {
+            var curtop = 0;
+            if (obj.offsetParent) {
+                do {
+                    curtop += obj.offsetTop;
+                } while (obj = obj.offsetParent);
+            return [curtop];
+            }
+        }
         if (el.length > 0) {
-            el.get(0).scrollIntoView();
+            // el.get(0).scrollIntoView();
+            window.scroll(0,findPos( el.get(0)));
             return true;
         } else {
             return false;
@@ -98,6 +108,22 @@ exports.scrollToSelector = function (selector) {
     return browser
         .executeScript(scrollToSelector, selector)
         .then(function () {
+            return browser.sleep(1000);
+        });
+};
+
+exports.scrollUp = function () {
+    return browser
+        .executeScript('window.scrollTo(0,0);')
+        .then(function () {
             return browser.sleep(500);
         });
 };
+
+exports.scrollDown = function () {
+    return browser
+      .executeScript('document.getElementsByClassName("railway-repair__wrap")[0].scrollTo(0,document.body.scrollHeight);')
+      .then(function () {
+          return browser.sleep(500);
+      });
+}

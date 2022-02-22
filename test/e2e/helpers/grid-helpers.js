@@ -39,11 +39,11 @@ function functionsList(fieldName, isSelector) {
                 })
                 .then(angularWait)
                 .then(expliciteWait)
-                .then(function () {
+                /* .then(function () {
                     return browser.executeScript(function () {
                         return $('.modal').removeClass('fade');
                     });
-                })
+                })*/
                 .then(angularWait)
                 .then(expliciteWait);
         },
@@ -153,11 +153,11 @@ function functionsList(fieldName, isSelector) {
                         ).perform()
                         return angularWait()
                             .then(expliciteWait)
-                            .then(function () {
+                            /* .then(function () {
                                 return browser.executeScript(function () {
-                                    return $('.modal').removeClass('fade');
+                                    return $('.details__modal').removeClass('details-fade');
                                 });
-                            })
+                            })*/
                             .then(function () {
                                 return rowNum;
                             });
