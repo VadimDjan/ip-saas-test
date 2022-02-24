@@ -85,14 +85,10 @@ describe('Автотест на создание ДПГ. ', function () {
             branch: 'Красноярская дирекция по ремонту пути',
             description: today + 'Описание услуги',
         })
+            .then(browser.sleep(1500))
             .then(function () {
-                return $h.form.processButton(['CREATE', 'UPDATE']);
+                return $h.form.processButton('CREATE');
             })
-            // .then(function () {
-            //     protractor.helpers.grid.main.rowsList().count().then(function (res) { //проверить что в выпадающем списке есть значение, хотя бы 1
-            //         expect(res >= 1).toBe(true);
-            //     })
-            // })
             .then(function () {
                 element(by.css('[class="form-header__title"]')).getText().then(function (text) {    // Сохранить ID servicce
                     protractor.helpers.serviceId = parseInt(text.split('#')[1]);
@@ -114,32 +110,10 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(function () {
                 return $h.form.processButton(['UPDATE']);
             })
-            .then(expliciteWait)
+            .then($h.login.logOut)
+            .then(browser.sleep(6000))
             .then(done);
     }, skip);
-
-    // it('5 Выйти из системы (Проверить что есть кнопка "Выйти", после выхода проверить URL  #/login', function (done) {
-    //     // console.log('Step Выходим')
-    //
-    //     return angularWait()
-    //         .then(function () {
-    //             browser.actions().mouseMove(element(by.css('[ng-bind=\"$ctrl.currentUser()\"]'))).perform()
-    //             expect(element(by.css('[class="button-log-out"]')).isPresent()).toBe(true)  // Проверить что есть кнопка выйти
-    //             element(by.css('[class="button-log-out"]')).click()
-    //         })
-    //         .then(expliciteWait)
-    //         .then(function () {
-    //             // console.log('Step Выходим 1')
-    //             return browser.getCurrentUrl();
-    //         })
-    //         .then(function (url) {
-    //             // console.log('Step Выходим 2')
-    //             expect(url.indexOf('login') >= 0).toBe(true);      // Проверить что  #/login
-    //         })
-    //         .then(angularWait)
-    //         .then(expliciteWait)
-    //         .then(done);
-    // }, skip);
 
 }, !protractor.totalStatus.ok);
 

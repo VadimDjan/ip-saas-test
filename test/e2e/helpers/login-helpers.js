@@ -47,15 +47,14 @@ function getLoginObject(usr) {
         [
             'КраснДРП;Qwerty1234!;itsm',
             'seri0zha;Qwerty123!',
-            'demo;Qwerty123!;itsm',
-            'anastasya;I127d410e!;itsm',
             'ПМС-20_Фомин;Qwerty1!;itsm',
             'ПМС197_Менед;Qwerty123!;',
         ].map(line => line.split(';'))
+    const selectedIndex = 0;
     var loginObject = {
-        user: lines[5][0],
-        password: lines[5][1],
-        workspace: lines[5][2],
+        user: lines[selectedIndex][0],
+        password: lines[selectedIndex][1],
+        workspace: lines[selectedIndex][2],
         users: lines.slice(1).filter(function (line) {
             return line.length >= 3;
         }).map(function (line) {
@@ -69,6 +68,17 @@ function getLoginObject(usr) {
     return loginObject;
 }
 
+async function logOut() {
+    const EC = protractor.ExpectedConditions;
+    const profileButton = await element(by.css('.navbar-username'));
+    await browser.wait(EC.elementToBeClickable(profileButton), 10000);
+    await browser.sleep(500);
+    await browser.actions().mouseMove(profileButton).perform();
+    await browser.wait(EC.elementToBeClickable(element(by.css('.button-log-out'))), 10000);
+    return profileButton.element(by.css('.button-log-out')).click();
+}
+
 exports.loginToPage = loginToPage;
 exports.getLoginObject = getLoginObject;
 exports.setLoginObject = setLoginObject;
+exports.logOut = logOut;

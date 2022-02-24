@@ -52,9 +52,10 @@ function setField(name, value, mode) {
             switch (field.type) {
                 case 'float':
                 case 'number':
-                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
-                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.DELETE);
-                    return field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(value)
+                    /*field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
+                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.DELETE);*/
+                    return field.element.element(by.css(`.react-grid-item[data-field-name="${name}"] .numberfield__wrapper input`)).clear().sendKeys(value)
+                      .then(() => element(by.css('.show .card-body .react-grid-layout')).click())
                 case 'text':
                     field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
                     field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.DELETE);
@@ -164,18 +165,17 @@ function setField(name, value, mode) {
                 case 'no_glass_autocomplete':
                 case 'addable_autocomplete':
                     // case 'no_glass_autocomplete':
-
-
-                    field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click();
                     selector = ' .rw-popup';
                     selector2 = selector + ' li.rw-list-option';
-                    if (field.type.indexOf('autocomplete') >= 0) {
-                        // console.log('!!!!setField**', field.type)
-                        const val = value && value.displayValue || value && value.value || value
-                        field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
-                    }
-
-                    return angularWait()
+                    return field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click()
+                      .then(() => browser.sleep(1500))
+                      .then(function() {
+                          if (field.type.indexOf('autocomplete') >= 0) {
+                              // console.log('!!!!setField**', field.type)
+                              const val = value && value.displayValue || value && value.value || value
+                              return field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
+                          }
+                      })
                         .then(expliciteWait)
                         // .then(function () {
                         //     return browser.wait(function () {
@@ -675,8 +675,10 @@ function processButton(name, fieldName, allowNoButton) {
                 const selector = 'div .modal-content' + ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
                 return browser.wait(EC.presenceOf(element(by.css(selector))), 5000)
                     .then(function(){
-                        element(by.css(selector))
-                        .click()
+                        return element(by.css(selector)).click()
+                        /*return browser.actions()
+                          .mouseMove(element(by.css(selector)))
+                          .click().perform();*/
                     });
             }
         });
