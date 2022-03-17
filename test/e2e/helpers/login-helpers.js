@@ -45,7 +45,7 @@ function getLoginObject(usr) {
     var lines = // $h.file.readFileSync(path).split(/\r?\n/)
         // ['victor.follet@ideaplatform.ru;buktop;TEMPLATE', 'demo.user@ipdemo.ru;123;TEMPLATE'].map(line => line.split(';'))
         [
-            'КраснДРП;Qwerty1234!;itsm',
+            'КраснДРП;Qwerty123!;itsm',
             'seri0zha;Qwerty123!',
             'ПМС-20_Фомин;Qwerty1!;itsm',
             'ПМС197_Менед;Qwerty123!;',

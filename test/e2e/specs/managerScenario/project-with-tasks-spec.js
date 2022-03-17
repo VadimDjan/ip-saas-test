@@ -89,6 +89,9 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(function () {
                 return $h.form.processButton('CREATE');
             })
+            .then(function() {
+                return browser.wait(EC.presenceOf($('button[data-button-name="UPDATE"]')), 20000);
+            })
             .then(function () {
                 element(by.css('[class="form-header__title"]')).getText().then(function (text) {    // Сохранить ID servicce
                     protractor.helpers.serviceId = parseInt(text.split('#')[1]);
@@ -110,7 +113,7 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(function () {
                 return $h.form.processButton(['UPDATE']);
             })
-            .then($h.login.logOut)
+            // .then($h.login.logOut)
             .then(browser.sleep(6000))
             .then(done);
     }, skip);
