@@ -10,27 +10,13 @@ describe('Автотест на получение Титула. ', function () 
     let buttonCancel = 'Отменить участок';
     let buttonIncludeInTitle = 'Включить в титул';
     let linesNumber;
-    const jackdawsCount = 4;  // установить 4 галочки
+    const jackdawsCount = 2;  // установить 2 галочки
     let number = 0;
 
-    // protractor.helpers.taksUid = 3729019;
+    // protractor.helpers.taksUid = 3746821;
     function skip() {
         return !protractor.totalStatus.ok;
     }
-
-    // it('1. Заходим в систему под пользователем КраснДРП. ##can_continue', (done) => {
-    //     // console.log('START - 1. Заходим в систему под пользователем КраснДРП');
-    //     loginObject = $h.login.getLoginObject();
-    //     // managerUser = 'Менеджер услуги ДРП' // 'Администратор Шаблонов'//loginObject.user
-    //     $h.login.loginToPage()
-    //         .then(angularWait)
-    //         .then(expliciteWait)
-    //         .then(function () {
-    //             return expect(element(by.css('[ng-click=\"$ctrl.openAccount()\"]')).isPresent()).toBe(true);
-    //         })
-    //         .then(done);
-    //     // console.log('END - 1. Заходим в систему под пользователем КраснДРП');
-    // }, skip);
 
     // 1. Переходим пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись
     it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
@@ -95,8 +81,8 @@ describe('Автотест на получение Титула. ', function () 
         }, done)
     }, skip);
 
-    // 5. Переходим по ссылке "Перейти к Титулу ремонта ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 4 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"
-    it('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 4 записи и кнопки "Добавить запись", "Отменить", "Включить в титул" . ##can_continue', async done => {
+    // 5. Переходим по ссылке "Перейти к Титулу ремонта ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"
+    it('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул" . ##can_continue', async done => {
         await errorCatcher(async () => {
             await $h.form.clickOnLink('link_to_action');
             await browser.sleep(1500);
@@ -131,9 +117,9 @@ describe('Автотест на получение Титула. ', function () 
         }, done);
     }, skip);
 
-    // 7. Снять галку с 4-х ремонтов, убедиться, что галки снялись
-    it('7. Снять галку с 4-х ремонтов. ##can_continue', async done => {
-        console.log('Снять галку с 4-х ремонтов');
+    // 7. Снять галку с 2-х ремонтов, убедиться, что галки снялись
+    it('7. Снять галку с 2-х ремонтов. ##can_continue', async done => {
+        console.log('Снять галку с 2-х ремонтов');
         await errorCatcher(async () => {
             await browser.sleep(1500);
             const elements = element.all(by.css(' .k-grid-content [class="idea-grid-select"]'));
@@ -158,15 +144,15 @@ describe('Автотест на получение Титула. ', function () 
         }, done)
     }, skip);
 
-     // 9. Выбрать 4 записи (кликнуть по галкам) из группы "Не указано", нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу, которая называется "Услуга..."
-    it('9. Выбрать 4 записи (кликнуть по галкам) из группы Не указано, нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу. ##can_continue', async done => {
+     // 9. Выбрать 2 записи (кликнуть по галкам) из группы "Не указано", нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу, которая называется "Услуга..."
+    it('9. Выбрать 2 записи (кликнуть по галкам) из группы Не указано, нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу. ##can_continue', async done => {
         await errorCatcher(async () => {
             const linesNumber = 1;
             let startNumber = 0;
             let childElements = protractor.helpers.grid.main.rowsList();
             let newGroupExists = false;
             // console.log(await childElements);
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 2; i++) {
                 const text = await childElements.get(i).getText();
                 if (text.includes('Не указано')) { //убедиться, что есть группа "Не указано"
                     startNumber = i;
@@ -192,7 +178,7 @@ describe('Автотест на получение Титула. ', function () 
             await element(by.css('[data-button-id="1232"]')).click(); // нажать Включить в титул
             await browser.sleep(5000);
             newGroupExists = false;
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 2; i++) {
                 const text = await childElements.get(i).getText();
                 if (text.includes('Услуга')) { //убедиться, что есть группа "Услуга"
                     startNumber = i;
@@ -251,7 +237,7 @@ describe('Автотест на получение Титула. ', function () 
                  await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), 5000);
                  await $h.form.processButton(['Выполнить'], 'task');   //жмем на кнопку Выполнить
              }
-             await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), 5000);
+             await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), 20000);
              const text = await element(by.css(selector)).getAttribute('value');
              console.log(`Статус workflow: ${text}`);
              expect(text).not.toBeNull();
@@ -262,6 +248,36 @@ describe('Автотест на получение Титула. ', function () 
 
          }, done)
      }, skip);
+
+     it('12. Перейти в услугу и скопировать id всех необходимых нарядов', async done => {
+       await errorCatcher(async () => {
+           console.log(`Перейти по ссылке /#/service/${$h.serviceId}`);
+           await browser.get($h.url + '/#/service/' + $h.serviceId);
+           const currentUrl = await browser.getCurrentUrl();
+           expect(currentUrl.includes(`/#/service/${$h.serviceId}`)).toBe(true);
+           await browser.wait(EC.presenceOf($('button[data-button-name="UPDATE"]')), 20000);
+
+           const form = await $h.form.getForm(['tasks']);
+           const tasks = form?.tasks;
+           await browser.sleep(1500);
+
+           if (tasks?.length) {
+               const dpgAddWorkCompletionStage = tasks.find(task => task.displayname.includes('Создать этапы выполнения работ по ДПГ'));
+               expect(dpgAddWorkCompletionStage).not.toBeNull();
+               if (dpgAddWorkCompletionStage) $h.dpgAddWorkCompletionStageId = dpgAddWorkCompletionStage.taskid;
+
+               const dpgSpecifyCompletionStage = tasks.find(task => task.displayname.includes('Указать этапы и режим выполнения участков ремонта пути'));
+               expect(dpgSpecifyCompletionStage).not.toBeNull();
+               if (dpgSpecifyCompletionStage) $h.dpgSpecifyCompletionStageId = dpgSpecifyCompletionStage.taskid;
+
+               const dpgDistributeTrack = tasks.find(task => task.displayname.includes('Распределить участки ремонта пути по ПМС'));
+               expect(dpgDistributeTrack).not.toBeNull();
+               if (dpgDistributeTrack) $h.dpgDistributeTrackId = dpgDistributeTrack.taskid;
+           }
+           console.log($h.dpgAddWorkCompletionStageId, $h.dpgSpecifyCompletionStageId, $h.dpgDistributeTrackId);
+           await browser.sleep(3000);
+       }, done);
+     });
 }, !protractor.totalStatus.ok);
 
 
