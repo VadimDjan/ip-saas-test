@@ -52,14 +52,10 @@ function setField(name, value, mode) {
             switch (field.type) {
                 case 'float':
                 case 'number':
-                    /*field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
-                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.DELETE);*/
-                    return field.element.element(by.css(`.react-grid-item[data-field-name="${name}"] .numberfield__wrapper input`)).clear().sendKeys(value)
-                      .then(() => element(by.css('.show .card-body .react-grid-layout')).click())
+                    return field.element.element(by.css(`${fieldSelector} .numberfield__wrapper input`)).clear().sendKeys(value)
+                      .then(() => element(by.css(`${fieldSelector} .connector__label`)).click())
                 case 'text':
-                    field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
-                    field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.DELETE);
-                    return field.element.element(by.css('div.textfield__wrapper input')).sendKeys(value)
+                    return field.element.element(by.css('div.textfield__wrapper input')).clear().sendKeys(value)
                 case 'input':
                     browser.executeScript('window.scrollTo(0,0);').then(function () {
                         // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
@@ -122,7 +118,6 @@ function setField(name, value, mode) {
 
                     // console.log('setField11**', field.type)
                     element(by.css(fieldSelector + ' .select2-choice')).click();
-                    val = value;
                     selector = '#select2-drop:not([style*=\"display: none\"])';
                     selector2 = selector + ' .select2-results li.select2-result-selectable';
                     // console.log('**selector**', selector)
@@ -170,52 +165,29 @@ function setField(name, value, mode) {
                     return field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click()
                       .then(() => browser.sleep(1500))
                       .then(function() {
-                          if (field.type.indexOf('autocomplete') >= 0) {
-                              // console.log('!!!!setField**', field.type)
-                              const val = value && value.displayValue || value && value.value || value
+                          /* if (field.type === 'autocomplete') {
+                              const val = value && value.displayValue || value && value.value || value;
                               return field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
+                          }*/
+                          if (['autocomplete', 'no_glass_autocomplete'].includes(field.type)) {
+                              const element = field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset'));
+                              element.isPresent()
+                                  .then(isPresent => {
+                                      console.log(isPresent);
+                                      if (isPresent) {
+                                          const val = value && value.displayValue || value && value.value || value;
+                                          return element.clear().sendKeys(val)
+                                      }
+                                  })
                           }
                       })
                         .then(expliciteWait)
-                        // .then(function () {
-                        //     return browser.wait(function () {
-                        //
-                        //         console.log('setField**browser.wait val', val)
-                        //         console.log('setField**browser.wait value', value)
-                        //         return browser.isElementPresent(by.css(selector2));
-                        //     });
-                        // })
                         .then(browser.wait(EC.presenceOf(element(by.css(fieldSelector + selector2))), 7000))
                         .then(function () {
                             try {
-                                if (field.type.indexOf('autocomplete') >= 0) {
+                                if (field.type === 'autocomplete') {
                                     return element.all(by.css(fieldSelector + selector2)).first().click();
-                                } else if (field.type.indexOf('combobox') >= 0) {
-                                    return element.all(by.css(fieldSelector + selector2)).then(function(arr) {
-                                        let i = 0;
-                                        let end = false;
-                                        async function* generate() {
-                                            while(!end) {
-                                               yield  await arr[i].getText();
-                                            }
-                                            return arr[i].click();
-                                        }
-                                        async function cycle() {
-                                            let generator = generate();
-                                            let text = await generator.next();
-                                            while ( text.value !== value && i < arr.length - 1) {
-                                                i += 1;
-                                                text = await generator.next();
-                                            }
-                                            end = true;
-                                            return await generator.next();
-                                        }
-                                        return cycle();
-                                    });
                                 } else {
-                                    // console.log('setField** else val', val)
-                                    // console.log('setField** else value', value)
-                                    // return element.all(by.css(fieldSelector + selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
                                     return field.element.element(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value)).click();
                                 }
                             } catch (e) {
@@ -381,6 +353,7 @@ function getField(name, mode) {
                         });
                 case 'float':
                 case 'number':
+                case 'text':
                     // console.log(fieldSelector, field.type);
                     return field.element.element(by.css('input')).getAttribute('value');
                 // case 'float':
@@ -507,7 +480,7 @@ function processForm(_fieldsList, functionToProcess) {
             }
             nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
             return element(by.css(nextTabHeaderSelector)).isPresent();
-        };
+        }
         let nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
         var currentFieldsList = [], sectionFieldsList = [];
         var processNextField = function () {
@@ -532,7 +505,7 @@ function processForm(_fieldsList, functionToProcess) {
         })
             .then(function (_sectionFieldsList) {
                 sectionFieldsList = _sectionFieldsList;
-                currentFieldsList = _.intersection(sectionFieldsList, fieldsList);
+                currentFieldsList = _.intersection(fieldsList, sectionFieldsList);
                 return processNextField();
             })
             .then(function () {
@@ -546,16 +519,15 @@ function processForm(_fieldsList, functionToProcess) {
                         .then(element(by.css(selector)).isPresent()
                             .then(function (isPresent) {
                                 if (isPresent) {
-                                    return angularWait().then(function () {
+                                    return angularWait().then(async () => {
                                         try {
-                                            return $h.common.scrollToSelector(nextTabHeaderSelector)
-                                                .then(function () {
-                                                    return element(by.css(nextTabHeaderSelector)).click();
-                                                })
-                                                .then(browser.wait(EC.presenceOf(element(by.css(nextTab + ' .collapse.show'))), 3000))
-                                                .then(function () {
-                                                    return processSection(key+i);
-                                                });
+                                            const isDisplayed = await element(by.css(nextTabHeaderSelector)).isDisplayed();
+                                            if (isDisplayed) {
+                                                await $h.common.scrollToSelector(nextTabHeaderSelector);
+                                                await browser.actions().mouseMove(element(by.css(nextTabHeaderSelector))).click().perform();
+                                                await browser.wait(EC.presenceOf(element(by.css(nextTab + ' .collapse.show'))), 10000);
+                                            }
+                                            await processSection(key+i);
                                         } catch (e) {
                                             return null;
                                         }
@@ -611,6 +583,7 @@ function processForm(_fieldsList, functionToProcess) {
 }
 
 exports.setForm = function (record) {
+    console.log(Object.keys(record));
     return processForm(Object.keys(record), fieldName => {
         const fieldValue = record[fieldName]
         if (fieldName === 'displayname') {
@@ -686,7 +659,7 @@ function processButton(name, fieldName, allowNoButton) {
 
 exports.processButton = processButton;
 
-function processPopup(action) {
+/* function processPopup(action) {
     const selector = '.modal-footer .popup__dialog-btn_' + action
     return function () {
         return angularWait()
@@ -702,14 +675,27 @@ function processPopup(action) {
                 }
             })
             .then(function () {
-                element(by.css(selector)).click();
+                return element(by.css(selector)).click();
             })
             .then(browser.sleep(2000));
     };
+}*/
+
+async function processPopup(action) {
+    const selector = '.modal-footer .popup__dialog-btn_' + action;
+    const isPresent = await element(by.css(selector)).isPresent();
+    if (isPresent) {
+        await $h.common.scrollToSelector(selector);
+        await element(by.css(selector)).click();
+    } else {
+        console.error('Can\'t find button on popup for action = ' + action + ' and selector = ' + selector);
+    }
+    await browser.sleep(1500);
 }
+
 exports.processPopup = processPopup;
-exports.submitPopup = processPopup('submit');
-exports.cancelPopup = processPopup('cancel');
+exports.submitPopup = () => processPopup('primary');
+exports.cancelPopup = () => processPopup('cancel');
 
 exports.clickOnLink = async function (fieldName) {
     await browser.sleep(1500);
@@ -718,10 +704,25 @@ exports.clickOnLink = async function (fieldName) {
     const handles = await browser.getAllWindowHandles();
     await browser.driver.switchTo().window(handles[handles.length - 1]);
     return browser.sleep(1500);
-}
+};
 
 exports.closeLastModal = async function() {
     await browser.sleep(1500);
     const lastModalCloseButton = await element.all(by.css('.details__modal .details__close-btn')).last();
     return await lastModalCloseButton.click();
+};
+
+exports.openSection = async function(name) {
+    const sectionElement = await element(by.cssContainingText('.card-header .accordion-panel', name));
+    const text = await sectionElement.getText();
+    if (text.includes(name)) {
+        await browser.actions().mouseMove(sectionElement).click().perform();
+    }
+};
+
+exports.collapseCurrentSection = async function() {
+    const body = element(by.css('.collapse.show'));
+    const card = body.element(by.xpath('..'));
+    const accordionPanel = card.element(by.css('.card-header .accordion-panel'));
+    await browser.actions().mouseMove(accordionPanel).click().perform();
 }

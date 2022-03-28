@@ -238,7 +238,14 @@ function functionsList(fieldName, isSelector) {
                     });
             }
 
-        }
+        },
+        clearFilters: async () => { // очистка фильтров на форме списка
+            if (await element(by.css('.idea-button-clear-filters')).isDisplayed()) {
+                await element(by.css('.idea-button-clear-filters')).click();
+                await browser.wait(EC.invisibilityOf(element(by.css('.idea-button-clear-filters'))), 10000);
+                await browser.sleep(500);
+            }
+        },
     };
 }
 
