@@ -141,3 +141,5 @@ exports.errorCatcher = async function(callback, finalCallback) {
     }
     await finalCallback();
 }
+
+exports.defaultWaitTimeout = 20000;

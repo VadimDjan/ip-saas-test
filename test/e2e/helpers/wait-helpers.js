@@ -1,3 +1,5 @@
+const defaultWaitTimeout = 20000;
+
 exports.expliciteWait = function(originalData) {
     return browser.sleep(protractor.expliciteWaitTime)
         .then(function(){
@@ -25,5 +27,7 @@ exports.popupHideWait = originalData => {
 };
 
 exports.waitForModalOpened = () => {
-  return browser.wait(protractor.ExpectedConditions.presenceOf($('.modal-dialog')), 20000);
+  return browser.wait(protractor.ExpectedConditions.presenceOf($('.modal-dialog')), defaultWaitTimeout);
 }
+
+exports.defaultWaitTimeout = defaultWaitTimeout;

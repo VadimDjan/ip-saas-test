@@ -1,9 +1,8 @@
-var _ = protractor.helpers._;
-var $h = protractor.helpers;
-var expliciteWait = $h.wait.expliciteWait;
-var angularWait = $h.wait.angularWait;
-var EC = protractor.ExpectedConditions;
-var Key = protractor.Key;
+const _ = protractor.helpers._;
+const $h = protractor.helpers;
+const { defaultWaitTimeout, angularWait, expliciteWait } = $h.wait;
+const EC = protractor.ExpectedConditions;
+const Key = protractor.Key;
 
 function getFieldSelector(name, mode) {
     if (mode === 'popup') {
@@ -13,6 +12,7 @@ function getFieldSelector(name, mode) {
 }
 
 var findFieldOnCurrentTab = function (name, mode) {
+    const lastModal = element.all(by.css('.modal-dialog')).last();
     if (mode === 'popup') {
         return protractor.promise.all([
             element(by.css('.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]')),
@@ -25,7 +25,6 @@ var findFieldOnCurrentTab = function (name, mode) {
                 };
             });
     }
-    const lastModal = element.all(by.css('.modal-dialog')).last();
     const currentTab = lastModal.element(by.css('.card .show'));
     return protractor.promise.all([
         currentTab.element(by.css('.react-grid-item[data-field-name="' + name + '"]')),
@@ -43,7 +42,7 @@ exports.getFieldSelector = getFieldSelector;
 function setField(name, value, mode) {
     return findFieldOnCurrentTab(name, mode)
         .then(browser.sleep(2000))
-        .then(function (field) {
+        .then(async function (field) {
             //console.log(name,value, field.type)
             var fieldSelector = getFieldSelector(name, mode),
                 selector,
@@ -52,8 +51,14 @@ function setField(name, value, mode) {
             switch (field.type) {
                 case 'float':
                 case 'number':
-                    return field.element.element(by.css(`${fieldSelector} .numberfield__wrapper input`)).clear().sendKeys(value)
-                      .then(() => element(by.css(`${fieldSelector} .connector__label`)).click())
+                    const fieldElement = field.element.element(by.css(`${fieldSelector} .numberfield__wrapper input`));
+                    await browser.actions().mouseMove(fieldElement).click(fieldElement);
+                    await fieldElement.sendKeys(Key.chord(Key.CONTROL, 'a'));
+                    await fieldElement.sendKeys(Key.DELETE);
+                    await browser.sleep(500);
+                    await fieldElement.sendKeys(value);
+                    await browser.sleep(500);
+                    return field.element.element(by.css(`${fieldSelector} .connector__label`)).click();
                 case 'text':
                     return field.element.element(by.css('div.textfield__wrapper input')).clear().sendKeys(value)
                 case 'input':
@@ -89,7 +94,12 @@ function setField(name, value, mode) {
                     }, selector, value);*/
                 case 'richtext':
                     selector = fieldSelector + ' .se-wrapper p';
-                    return field.element.element(by.css(selector)).clear().sendKeys(value);
+                    const richtextElement = field.element.element(by.css(selector));
+                    return richtextElement.click().then(async () => {
+                        await richtextElement.sendKeys(Key.CONTROL, 'a', Key.DELETE);
+                        await browser.sleep(500);
+                        await richtextElement.sendKeys(value);
+                    });
                 case 'comments': //$('textarea.comment-view__editor').data('kendoEditor')
                     selector = fieldSelector + ' textarea.comment-view__editor';
                     selector2 = fieldSelector + ' [ng-click="writeComment(comment)"]';
@@ -173,7 +183,6 @@ function setField(name, value, mode) {
                               const element = field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset'));
                               element.isPresent()
                                   .then(isPresent => {
-                                      console.log(isPresent);
                                       if (isPresent) {
                                           const val = value && value.displayValue || value && value.value || value;
                                           return element.clear().sendKeys(val)
@@ -182,13 +191,17 @@ function setField(name, value, mode) {
                           }
                       })
                         .then(expliciteWait)
-                        .then(browser.wait(EC.presenceOf(element(by.css(fieldSelector + selector2))), 7000))
+                        .then(browser.wait(EC.presenceOf(element(by.css(fieldSelector + selector2))), defaultWaitTimeout))
                         .then(function () {
                             try {
                                 if (field.type === 'autocomplete') {
                                     return element.all(by.css(fieldSelector + selector2)).first().click();
                                 } else {
-                                    return field.element.element(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value)).click();
+                                    return field
+                                        .element
+                                        .all(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value))
+                                        .first()
+                                        .click();
                                 }
                             } catch (e) {
                                 console.error('Unknown value ' + value + ' for field ' + name);
@@ -402,7 +415,7 @@ function getField(name, mode) {
                 case 'no_glass_autocomplete':
                     // console.log('getField', field.type)
                     // console.log(field.type, '6')
-                    return field.element.element(by.css('input')).getAttribute('value');
+                    return field.element.all(by.css('input')).first().getAttribute('value');
                 case 'html':
                     console.log('action not defined,  type =' + field.type)
                     return;
@@ -449,6 +462,8 @@ function processForm(_fieldsList, functionToProcess) {
     // console.log('processForm 1', _fieldsList);
     var result = {};
     let fieldsList = [];
+    const lastModal = element.all(by.css('.details__modal')).last();
+
     function processHeader() {
         // console.log('processHeader 1')
         if (_fieldsList.includes('displayname')) {
@@ -500,7 +515,7 @@ function processForm(_fieldsList, functionToProcess) {
             }
         };
 
-        return element.all(by.css(`div.modal-content .card[data-key="${key}"] .react-grid-item`)).map(function (elm, index) {
+        return lastModal.all(by.css(`div.modal-content .card[data-key="${key}"] .react-grid-item`)).map(function (elm, index) {
                 return elm.getAttribute('data-field-name');
         })
             .then(function (_sectionFieldsList) {
@@ -515,19 +530,22 @@ function processForm(_fieldsList, functionToProcess) {
                 fieldsList = _.difference(fieldsList, sectionFieldsList);
                 var selector = 'div.modal-content .card .collapse.show';
                 if (fieldsList.length) {
-                    return browser.wait(EC.presenceOf(element(by.css(selector))), 30000)
+                    return browser.wait(EC.presenceOf(element(by.css(selector))), defaultWaitTimeout)
                         .then(element(by.css(selector)).isPresent()
                             .then(function (isPresent) {
                                 if (isPresent) {
                                     return angularWait().then(async () => {
                                         try {
-                                            const isDisplayed = await element(by.css(nextTabHeaderSelector)).isDisplayed();
+                                            const isDisplayed = await lastModal.element(by.css(nextTabHeaderSelector)).isDisplayed();
+                                            const text = await lastModal.element(by.css('.displayname__name')).getText();
+
                                             if (isDisplayed) {
-                                                await $h.common.scrollToSelector(nextTabHeaderSelector);
-                                                await browser.actions().mouseMove(element(by.css(nextTabHeaderSelector))).click().perform();
-                                                await browser.wait(EC.presenceOf(element(by.css(nextTab + ' .collapse.show'))), 10000);
+                                                // await $h.common.scrollToSelector(nextTabHeaderSelector);
+                                                await browser.actions().mouseMove(lastModal.element(by.css(nextTabHeaderSelector))).click().perform();
+                                                await browser.wait(EC.presenceOf(lastModal.element(by.css(nextTab + ' .collapse.show'))), defaultWaitTimeout);
                                             }
                                             await processSection(key+i);
+
                                         } catch (e) {
                                             return null;
                                         }
@@ -552,10 +570,7 @@ function processForm(_fieldsList, functionToProcess) {
         return element(by.css('div.modal-content .card[data-key="0"] .collapse.show')).isPresent()
             // .then(console.log( '**********!!!!**'))
             .then(function (isPresentFirstTab) {
-                if (isPresentFirstTab) {
-                    // console.log( '*****isPresentFirstTab*******', isPresentFirstTab)
-                    return;
-                } else {
+                if (!isPresentFirstTab) {
                     // console.log( '*****isPresentFirstTab****FALSE***')
                     return element(by.css(firstTabHeaderSelector)).isPresent()
                         .then(function (isPresentHeader) {
@@ -564,7 +579,7 @@ function processForm(_fieldsList, functionToProcess) {
                                 return $h.common.scrollToSelector(firstTabHeaderSelector)
                                     // .then(console.log( '!!!!!!!!**********!!!!!!!!'))
                                     .then(function () {
-                                        return element(by.css(firstTabHeaderSelector)).click();
+                                        return browser.actions().mouseMove(lastModal.element(by.css(firstTabHeaderSelector))).click().perform();
                                     })
                                     .then(angularWait);
                             }
@@ -576,14 +591,13 @@ function processForm(_fieldsList, functionToProcess) {
     return processHeader()
         // .then(console.log(openFirstTabIfNeeded, 'processHeader in openFirstTabIfNeeded*'))
         .then(openFirstTabIfNeeded)
-        .then(browser.wait(EC.presenceOf(element(by.css('div.modal-content .card .collapse.show'))), 5000))
+        .then(browser.wait(EC.presenceOf(element(by.css('div.modal-content .card .collapse.show'))), defaultWaitTimeout))
         .then(element(by.css('div.modal-content .card .collapse.show')).element(by.xpath('parent::div')).getAttribute('react-key')
             .then(function(key) { processSection(Number(key))}))
         .then(() => result)
 }
 
 exports.setForm = function (record) {
-    console.log(Object.keys(record));
     return processForm(Object.keys(record), fieldName => {
         const fieldValue = record[fieldName]
         if (fieldName === 'displayname') {
@@ -630,8 +644,8 @@ function processButton(name, fieldName, allowNoButton) {
                     return;
                 } else {
                     var selector = 'div.modal-content' + ' button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
-                    return  $h.common.scrollToSelector(selector)
-                        .then(browser.wait(EC.presenceOf(element(by.css(selector))), 7000))
+                    return $h.common.scrollToSelector(selector)
+                        .then(browser.wait(EC.presenceOf(element(by.css(selector))), defaultWaitTimeout))
                         .then(() => element(by.css(selector)).isPresent())
                         .then(function (isPresent) {
                             if (isPresent) {
@@ -646,12 +660,12 @@ function processButton(name, fieldName, allowNoButton) {
                 }
             } else {
                 const selector = 'div .modal-content' + ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
-                return browser.wait(EC.presenceOf(element(by.css(selector))), 5000)
+                return browser.wait(EC.presenceOf(element(by.css(selector))), defaultWaitTimeout)
                     .then(function(){
-                        return element(by.css(selector)).click()
-                        /*return browser.actions()
+                        // return element(by.css(selector)).click()
+                        return browser.actions()
                           .mouseMove(element(by.css(selector)))
-                          .click().perform();*/
+                          .click().perform();
                     });
             }
         });
@@ -699,8 +713,9 @@ exports.cancelPopup = () => processPopup('cancel');
 
 exports.clickOnLink = async function (fieldName) {
     await browser.sleep(1500);
-    const link = await element(by.css(`[data-field-name=${fieldName}] .linkfield__link`));
-    await link.click();
+    const link = await element.all(by.css(`[data-field-name=${fieldName}] .linkfield__link`)).last();
+    await browser.actions().mouseMove(link).click().perform();
+
     const handles = await browser.getAllWindowHandles();
     await browser.driver.switchTo().window(handles[handles.length - 1]);
     return browser.sleep(1500);
@@ -721,7 +736,8 @@ exports.openSection = async function(name) {
 };
 
 exports.collapseCurrentSection = async function() {
-    const body = element(by.css('.collapse.show'));
+    const lastModal = await element.all(by.css('.details__modal')).last();
+    const body = lastModal.element(by.css('.collapse.show'));
     const card = body.element(by.xpath('..'));
     const accordionPanel = card.element(by.css('.card-header .accordion-panel'));
     await browser.actions().mouseMove(accordionPanel).click().perform();

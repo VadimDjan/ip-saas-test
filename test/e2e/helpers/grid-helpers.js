@@ -1,7 +1,6 @@
-var $h = protractor.helpers;
-var expliciteWait = $h.wait.expliciteWait;
-var angularWait = $h.wait.angularWait;
-
+const $h = protractor.helpers;
+const { defaultWaitTimeout, expliciteWait, angularWait } = $h.wait
+const EC = protractor.ExpectedConditions;
 
 function functionsList(fieldName, isSelector) {
 
@@ -75,7 +74,7 @@ function functionsList(fieldName, isSelector) {
                                     var EC = protractor.ExpectedConditions;
                                     // console.log('checkbox', checkbox)
                                     // console.log('EC', EC)
-                                    return browser.wait(EC.visibilityOf(checkbox), 15000);
+                                    return browser.wait(EC.visibilityOf(checkbox), defaultWaitTimeout);
                                 })
                                 .then(function () {
                                     // console.log('нажать Запланирован')
@@ -242,8 +241,8 @@ function functionsList(fieldName, isSelector) {
         clearFilters: async () => { // очистка фильтров на форме списка
             if (await element(by.css('.idea-button-clear-filters')).isDisplayed()) {
                 await element(by.css('.idea-button-clear-filters')).click();
-                await browser.wait(EC.invisibilityOf(element(by.css('.idea-button-clear-filters'))), 10000);
-                await browser.sleep(500);
+                await browser.wait(EC.invisibilityOf(element(by.css('.idea-button-clear-filters'))), defaultWaitTimeout);
+                await browser.sleep(1500);
             }
         },
     };

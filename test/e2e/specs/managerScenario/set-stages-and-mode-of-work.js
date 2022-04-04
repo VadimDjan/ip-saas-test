@@ -1,7 +1,8 @@
 describe('Автотест на указание этапов и режима выполнения участков ', function () {
     const _ = protractor.libs._;
     const $h = protractor.helpers;
-    const {errorCatcher} = $h.common;
+    const { errorCatcher } = $h.common;
+    const { defaultWaitTimeout } = $h.wait;
 
     var EC = protractor.ExpectedConditions;
 
@@ -16,7 +17,7 @@ describe('Автотест на указание этапов и режима в
     const buttonSelector_1 = '[data-button-id="1337"]'; // указать этап
     const buttonSelector_2 = '[data-button-id="1344"]'; // указать режим выполнения
 
-    $h.dpgSpecifyCompletionStageId = 3748657;
+    // $h.dpgSpecifyCompletionStageId = 3761302;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -38,26 +39,29 @@ describe('Автотест на указание этапов и режима в
 
     // 1. Переходим пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись
     it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
-        console.log('Переходим в пункт меню "Мои наряды"');
+        console.log('---------Автотест на указание этапов и режима выполнения участков---------');
+        console.log('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.');
         await errorCatcher(async () => {
             await browser.sleep(1000);
             await $h.menu.selectInMenu(['Мои наряды']);
-            await browser.sleep(1000);
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои наряды'))), defaultWaitTimeout);
+
             const currentUrl = await browser.getCurrentUrl();
             console.log('URL содержит /my_tasks_wc');
             expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
-            await browser.sleep(5000);
 
             await $h.grid.main.clearFilters();
 
             const count = await protractor.helpers.grid.main.rowsList().count();
             console.log('Количество записей больше 1');
             expect(count >= 1).toBe(true);
+            await browser.sleep(1500);
         }, done)
     }, skip);
 
     // 2. Выбираем наряд "Указать этапы и режим выполнения участков ремонта пути" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".
     it('2. Выбираем наряд "Указать этапы и режим выполнения участков ремонта пути" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".  ##can_continue', async done => {
+        console.log('2. Выбираем наряд "Указать этапы и режим выполнения участков ремонта пути" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".');
         await errorCatcher(async () => {
             await $h.grid.main.setSearch([
                 {
@@ -67,7 +71,9 @@ describe('Автотест на указание этапов и режима в
                     value: $h.dpgSpecifyCompletionStageId,
                 }
             ]);
-            await browser.sleep(2000);
+            await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
+            await browser.sleep(1500);
+
             const webElement = await element.all(by.css('[data-pkfieldid=\"' + String($h.dpgSpecifyCompletionStageId) + '\"]')).first().getWebElement();
             await browser.actions().doubleClick(webElement).perform();
             await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), 30000);
@@ -76,6 +82,7 @@ describe('Автотест на указание этапов и режима в
 
     // 3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
     it('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', async done => {
+        console.log('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение.')
         await errorCatcher(async () => {
             await browser.sleep(1500);
             await $h.form.setForm({
@@ -83,7 +90,7 @@ describe('Автотест на указание этапов и режима в
             });
             await browser.sleep(1500);
             await $h.form.processButton(['UPDATE'], 'task');
-            await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), 5000);
+            await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), defaultWaitTimeout);
             const alertIsPresent = await element(by.css('[class="alert__wrapper alert__wrapper_success"]')).isPresent();
             console.log('Появился зелёный алерт');
             expect(alertIsPresent).toBe(true);
@@ -92,6 +99,7 @@ describe('Автотест на указание этапов и режима в
 
     // 4. Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось
     it('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось. ##can_continue', async done => {
+        console.log('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось.');
         await errorCatcher(async () => {
             console.log('Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось');
             await browser.sleep(1500);
@@ -108,11 +116,11 @@ describe('Автотест на указание этапов и режима в
 
     // 5. Кликаем по ссылке и в открывшемся списке нажимаем на кнопку "Выбрать все", убедиться, что все галочки поставились
     it('5. Кликаем по ссылке и убеждаемся что отобразилась таблица и в ней имеются не менее 3х записей. ##can_continue', async done => {
-        // console.log('нажимаем на кнопку "Выбрать все"')
+        console.log('5. Кликаем по ссылке и убеждаемся что отобразилась таблица и в ней имеются не менее 3х записей.');
         await errorCatcher(async () => {
             await browser.sleep(1500);
             await $h.form.clickOnLink('link_to_action');
-            await browser.wait(EC.presenceOf(element(by.css('.k-grid-content '))), 10000);
+            await browser.wait(EC.presenceOf(element(by.css('.k-grid-content '))), defaultWaitTimeout);
 
             const count = await element.all(by.css('[data-uid]')).count();
 
@@ -124,7 +132,7 @@ describe('Автотест на указание этапов и режима в
 
     // 6. В открывшемся списке нажимаем на кнопку "Выбрать все", убедиться, что все галочки поставились
     it('6. В открывшемся списке нажимаем на кнопку "Выбрать все". ##can_continue', async done => {
-        console.log('нажимаем на кнопку "Выбрать все"')
+        console.log('6. В открывшемся списке нажимаем на кнопку "Выбрать все".')
         await errorCatcher(async () => {
             await browser.sleep(1500);
             await element(by.css('.k-button.idea-button-select-all')).click();
@@ -140,8 +148,9 @@ describe('Автотест на указание этапов и режима в
 
     // 7. Проверить, что есть хотя бы 1 запись, кнопки "Указать этап" и  "Указать режим выполнения", выбрать запись, нажать на кнопку "Указать этап", "
     it('7. Проверить, что есть кнопки "Указать этап" и  "Указать режим выполнения", выбрать запись, нажать на кнопку "Указать этап",  ##can_continue', async done => {
+        console.log('7. Проверить, что есть кнопки "Указать этап" и  "Указать режим выполнения", выбрать запись, нажать на кнопку "Указать этап"');
         await errorCatcher(async () => {
-            await browser.wait(EC.presenceOf(element(by.css(buttonSelector_1))), 5000);
+            await browser.wait(EC.presenceOf(element(by.css(buttonSelector_1))), defaultWaitTimeout);
             const pointStageElementText = await element(by.css(buttonSelector_1)).getText();
 
             console.log(`Текст кнопки содержит "${buttonPointStage}"`);
@@ -159,10 +168,11 @@ describe('Автотест на указание этапов и режима в
 
     // 8. Выбрать этап выполнения и нажать на кнопку да, проверить, что этап появился в записи
     it('8. Выбрать этап выполнения и нажать на кнопку да, проверить, что этап появился в записи,  ##can_continue', async done => {
+        console.log('8. Выбрать этап выполнения и нажать на кнопку да, проверить, что этап появился в записи');
         const popupSelector = '.uipopup__title.modal-title';
         const stageInGridSelector = 'span[data-field="service_stage"]';
         await errorCatcher(async () => {
-            await browser.wait(EC.presenceOf(element(by.css(popupSelector))), 5000);
+            await browser.wait(EC.presenceOf(element(by.css(popupSelector))), defaultWaitTimeout);
             await $h.form.setField('p_stage', 'Этап 1', 'popup'); // Вводим созданный этап
             await browser.sleep(1500);
             await $h.form.submitPopup(); // Жмём на кнопку "Да")
@@ -174,6 +184,7 @@ describe('Автотест на указание этапов и режима в
 
     // 9. Выбрать этап выполнения и нажать на кнопку да, проверить, что этап появился в записи
     it('9. Выбрать этап выполнения и нажать на кнопку да, проверить, что этап появился в записи,  ##can_continue', async done => {
+        console.log('9. Выбрать этап выполнения и нажать на кнопку да, проверить, что этап появился в записи');
         const popupSelector = '.uipopup__title.modal-title';
         const typeInGridSelector = 'span[data-field="working_type"]';
         const durationInGridSelector = 'span[data-field="reduced_km_window_duration"]';
@@ -181,7 +192,7 @@ describe('Автотест на указание этапов и режима в
             await browser.sleep(1500);
             await element(by.css(buttonSelector_2)).click(); // нажать Указать режим выполнения
             await browser.sleep(1500);
-            await browser.wait(EC.presenceOf(element(by.css(popupSelector))), 5000);
+            await browser.wait(EC.presenceOf(element(by.css(popupSelector))), defaultWaitTimeout);
             const popupText = await element(by.css(popupSelector)).getText();
 
             console.log(`Название окна содержит "${modalPointStage}"`);
@@ -205,16 +216,19 @@ describe('Автотест на указание этапов и режима в
     }, skip);
 
     it('10. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен". ##can_continue', async done => {
+        console.log('10. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен".');
         await errorCatcher(async () => {
             const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
+            await browser.close();
+            await browser.sleep(500);
 
             const handles = await browser.driver.getAllWindowHandles();
             await browser.driver.switchTo().window(handles[0]);
-            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), 5000);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), defaultWaitTimeout);
 
             await browser.sleep(1500);
             await $h.form.processButton(['Выполнить'], 'task');
-            await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), 10000);
+            await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), defaultWaitTimeout);
 
             const text = await element(by.css(selector)).getAttribute('value');
 

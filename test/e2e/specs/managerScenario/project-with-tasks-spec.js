@@ -3,6 +3,9 @@ describe('Автотест на создание ДПГ. ', function () {
     var $h = protractor.helpers;
     var expliciteWait = $h.wait.expliciteWait;
     var angularWait = $h.wait.angularWait;
+    const { errorCatcher } = $h.common;
+    const { defaultWaitTimeout } = $h.wait;
+
     var loginObject = {};
     var tasksBefore = 0,
         tasksToAdd = 0;
@@ -30,9 +33,10 @@ describe('Автотест на создание ДПГ. ', function () {
     // }, skip);
 
     // 1. Переходим по URL /#/service. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача, кнопка Добавить запись
-    it('1. Переходим по URL /#/service. ##can_continue', (done) => {
-        console.log('Автотест на создание ДПГ.  START - Go to path URL -> /#/service');
-        return angularWait()
+    it('1. Переходим по URL /#/service. ##can_continue', async done => {
+        console.log('---------Автотест на создание ДПГ---------');
+        console.log('1. Автотест на создание ДПГ.  START - Go to path URL -> /#/service');
+        /* return angularWait()
             .then(function () {
                 browser.get(protractor.helpers.url + '/#/service')
             })
@@ -55,54 +59,70 @@ describe('Автотест на создание ДПГ. ', function () {
             .then(function () {
                 expect(element(by.css('.k-button.idea-button-add-row')).getText()).toBe('Добавить запись');    // Проверить что есть кнопка Добавить запись
             })
-            .then(done);
+            .then(done);*/
+        await errorCatcher(async() => {
+            await browser.get(protractor.helpers.url + '/#/service');
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Услуга'))), defaultWaitTimeout);
+            await browser.sleep(1500);
+
+            const currentUrl = await browser.getCurrentUrl();
+            expect(currentUrl?.includes('/service')).toBe(true);
+
+            const count =  await protractor.helpers.grid.main.rowsList().count();
+            expect(count > 0).toBe(true);
+
+            const addRowButtonText = await element(by.css('.k-button.idea-button-add-row')).getText();
+            expect(addRowButtonText).toBe('Добавить запись');
+        }, done);
     }, skip);
 
     // 2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП"
-    it('2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП". ##can_continue', (done) => {
-        return element(by.css('.k-button.idea-button-add-row')).click()
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(browser.sleep(1500))
-            //.then(() => element(by.css('.displayname__icon.glyphicon.glyphicon-pencil')).click())
-            .then(browser.wait(EC.presenceOf(element(by.css('.displayname__name_active'))), 5000))
-            .then(() => expect(element(by.css('.displayname__name_active')).isPresent()).toBe(true))  // Проверить что display доступен для редактирования
-            .then(() => expect(element(by.css('.react-grid-item[data-field-name="year"]')).isEnabled()).toBe(true))  // Проверить что Год доступен для редактирования
-            .then(() => expect(element(by.css('.react-grid-item[data-field-name="branch"]')).isEnabled()).toBe(true))  // Проверить что ДРП доступен для редактирования
-            .then(() => expect(element(by.css('.header-button.btn-primary')).getText()).toBe('Создать'))  //Прооверить что есть кнопка создать
-            .then(expliciteWait)
-            .then(done);
+    it('2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП". ##can_continue', async done => {
+        await errorCatcher(async () => {
+            console.log('2. В открывшейся форме списка нажимаем на кнопку "Добавить запись". Проверить, что есть кнопка "Создать" и доступны для редактирования поля "display", "Год", "ДРП".')
+            await element(by.css('.k-button.idea-button-add-row')).click();
+            await browser.wait(EC.presenceOf(element(by.css('.displayname__name_active'))), defaultWaitTimeout);
+            await browser.sleep(1500);
+
+            const displayIsPresent = await element(by.css('.displayname__name_active')).isPresent(); // Проверить что display доступен для редактирования
+            expect(displayIsPresent).toBe(true);
+
+            const yearIsEnabled = await element(by.css('.react-grid-item[data-field-name="year"]')).isEnabled(); // Проверить что Год доступен для редактирования
+            expect(yearIsEnabled).toBe(true);
+
+            const branchIsEnabled = await element(by.css('.react-grid-item[data-field-name="branch"]')).isEnabled(); // Проверить что ДРП доступен для редактирования
+            expect(branchIsEnabled).toBe(true);
+
+            const buttonText = await element(by.css('.header-button.btn-primary')).getText();
+            expect(buttonText).toBe('Создать');
+        }, done);
     }, skip);
 
     // 3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ.
-    it('3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ. ##can_continue', function (done) {
-        const today = '[' + $h.common.getTodayStr() + '] - ';
-        const year = $h.common.getFullYear();
-        protractor.helpers.dpg = today + 'Услуга';
-        return $h.form.setForm({
-            displayname: today + 'Услуга',
-            year: year,
-            branch: 'Красноярская дирекция по ремонту пути',
-            description: today + 'Описание услуги',
-        })
-            .then(browser.sleep(1500))
-            .then(function () {
-                return $h.form.processButton('CREATE');
-            })
-            .then(function() {
-                return browser.wait(EC.presenceOf($('button[data-button-name="UPDATE"]')), 20000);
-            })
-            .then(function () {
-                element(by.css('[class="form-header__title"]')).getText().then(function (text) {    // Сохранить ID servicce
-                    protractor.helpers.serviceId = parseInt(text.split('#')[1]);
-                })
-            })
-            .then(done);
+    it('3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ. ##can_continue', async done => {
+        await errorCatcher(async () => {
+            console.log('3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ.');
+            const today = `[${$h.common.getTodayStr()}] - `
+            const year = $h.common.getFullYear();
+            $h.dpg = today + 'Услуга';
+            await $h.form.setForm({
+                displayname: `${today}Услуга`,
+                year: year,
+                branch: 'Красноярская дирекция по ремонту пути',
+                description: `${today}Описание услуги`,
+            });
+            await browser.sleep(1500);
+            await $h.form.processButton(['CREATE']);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), defaultWaitTimeout);
+            await browser.sleep(1500);
+            const titleText = await element(by.css('[class="form-header__title"]')).getText();
+            $h.serviceId = parseInt(titleText.split('#')[1]);
+        }, done);
     }, skip);
 
     // 4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.
-    it('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', function (done) {
-        return $h.form.getForm(['tasks'])
+    it('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', async done => {
+        /* return $h.form.getForm(['tasks'])
             .then(function (form) {
                 eventUid = form.uid;
                 tasksBefore = form.tasks.length
@@ -115,7 +135,20 @@ describe('Автотест на создание ДПГ. ', function () {
             })
             // .then($h.login.logOut)
             .then(browser.sleep(6000))
-            .then(done);
+            .then(done);*/
+        await errorCatcher(async () => {
+            console.log('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.');
+            const form = await $h.form.getForm(['tasks']);
+            await browser.sleep(1500);
+            eventUid = form.uid;
+            tasksBefore = form.tasks.length
+            $h.taksUid = Number(form.tasks[0].taskid)
+            expect(tasksBefore).toBe(1);    // проверяем что создалась одна запись
+
+            await $h.form.processButton(['UPDATE']);
+            await browser.wait(EC.stalenessOf(element(by.css('.loader-spinner'))), defaultWaitTimeout);
+            await browser.sleep(1500);
+        }, done);
     }, skip);
 
 }, !protractor.totalStatus.ok);

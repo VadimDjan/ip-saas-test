@@ -2,9 +2,10 @@ describe('Автотест на Осмотр участка. ', function () {
     const _ = protractor.libs._;
     const $h = protractor.helpers;
     const { errorCatcher } = $h.common;
+    const { defaultWaitTimeout } = $h.wait;
     const EC = protractor.ExpectedConditions;
 
-    $h.serviceId = 932;
+    // $h.serviceId = 970;
     // let taksUid = 48037;
     let numOfRows = 0;
     let start_km_ar = 0;
@@ -55,22 +56,25 @@ describe('Автотест на Осмотр участка. ', function () {
     }, skip);*/
 
     // 00. Переходим по URL /#/service. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача, кнопка Добавить запись
-    it('00. Переходим по URL /#/service. ##can_continue', async done => {
+    it('0. Переходим по URL /#/service. ##can_continue', async done => {
+        console.log('---------Автотест на осмотр участка---------');
+        console.log('1. Переходим по URL /#/service.');
         await errorCatcher(async () => {
-            await browser.get(protractor.helpers.url + '/#/service');
-            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-grid-toolbar .table-name', 'Услуга'))), 10000);
+            await browser.get($h.url + '/#/service');
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-grid-toolbar .table-name', 'Услуга'))), defaultWaitTimeout);
             await browser.sleep(1000);
-            const rowsCount = await protractor.helpers.grid.main.rowsList().count();
+            const rowsCount = await $h.grid.main.rowsList().count();
             console.log('Количество записей больше 0');
             expect(rowsCount > 0).toBe(true);
-            console.log('На форме есть кнопка "Добавить запись"');
-            await expect(element(by.css('.k-button.idea-button-add-row')).getText()).toBe('Добавить запись');
+            // console.log('На форме есть кнопка "Добавить запись"');
+            // await expect(element(by.css('.k-button.idea-button-add-row')).getText()).toBe('Добавить запись');
             await $h.grid.main.clearFilters();
         }, done);
 
     }, skip);
 
-    it('0. Закрываем модальное окно. Переходим на вкладку "Участки ремонта пути", выбираем первый участок и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".  ##can_continue', async done => {
+    it('1. Находим услугу по ID и проваливаемся в неё. ##can_continue', async done => {
+        console.log('1. Находим услугу по ID и проваливаемся в неё');
         await errorCatcher(async () => {
             await $h.grid.main.setSearch([
                 {
@@ -80,24 +84,27 @@ describe('Автотест на Осмотр участка. ', function () {
                     value:  $h.serviceId,
                 }
             ]);
+            await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
             await browser.sleep(1500);
+
             const event = await element.all(by.css('[data-pkfieldid=\"' + String($h.serviceId) + '\"]')).first().getWebElement();
             await browser.actions().doubleClick(event).perform();
             await browser.sleep(3000);
         }, done);
     }, skip)
 
-    it('1. Закрываем модальное окно. Переходим на вкладку "Участки ремонта пути", выбираем первый участок и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".  ##can_continue', async done => {
+    it('2. Находим сабгрид "Участки КРП" и проваливаемся в первый. ##can_continue', async done => {
+        console.log('2. Находим сабгрид "Участки КРП" и проваливаемся в первый.');
         await errorCatcher(async () => {
             const form = await $h.form.getForm(['requests']);
             const index = 0;
             $h.requestsId = form.requests[0].items[0].items[index].requestid;
 
-            const event =await element.all(by.css('[data-pkfieldid=\"' + String($h.requestsId) + '\"]')).first().getWebElement();
+            const event = await element.all(by.css('[data-pkfieldid=\"' + String($h.requestsId) + '\"]')).first().getWebElement();
             await browser.actions().doubleClick(event).perform();
             await browser.sleep(1000);
 
-            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="calc_mvsp"]'))), 5000);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="calc_mvsp"]'))), defaultWaitTimeout);
             console.log(`На форме присутствует кнопка с надпсиью ${buttonCalcMvsp}`);
             await expect(element(by.css('[data-button-name="calc_mvsp"]')).getText()).toBe(buttonCalcMvsp);
             await browser.sleep(2000);
@@ -105,10 +112,11 @@ describe('Автотест на Осмотр участка. ', function () {
     }, skip);
 
     // 2. Кликаем по ссылке, на открывшейся форме проверяем наличие кнопок.
-    it('2. Кликаем по ссылке и убеждаемся что отобразилась таблица и в ней имеются не менее 3х записей. ##can_continue', async done => {
+    it('3. Кликаем по ссылке и убеждаемся что отобразилась таблица ##can_continue', async done => {
+        console.log('3. Кликаем по ссылке и убеждаемся что отобразилась таблица');
         await errorCatcher(async () => {
             await $h.form.clickOnLink('link_to_request_inspections');
-            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="request_cancel2"]'))), 10000);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="request_cancel2"]'))), defaultWaitTimeout);
             await browser.sleep(1500);
             console.log('На форме есть кнопки "Сохранить", "Отменить участок" и "Получить шаблон осмотра".');
             await expect(element(by.css('[data-button-name="UPDATE"]')).isPresent()).toBe(true);
@@ -116,26 +124,39 @@ describe('Автотест на Осмотр участка. ', function () {
             await expect(element(by.css('[data-button-name="get_inspecting_templ"]')).isPresent()).toBe(true);
         }, done);
     }, skip);
+
+
     // 3. Заполнить обязательные поля на вкладке "Общая информация"
-    it('3. Заполнить обязательные поля на вкладке "Общая информация" . ##can_continue', async done => {
-        await errorCatcher(async () => {
-            await $h.form.setForm({
-                railtrack_class: '2',
-                track_specialization: 'В',
-                temp_amplitude: '>110',
-                powerunit: 'Электрическая пост.',
-                track_number: 4,
-            });
-            await browser.sleep(1500);
-        }, done);
+     it('4. Заполнить обязательные поля на вкладке "Общая информация" . ##can_continue', async done => {
+         console.log('4. Заполнить обязательные поля на вкладке "Общая информация".');
+         await errorCatcher(async () => {
+             await $h.form.setForm({
+                 railtrack_class: '2',
+                 track_specialization: 'В',
+                 temp_amplitude: '>110',
+                 powerunit: 'Электрическая пост.',
+                 track_number: 4,
+                 train_num: 5,
+                 region: 'Красноярский',
+                 established_velocity_cargo: 80,
+                 established_velocity: 100,
+                 volume_of_traffic: 167,
+                 tonnage: 1000,
+
+             });
+             await browser.sleep(1500);
+         }, done);
     }, skip);
         // 4. Перейти во вкладку "Верхнее строение пути" поля в разделе "До ремонта", заполнить обязательные поля.
-    it('4. Перейти во вкладку "Верхнее строение пути" поля в разделе "До ремонта", заполнить обязательные поля. ##can_continue', async done => {
+    it('5. Перейти во вкладку "Верхнее строение пути" поля в разделе "До ремонта", заполнить обязательные поля. ##can_continue', async done => {
+        console.log('5. Перейти во вкладку "Верхнее строение пути" поля в разделе "До ремонта", заполнить обязательные поля.')
         await errorCatcher(async () => {
             await browser.sleep(1000);
             await $h.form.setForm({
                 rail_brand_br: 'Р65 СГ I',
+                bug_rail_count: 10,
                 sleeper_br: 'Ш АРС-МК',
+                bug_sleeper_count: 10,
                 clips_br: 'АРС',
                 ballast_br: 'Щебень',
                 signal_system_br: 'Полуавтоматическая',
@@ -147,13 +168,8 @@ describe('Автотест на Осмотр участка. ', function () {
                 trackform_ar: 'Звеньевой',
             });
             await browser.sleep(1500);
-        }, done);
-    }, skip);
-
-    it('4а. В Осмотре участка нажимаем на кнопку "Сохранить". Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', async done => {
-        await errorCatcher(async () => {
-            await $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
-            expect(await element(by.css(`[class="${alertSuccess}"]`)).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
+            await $h.form.processButton(['UPDATE']);
+            await browser.wait(EC.stalenessOf(element(by.css('[data-button-name="UPDATE"] .loader-spinner'))), defaultWaitTimeout);
             await browser.sleep(1500);
         }, done);
     }, skip);
@@ -163,6 +179,7 @@ describe('Автотест на Осмотр участка. ', function () {
 // Заполнить поля "км", "Количество пикетов" значениями "км. н." и нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1
 // Если запись в таблице уже существует, обновить значение "пк+ ок.". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
     it('5. Перейти во вкладку "Протяженность участка", заполнить открытые поля и строки таблиц: "Нестандартные километры"/"Нестандартные пикеты". ##can_continue', async done => {
+        console.log('5. Перейти во вкладку "Протяженность участка", заполнить открытые поля и строки таблиц: "Нестандартные километры"/"Нестандартные пикеты".');
         await errorCatcher(async () => {
             const form = await $h.form.getForm(['start_km_br', 'start_pk_br', 'finish_km', 'finish_pk_before_repair', 'distance_before_repair']);
             start_km_ar = form['start_km_br'];
@@ -181,18 +198,17 @@ describe('Автотест на Осмотр участка. ', function () {
             const totalRows = await $h.grid.subgrid('unusual_km').getTotalRows();    //таблица "Нестандартные километры"
             numOfRows = totalRows;
             await browser.sleep(1000);
+            await browser.executeScript('window.scrollTo(0,0);');
             if (totalRows > 0) {
-                await browser.executeScript('window.scrollTo(0,0);');
                 isExistsRows = true;
                 await element.all(by.css(`[data-field-name="unusual_km"] [class="${editInlineButton}"]`)).first().click();
             } else {
-                await browser.executeScript('window.scrollTo(0,0);');
                 await elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
-                await browser.executeScript('window.scrollTo(0,0);');
 
                 await elementMain.element(by.css('[data-container-for="km"]')).click();
                 await elementMain.element(by.css('input[name="km"]')).clear().sendKeys(finish_km_after_repair);
             }
+            await browser.executeScript('window.scrollTo(0,0);');
             await browser.sleep(500);
 
             await elementMain.element(by.css('[data-container-for="pk_count"]')).click();
@@ -229,18 +245,25 @@ describe('Автотест на Осмотр участка. ', function () {
                 await elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
             }
             await browser.executeScript('window.scrollTo(0,0);');
-            console.log('SCROLLED')
+
             await browser.sleep(1500);
             await elementMain.element(by.css('[data-container-for="km"]')).click();
-            await elementMain.element(by.css('input[name="km"]')).clear().sendKeys(start_km_ar);
-            await elementMain.element(by.css('[data-container-for="pk"]')).click();
-            await elementMain.element(by.css('input[name="pk"]')).clear().sendKeys(Math.ceil(start_pk_ar));
+            await elementMain.element(by.css('input[name="km"]')).clear();
+            await elementMain.element(by.css('[data-container-for="km"]')).click();
+            await elementMain.element(by.css('input[name="km"]')).sendKeys(start_km_ar);
+            await browser.sleep(500);
 
+            await elementMain.element(by.css('[data-container-for="pk"]')).click();
+            await elementMain.element(by.css('input[name="pk"]')).clear();
+            await elementMain.element(by.css('[data-container-for="pk"]')).click();
+            await elementMain.element(by.css('input[name="pk"]')).sendKeys(Math.ceil(start_pk_ar));
+            await browser.sleep(500);
 
             await elementMain.element(by.css('[data-container-for="distance"]')).click();
             await elementMain.element(by.css('input[name="distance"]')).clear();
             await elementMain.element(by.css('[data-container-for="distance"]')).click();
             await elementMain.element(by.css('input[name="distance"]')).sendKeys((Number(distance_after_repair) + 1));
+            await browser.sleep(500);
 
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
@@ -607,6 +630,7 @@ describe('Автотест на Осмотр участка. ', function () {
 // Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок.", "Тип" (указать первый из выпадающего списка) и нажать кнопку "Сохранить". Проверить, что количество записей в таблице
 // увеличилось на 1. Если запись в таблице уже существует, обновить поле "Тип" из выпадающего списка. Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
     it('6. Перейти во вкладку "Протяженность рельсов", заполнить данные по таблице". ##can_continue', async done => {
+        console.log('6. Перейти во вкладку "Протяженность рельсов", заполнить данные по таблице".');
         await errorCatcher(async () => {
             await $h.form.collapseCurrentSection();
             await browser.sleep(1500);
@@ -618,10 +642,12 @@ describe('Автотест на Осмотр участка. ', function () {
                 await browser.executeScript('window.scrollTo(0,0);');
                 isExistsRows = true;
                 await element.all(by.css(`[data-field-name="track_rail_distance"] [class="${editInlineButton}"]`)).first().click();
+                await browser.sleep(500);
             } else {
                 await browser.executeScript('window.scrollTo(0,0);');
                 await elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
                 await browser.sleep(1000);
+
                 await browser.executeScript('window.scrollTo(0,0);');
                 await elementMain.element(by.css('[data-container-for="start_km"]')).click();
                 await elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
@@ -668,6 +694,7 @@ describe('Автотест на Осмотр участка. ', function () {
     // Для таблицы Профиль пути нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок.", "%0".
     // Если строка уже существует обновить поле "%0". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
     it('7. Перейти во вкладку "План и профиль пути". Редактировать/заполниь таблицы План пути и Профиль пути. ##can_continue', async done => {
+        console.log('7. Перейти во вкладку "План и профиль пути". Редактировать/заполниь таблицы План пути и Профиль пути.');
         await errorCatcher(async () => {
             await $h.form.collapseCurrentSection();
             await $h.form.getForm(['track_grading']);
@@ -678,9 +705,11 @@ describe('Автотест на Осмотр участка. ', function () {
             if (count > 0) {
                 isExistsRows = true;
                 await element.all(by.css(`[data-field-name="track_grading"] [class="${editInlineButton}"]`)).first().click();
+                await browser.sleep(500);
             } else {
                 await elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
                 await browser.executeScript('window.scrollTo(0,0);');
+                await browser.sleep(500);
 
                 await elementMain.element(by.css('[data-container-for="start_km"]')).click();
                 await elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
@@ -725,14 +754,17 @@ describe('Автотест на Осмотр участка. ', function () {
 
             elementMain = element(by.css('[data-field-name="track_topology"]'));
             count = await $h.grid.subgrid('track_topology').getTotalRows();    //таблица "План пути";
+            numOfRows = count;
 
             await browser.executeScript('window.scrollTo(0,0);');
             if (count > 0) {
                 isExistsRows = true;
                 await element.all(by.css(`[data-field-name="track_topology"] [class="${editInlineButton}"]`)).first().click();
+                await browser.sleep(500);
             } else {
                 await elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
                 await browser.executeScript('window.scrollTo(0,0);');
+                await browser.sleep(500);
 
                 await elementMain.element(by.css('[data-container-for="start_km"]')).click();
                 await elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar); // км.н
@@ -766,6 +798,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await element(by.css('[data-container-for="sidedness"] .k-select')).click();
             await browser.sleep(1000);
             await element.all(by.css('.k-state-border-up .k-item')).first().click();
+            await browser.sleep(500);
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
 
@@ -783,188 +816,6 @@ describe('Автотест на Осмотр участка. ', function () {
             isExistsRows = false;
             await browser.sleep(1500);
         }, done);
-        /* return $h.form.getForm(['track_grading'])
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                elementMain = element(by.css('[data-field-name="track_grading"]'));
-            })
-            .then(function () {
-                return $h.grid.subgrid('track_grading').getTotalRows();    //таблица "Профиль пути"
-            })
-            .then(function (count) {
-                numOfRows = count;
-
-                if (count > 0) {
-                    return angularWait()
-                        .then(function () {
-                            browser.executeScript('window.scrollTo(0,0);');
-                            isExistsRows = true;
-                           element.all(by.css(`[data-field-name="track_grading"] [class="${editInlineButton}"]`)).first().click();
-                        })
-                } else {
-                    return angularWait()
-                        .then(function () {
-                            browser.executeScript('window.scrollTo(0,0);');
-                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
-                        })
-                        .then(angularWait)
-                        .then(function () {
-                            return $h.grid.subgrid('track_grading').getTotalRows();
-                        })
-                        // .then(function (countAfterAdd) {
-                        //     console.log('countAfterAdd_4 =', countAfterAdd)
-                        //     expect(countAfterAdd).toBe(numOfRows + 1);
-                        // })
-                        .then(function () {
-                            browser.executeScript('window.scrollTo(0,0);');
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="start_km"]')).click();
-                            elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="start_pk"]')).click();
-                            elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="finish_km"]')).click();
-                            elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-                            elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_km_after_repair);
-                        })
-                }
-            })
-            .then(function () {
-                elementMain.element(by.css('[data-container-for="gradient"]')).click();
-                elementMain.element(by.css('input[name="gradient"]')).clear();
-                elementMain.element(by.css('[data-container-for="gradient"]')).click();
-                elementMain.element(by.css('input[name="gradient"]')).sendKeys(gradient);
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
-            })
-            .then(function () {
-                element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
-                    // console.log('resCount4', resCount, 'countMistakes', countMistakes)
-                    expect(resCount).toBe(countMistakes);
-                    countMistakes = resCount;
-                })
-            })
-            .then(function () {
-                return $h.grid.subgrid('track_grading').getTotalRows()
-                    .then(function (countAfterAdd) {
-                        // console.log('countAfterAdd5', countAfterAdd, 'numOfRows', numOfRows)
-                        if (isExistsRows) {
-                            expect(countAfterAdd).toBe(numOfRows);
-                        } else {
-                            expect(countAfterAdd).toBe(numOfRows + 1);
-                        }
-                        isExistsRows = false;
-                    })
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                elementMain = element(by.css('[data-field-name="track_topology"]'));
-            })
-            .then(function () {
-                return $h.grid.subgrid('track_topology').getTotalRows();    //таблица "План пути"
-            })
-            .then(function (count) {
-                numOfRows = count;
-
-                if (count > 0) {
-                    return angularWait()
-                        .then(function () {
-                            browser.executeScript('window.scrollTo(0,0);');
-                            isExistsRows = true;
-                           element.all(by.css(`[data-field-name="track_topology"] [class="${editInlineButton}"]`)).first().click();
-                        })
-                } else {
-                    return angularWait()
-                        .then(function () {
-                            browser.executeScript('window.scrollTo(0,0);');
-                            elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
-                        })
-                        .then(angularWait)
-                        .then(function () {
-                            return $h.grid.subgrid('track_topology').getTotalRows();
-                        })
-                        // .then(function (countAfterAdd) {
-                        //     console.log('countAfterAdd_5 =', countAfterAdd)
-                        //     expect(countAfterAdd).toBe(numOfRows + 1);
-                        // })
-                        .then(function () {
-                            browser.executeScript('window.scrollTo(0,0);');
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="start_km"]')).click();
-                            elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="start_pk"]')).click();
-                            elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="finish_km"]')).click();
-                            elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-                            elementMain.element(by.css('input[name="finish_pk"]')).clear().sendKeys(finish_pk_after_repair);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="radius"]')).click();
-                            elementMain.element(by.css('input[name="radius"]')).clear().sendKeys(radius);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="length"]')).click();
-                            elementMain.element(by.css('input[name="length"]')).clear().sendKeys(length);
-                        })
-                        .then(function () {
-                            elementMain.element(by.css('[data-container-for="raising"]')).click();
-                            elementMain.element(by.css('input[name="raising"]')).clear().sendKeys(raising);
-                        })
-                }
-            })
-            .then(function () {
-                return element(by.css('[data-container-for="sidedness"] .k-select')).click()
-                    .then(expliciteWait)
-                    .then(function () {
-                        return element.all(by.css('[class="k-item"]')).first().click();
-                    })
-            })
-            .then(angularWait)
-            .then(function () {
-                elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
-            })
-            .then(function () {
-                element.all(by.css(`[class="${alertDanger}"]`)).count().then(function (resCount) {
-                    // console.log('resCount5', resCount, 'countMistakes', countMistakes)
-                    expect(resCount).toBe(countMistakes);
-                    countMistakes = resCount;
-                })
-            })
-            .then(function () {
-                return $h.grid.subgrid('track_topology').getTotalRows()
-                    .then(function (countAfterAdd) {
-                        // console.log('countAfterAdd6', countAfterAdd, 'numOfRows', numOfRows)
-                        if (isExistsRows) {
-                            expect(countAfterAdd).toBe(numOfRows);
-                        } else {
-                            expect(countAfterAdd).toBe(numOfRows + 1);
-                        }
-                        isExistsRows = false;
-                    })
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(done);*/
     }, skip);
 // 12. Перейти во вкладку "Ситуация". Для таблицы "Ситуация" нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данныхю.
 // Заполнить поля "км. н", "пк+ н.", "км ок.", "пк+ ок." значениями, сохраненными в п.9, выбрать 1ое значение из выпадающего списка для поля "Тип", установать/снять флажки с полей
@@ -974,6 +825,7 @@ describe('Автотест на Осмотр участка. ', function () {
 // значениями, сохраненными в п.9 и нажать кнопку "Сохранить". Проверить, что количество записей в таблице увеличилось на 1.
 // Если строка уже существует обновить поле "пк+ ок.". Убедится, что в правом верхнем углу не возникло красного сообщения об ошибке
     it('8. Перейти во вкладку "Ситуация". Редактировать/заполниь таблицы "Ситуация" и "Места выгрузки". ##can_continue', async done => {
+        console.log('8. Перейти во вкладку "Ситуация". Редактировать/заполниь таблицы "Ситуация" и "Места выгрузки".');
         await errorCatcher(async () => {
             await $h.form.collapseCurrentSection();
             await $h.form.getForm(['track_situation']);
@@ -986,8 +838,10 @@ describe('Автотест на Осмотр участка. ', function () {
             if (count > 0) {
                 isExistsRows = true;
                 await element.all(by.css(`[data-field-name="track_situation"] [class="${editInlineButton}"]`)).first().click();
+                await browser.sleep(500);
             } else {
                 await elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
+                await browser.sleep(500);
                 await browser.executeScript('window.scrollTo(0,0);');
 
                 await elementMain.element(by.css('[data-container-for="start_km"]')).click();
@@ -1016,74 +870,75 @@ describe('Автотест на Осмотр участка. ', function () {
 
                 await element(by.css('[data-container-for="is_higher_then4m"] [name="is_higher_then4m"]')).click();
                 await browser.sleep(500);
-
-                await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
-                await browser.sleep(2000);
-
-                let dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
-                console.log(`Количество ошибок: ${dangerCount}`);
-                expect(dangerCount).toBe(countMistakes);
-                countMistakes = dangerCount;
-
-                let countAfterAdd = await $h.grid.subgrid('track_situation').getTotalRows();
-                if (isExistsRows) {
-                    expect(countAfterAdd).toBe(numOfRows);
-                } else {
-                    expect(countAfterAdd).toBe(numOfRows + 1);
-                }
-                isExistsRows = false;
-
-
-                elementMain = element(by.css('[data-field-name="track_uploading_places"]'));
-                count = await $h.grid.subgrid('track_uploading_places').getTotalRows();    //таблица "Места выгрузки"
-                numOfRows = count;
-
-                if (count > 0) {
-                    isExistsRows = true;
-                    await element.all(by.css(`[data-field-name="track_uploading_places"] [class="${editInlineButton}"]`)).first().click();
-                } else {
-                    await elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
-                    await browser.executeScript('window.scrollTo(0,0);');
-
-                    await elementMain.element(by.css('[data-container-for="start_km"]')).click();
-                    await elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
-                    await browser.sleep(500);
-
-                    await elementMain.element(by.css('[data-container-for="start_pk"]')).click();
-                    await elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
-                    await browser.sleep(500);
-
-                    await elementMain.element(by.css('[data-container-for="finish_km"]')).click();
-                    await elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
-                    await browser.sleep(500);
-
-                    await elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-                    await elementMain.element(by.css('input[name="finish_pk"]')).clear();
-                    await elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
-                    await elementMain.element(by.css('input[name="finish_pk"]')).sendKeys(finish_pk_after_repair);
-                    await browser.sleep(500);
-
-                    await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
-                    await browser.sleep(2000);
-
-                    dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
-                    console.log(`Количество ошибок: ${dangerCount}`);
-                    expect(dangerCount).toBe(countMistakes);
-                    countMistakes = dangerCount;
-
-                    countAfterAdd = await $h.grid.subgrid('track_uploading_places').getTotalRows();
-                    if (isExistsRows) {
-                        expect(countAfterAdd).toBe(numOfRows);
-                    } else {
-                        expect(countAfterAdd).toBe(numOfRows + 1);
-                    }
-                    isExistsRows = false;
-
-                    await browser.sleep(1500);
-                }
             }
+            await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
+            await browser.sleep(2000);
+
+            let dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
+            console.log(`Количество ошибок: ${dangerCount}`);
+            expect(dangerCount).toBe(countMistakes);
+            countMistakes = dangerCount;
+
+            let countAfterAdd = await $h.grid.subgrid('track_situation').getTotalRows();
+            if (isExistsRows) {
+                expect(countAfterAdd).toBe(numOfRows);
+            } else {
+                expect(countAfterAdd).toBe(numOfRows + 1);
+            }
+            isExistsRows = false;
+
+
+            elementMain = element(by.css('[data-field-name="track_uploading_places"]'));
+            count = await $h.grid.subgrid('track_uploading_places').getTotalRows();    //таблица "Места выгрузки"
+            numOfRows = count;
+
+            if (count > 0) {
+                isExistsRows = true;
+                await element.all(by.css(`[data-field-name="track_uploading_places"] [class="${editInlineButton}"]`)).first().click();
+                await browser.sleep(500);
+            } else {
+                await elementMain.element(by.css(`[class="${addInlineButton}"]`)).click();
+                await browser.sleep(500);
+                await browser.executeScript('window.scrollTo(0,0);');
+
+                await elementMain.element(by.css('[data-container-for="start_km"]')).click();
+                await elementMain.element(by.css('input[name="start_km"]')).clear().sendKeys(start_km_ar);
+                await browser.sleep(500);
+
+                await elementMain.element(by.css('[data-container-for="start_pk"]')).click();
+                await elementMain.element(by.css('input[name="start_pk"]')).clear().sendKeys(start_pk_ar);
+                await browser.sleep(500);
+
+                await elementMain.element(by.css('[data-container-for="finish_km"]')).click();
+                await elementMain.element(by.css('input[name="finish_km"]')).clear().sendKeys(finish_km_after_repair);
+                await browser.sleep(500);
+
+                await elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
+                await elementMain.element(by.css('input[name="finish_pk"]')).clear();
+                await elementMain.element(by.css('[data-container-for="finish_pk"]')).click();
+                await elementMain.element(by.css('input[name="finish_pk"]')).sendKeys(finish_pk_after_repair);
+                await browser.sleep(500);
+            }
+            await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
+            await browser.sleep(3000);
+
+            dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
+            console.log(`Количество ошибок: ${dangerCount}`);
+            expect(dangerCount).toBe(countMistakes);
+            countMistakes = dangerCount;
+
+            countAfterAdd = await $h.grid.subgrid('track_uploading_places').getTotalRows();
+            if (isExistsRows) {
+                expect(countAfterAdd).toBe(numOfRows);
+            } else {
+                expect(countAfterAdd).toBe(numOfRows + 1);
+            }
+            isExistsRows = false;
+            await browser.sleep(1500);
         }, done);
     }, skip);
+
+
 
 // // 9. Перейти во вкладку "Инженерные сооружения"  нажать кнопку "Добавить запись", убедится, что появилась строка с формами для ввода данных. Заполнить поля "км. н", "пк+ н.",
 // // "км ок.", "пк+ ок.", "Протяженность", "Общая длина пролетов" значениями, сохраненными в п.9, выбрать 1ые значения из выпадающего списка для полей "Тип" и "Конструкция",
@@ -1622,20 +1477,18 @@ describe('Автотест на Осмотр участка. ', function () {
 //
     // 13. В Осмотре участка нажимаем на кнопку "Сохранить". Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
     it('13. В Осмотре участка нажимаем на кнопку "Сохранить". Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', async done => {
-        /* return angularWait()
-            .then(function () {
-                // return $h.form.processButton(['CREATE', 'UPDATE']);
-                return $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
-            })
-            .then(function () {
-                expect(element(by.css(`[class="${alertSuccess}"]`)).isPresent()).toBe(true)  // Справа наверху возникло зеленое сообщение
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(done);*/
         await errorCatcher(async () => {
             await $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
-            await browser.sleep(5000);
+            await browser.wait(EC.stalenessOf(element(by.css('[data-button-name="UPDATE"] .loader-spinner'))), defaultWaitTimeout);
+            await browser.sleep(1500);
+
+            await browser.close();
+            await browser.sleep(1500);
+
+            const handles = await browser.driver.getAllWindowHandles();
+            await browser.driver.switchTo().window(handles[0]);
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.linkfield__link', 'Перейти к результатам осмотра участка'))), defaultWaitTimeout);
+            await browser.sleep(1500);
         }, done);
     }, skip);
 //

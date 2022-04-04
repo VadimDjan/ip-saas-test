@@ -2,6 +2,7 @@ describe('Автотест на получение Титула. ', function () 
     const _ = protractor.libs._;
     const $h = protractor.helpers;
     const { errorCatcher } = $h.common;
+    const { defaultWaitTimeout } = $h.wait;
 
     const EC = protractor.ExpectedConditions;
 
@@ -10,7 +11,7 @@ describe('Автотест на получение Титула. ', function () 
     let buttonCancel = 'Отменить участок';
     let buttonIncludeInTitle = 'Включить в титул';
     let linesNumber;
-    const jackdawsCount = 2;  // установить 2 галочки
+    const jackdawsCount = 4;  // установить 4 галочки
     let number = 0;
 
     // protractor.helpers.taksUid = 3746821;
@@ -20,23 +21,27 @@ describe('Автотест на получение Титула. ', function () 
 
     // 1. Переходим пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись
     it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
-        console.log('Переходим в пункт меню "Мои наряды"');
+        console.log('---------Автотест на получение Титула---------');
+        console.log('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись. "');
         await errorCatcher(async () => {
             await browser.sleep(1000);
             await $h.menu.selectInMenu(['Мои наряды']);
-            await browser.sleep(1000);
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои наряды'))), defaultWaitTimeout);
+
             const currentUrl = await browser.getCurrentUrl();
             console.log(currentUrl);
             expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
-            await browser.sleep(5000);
+
             const count = await protractor.helpers.grid.main.rowsList().count();
             console.log(count);
             expect(count >= 1).toBe(true);
+            await browser.sleep(1500);
         }, done)
     }, skip);
 
      it('2. Выбираем наряд "Получение титула ремонта" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".  ##can_continue', async done => {
         await errorCatcher(async () => {
+            console.log('2. Выбираем наряд "Получение титула ремонта" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".');
             await $h.grid.main.setSearch([
                 {
                     type: 'int',
@@ -45,22 +50,25 @@ describe('Автотест на получение Титула. ', function () 
                     value: protractor.helpers.taksUid
                 }
             ]);
-            await browser.sleep(2000);
-            const webElement = await element.all(by.css('[data-pkfieldid=\"' + String(protractor.helpers.taksUid) + '\"]')).first().getWebElement();
+            await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
+            await browser.sleep(1500);
+
+            const webElement = await element.all(by.css('[data-pkfieldid=\"' + String($h.taksUid) + '\"]')).first().getWebElement();
             await browser.actions().doubleClick(webElement).perform();
-            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), 30000);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), defaultWaitTimeout);
         }, done)
     }, skip);
 
     // 3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
     it('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', async done => {
         await errorCatcher(async () => {
+            console.log('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение.');
             await $h.form.setForm({
                 assignedto: 'Вернер А.А.'
             });
             await browser.sleep(1500);
             await $h.form.processButton(['UPDATE'], 'task');   //жмем на кнопку Сохранить
-            await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), 10000);
+            await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), defaultWaitTimeout);
             const alertIsPresent = await element(by.css('[class="alert__wrapper alert__wrapper_success"]')).isPresent();
             expect(alertIsPresent).toBe(true);
             await browser.sleep(1500);
@@ -70,10 +78,11 @@ describe('Автотест на получение Титула. ', function () 
     // 4. Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось
     it('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось. ##can_continue', async done => {
         await errorCatcher(async () => {
+            console.log('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось.');
             const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
             await $h.form.processButton(['В работу']);
-            await browser.wait(EC.presenceOf(element(by.css(selector))), 10000);
-            await browser.sleep(5000);
+            await browser.wait(EC.textToBePresentInElementValue($(selector), 'В работе'), defaultWaitTimeout);
+            await browser.sleep(1500);
             const statusValue = await element(by.css(selector)).getAttribute('value');
             const text = statusValue.includes('В работе') ? 'В работе' : statusValue;
             expect(text).toBe('В работе');
@@ -84,10 +93,11 @@ describe('Автотест на получение Титула. ', function () 
     // 5. Переходим по ссылке "Перейти к Титулу ремонта ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"
     it('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул" . ##can_continue', async done => {
         await errorCatcher(async () => {
+            console.log('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"');
             await $h.form.clickOnLink('link_to_action');
             await browser.sleep(1500);
 
-            await browser.wait(EC.presenceOf(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]'))), 10000);
+            await browser.wait(EC.presenceOf(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]'))), defaultWaitTimeout);
 
             const recordCount = await element.all(by.css('[data-uid]')).count();
             expect(recordCount >= jackdawsCount).toBe(true);
@@ -107,7 +117,7 @@ describe('Автотест на получение Титула. ', function () 
 
     // 6. В открывшемся списке нажимаем на кнопку "Выбрать все", убедиться, что все галочки поставились
     it('6. В открывшемся списке нажимаем на кнопку "Выбрать все". ##can_continue', async done => {
-        console.log('нажимаем на кнопку "Выбрать все"');
+        console.log('6. В открывшемся списке нажимаем на кнопку "Выбрать все".');
         await errorCatcher(async () => {
             await browser.sleep(1500);
             await element(by.css('.k-button.idea-button-select-all')).click();
@@ -119,7 +129,7 @@ describe('Автотест на получение Титула. ', function () 
 
     // 7. Снять галку с 2-х ремонтов, убедиться, что галки снялись
     it('7. Снять галку с 2-х ремонтов. ##can_continue', async done => {
-        console.log('Снять галку с 2-х ремонтов');
+        console.log('7. Снять галку с 2-х ремонтов.');
         await errorCatcher(async () => {
             await browser.sleep(1500);
             const elements = element.all(by.css(' .k-grid-content [class="idea-grid-select"]'));
@@ -134,7 +144,7 @@ describe('Автотест на получение Титула. ', function () 
 
     // 8. Нажать на кнопку "Отменить все", убедиться, что все галки снялись
     it('8. Нажать на кнопку Отменить все, убедиться, что все галки снялись. ##can_continue', async done => {
-         console.log('Нажать на кнопку Отменить все')
+         console.log('8. Нажать на кнопку Отменить все, убедиться, что все галки снялись.')
         await errorCatcher(async () => {
             await browser.sleep(1500);
             await element(by.css('.k-button.idea-button-select-all')).click();
@@ -147,12 +157,13 @@ describe('Автотест на получение Титула. ', function () 
      // 9. Выбрать 2 записи (кликнуть по галкам) из группы "Не указано", нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу, которая называется "Услуга..."
     it('9. Выбрать 2 записи (кликнуть по галкам) из группы Не указано, нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу. ##can_continue', async done => {
         await errorCatcher(async () => {
+            console.log('9. Выбрать 2 записи (кликнуть по галкам) из группы Не указано, нажать на кнопку "Включить в титул", убедиться, что записи попали в новую группу.');
             const linesNumber = 1;
             let startNumber = 0;
             let childElements = protractor.helpers.grid.main.rowsList();
             let newGroupExists = false;
             // console.log(await childElements);
-            for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < 4; i++) {
                 const text = await childElements.get(i).getText();
                 if (text.includes('Не указано')) { //убедиться, что есть группа "Не указано"
                     startNumber = i;
@@ -169,16 +180,16 @@ describe('Автотест на получение Титула. ', function () 
                 await childElements.get(startNumber + 2).element(by.css('[class="idea-grid-select"]')).click();
                 await browser.sleep(500);
 
-                /* await childElements.get(number + 3).element(by.css('[class="idea-grid-select"]')).click();
+                await childElements.get(startNumber + 3).element(by.css('[class="idea-grid-select"]')).click();
                 await browser.sleep(500);
 
-                await childElements.get(number + 4).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);*/
+                await childElements.get(startNumber + 4).element(by.css('[class="idea-grid-select"]')).click();
+                await browser.sleep(500);
             }
             await element(by.css('[data-button-id="1232"]')).click(); // нажать Включить в титул
             await browser.sleep(5000);
             newGroupExists = false;
-            for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < 4; i++) {
                 const text = await childElements.get(i).getText();
                 if (text.includes('Услуга')) { //убедиться, что есть группа "Услуга"
                     startNumber = i;
@@ -193,12 +204,18 @@ describe('Автотест на получение Титула. ', function () 
 
                 await childElements.get(startNumber + 2).element(by.css('[class="idea-grid-select"]')).click();
                 await browser.sleep(500);
+
+                await childElements.get(startNumber + 3).element(by.css('[class="idea-grid-select"]')).click();
+                await browser.sleep(500);
+
+                await childElements.get(startNumber + 4).element(by.css('[class="idea-grid-select"]')).click();
+                await browser.sleep(500);
             }
         }, done)
      }, skip);
 
     // 10. Выбрать одну запись из группы "Услуга..." и нажать на кнопку "Отменить". Убедиться, что запись пропадет из списка
-    it('10. Выбрать одну запись из группы "Услуга..." и нажать на кнопку "Отменить". Убедиться, что запись пропадет из списка. ##can_continue', async done => {
+    /* it('10. Выбрать одну запись из группы "Услуга..." и нажать на кнопку "Отменить". Убедиться, что запись пропадет из списка. ##can_continue', async done => {
         await errorCatcher(async () => {
             console.log('Выбираем одну запись из группы "Услуга"');
             let startNumber = 0;
@@ -222,22 +239,25 @@ describe('Автотест на получение Титула. ', function () 
             await element(by.css('[data-button-id="1233"]')).click();   // нажать Отменить
             await browser.sleep(3000);
         }, done);
-     }, skip);
+     }, skip);*/
 
     // 11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен"
      it('11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен". ##can_continue', async done =>{
        const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
          await errorCatcher(async () => {
-             console.log('Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен".');
+             console.log('11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен".');
+             await browser.close();
+             await browser.sleep(500);
+
              const handles = await browser.driver.getAllWindowHandles();
              console.log(`Количество вкладок: ${handles.length}`)
              expect(handles.length > 0).toBe(true);
              if (handles.length) {
                  await browser.driver.switchTo().window(handles[0]);
-                 await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), 5000);
+                 await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), defaultWaitTimeout);
                  await $h.form.processButton(['Выполнить'], 'task');   //жмем на кнопку Выполнить
              }
-             await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), 20000);
+             await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), defaultWaitTimeout);
              const text = await element(by.css(selector)).getAttribute('value');
              console.log(`Статус workflow: ${text}`);
              expect(text).not.toBeNull();
@@ -251,11 +271,12 @@ describe('Автотест на получение Титула. ', function () 
 
      it('12. Перейти в услугу и скопировать id всех необходимых нарядов', async done => {
        await errorCatcher(async () => {
+           console.log('12. Перейти в услугу и скопировать id всех необходимых нарядов');
            console.log(`Перейти по ссылке /#/service/${$h.serviceId}`);
            await browser.get($h.url + '/#/service/' + $h.serviceId);
            const currentUrl = await browser.getCurrentUrl();
            expect(currentUrl.includes(`/#/service/${$h.serviceId}`)).toBe(true);
-           await browser.wait(EC.presenceOf($('button[data-button-name="UPDATE"]')), 20000);
+           await browser.wait(EC.presenceOf($('button[data-button-name="UPDATE"]')), defaultWaitTimeout);
 
            const form = await $h.form.getForm(['tasks']);
            const tasks = form?.tasks;

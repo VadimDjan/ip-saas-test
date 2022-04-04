@@ -2,6 +2,7 @@ describe('Автотест распределение по ПМС.', function ()
     const _ = protractor.libs._;
     const $h = protractor.helpers;
     const { errorCatcher } = $h.common;
+    const { defaultWaitTimeout } = $h.wait;
     const EC = protractor.ExpectedConditions;
 
     const modalPointPMS = 'Укажите ПМС';
@@ -11,32 +12,35 @@ describe('Автотест распределение по ПМС.', function ()
     let number = 0;
     let isExistNewGroup = false;
 
-    $h.dpgDistributeTrackId = 3748658;
+    // $h.dpgDistributeTrackId = 3762659;
 
     function skip() {
         return !protractor.totalStatus.ok;
     }
 
     it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
-        console.log('Переходим в пункт меню "Мои наряды"');
+        console.log('---------Автотест распределение по ПМС---------');
+        console.log('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.');
         await errorCatcher(async () => {
             await browser.sleep(1000);
             await $h.menu.selectInMenu(['Мои наряды']);
-            await browser.sleep(1000);
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои наряды'))), defaultWaitTimeout);
+
             const currentUrl = await browser.getCurrentUrl();
             console.log(currentUrl);
             expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
-            await browser.sleep(5000);
 
             await $h.grid.main.clearFilters();
 
             const count = await protractor.helpers.grid.main.rowsList().count();
             console.log(count);
             expect(count >= 1).toBe(true);
+            await browser.sleep(1500);
         }, done)
     }, skip);
 
     it('2. Выбираем наряд "Распределить участки ремонта пути по ПМС" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".  ##can_continue', async done => {
+        console.log('2. Выбираем наряд "Распределить участки ремонта пути по ПМС" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".');
         await errorCatcher(async () => {
             await $h.grid.main.setSearch([
                 {
@@ -46,15 +50,18 @@ describe('Автотест распределение по ПМС.', function ()
                     value: $h.dpgDistributeTrackId,
                 }
             ]);
-            await browser.sleep(2000);
+            await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
+            await browser.sleep(1500);
+
             const webElement = await element.all(by.css('[data-pkfieldid=\"' + String($h.dpgDistributeTrackId) + '\"]')).first().getWebElement();
             await browser.actions().doubleClick(webElement).perform();
-            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), 30000);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), defaultWaitTimeout);
         }, done);
     }, skip);
 
     // 3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
-     it('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', async done => {
+    it('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', async done => {
+        console.log('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение.');
         await errorCatcher(async () => {
             await browser.sleep(1500);
             await $h.form.setForm({
@@ -62,7 +69,7 @@ describe('Автотест распределение по ПМС.', function ()
             });
             await browser.sleep(1500);
             await $h.form.processButton(['UPDATE'], 'task');
-            await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), 5000);
+            await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), defaultWaitTimeout);
             const alertIsPresent = await element(by.css('[class="alert__wrapper alert__wrapper_success"]')).isPresent();
             expect(alertIsPresent).toBe(true);
         }, done)
@@ -70,12 +77,12 @@ describe('Автотест распределение по ПМС.', function ()
 
     // 4. Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось
     it('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось. ##can_continue', async done => {
+        console.log('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось. ');
         await errorCatcher(async () => {
-            console.log('Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось');
             await browser.sleep(1500);
             const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
             await $h.form.processButton(['В работу']);
-            await browser.wait(EC.presenceOf(element(by.css(selector))), 5000);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), defaultWaitTimeout);
             await browser.sleep(1500);
 
             const text = await element(by.css(selector)).getAttribute('value');
@@ -85,10 +92,11 @@ describe('Автотест распределение по ПМС.', function ()
 
     // 5. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "Добавить запись" и нажимаем на неё .
     it('5. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "+Добавить" и нажимаем на неё . ##can_continue', async done => {
+        console.log('5. Переходим по ссылке "Перейти к ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "+Добавить" и нажимаем на неё.');
         await errorCatcher(async () => {
             await browser.sleep(1500);
             await $h.form.clickOnLink('link_to_action');
-            await browser.wait(EC.presenceOf(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]'))), 10000);
+            await browser.wait(EC.presenceOf(element(by.css('a[class="toolbar-buttons k-button idea-button-add-row"]'))), defaultWaitTimeout);
 
             const linesCount = await $h.grid.main.rowsList().count();
             expect(linesCount >= 1).toBe(true);
@@ -102,9 +110,10 @@ describe('Автотест распределение по ПМС.', function ()
     }, skip);
 
     // 6. Выбрать 2 запись из группы "Не указано", нажать на кнопку "Назначить ПМС"
-    it('6. Выбрать 2 запись из группы "Не указано", нажать на кнопку "Назначить ПМС". ##can_continue', async done => {
+    it('6. Выбрать всё записи из группы "Не указано", нажать на кнопку "Назначить ПМС". ##can_continue', async done => {
+        console.log('6. Выбрать всё записи из группы "Не указано", нажать на кнопку "Назначить ПМС".')
         await errorCatcher(async () => {
-            let childElements = protractor.helpers.grid.main.rowsList();
+            /* let childElements = protractor.helpers.grid.main.rowsList();
             for (let i = 0; i < linesNumber; i++) {
                 const text = await childElements.get(i).getText();
                 if (text.includes('Не указано')) {
@@ -115,7 +124,10 @@ describe('Автотест распределение по ПМС.', function ()
             }
             if (isExistNewGroup) {
                 await childElements.get(number + 1).element(by.css('[class="idea-grid-select"]')).click();
-            }
+                await browser.sleep(500);
+                await childElements.get(number + 2).element(by.css('[class="idea-grid-select"]')).click();
+            }*/
+            await element(by.css('.k-button.idea-button-select-all')).click();
             await browser.sleep(1500);
             await element(by.css('[data-button-id="1187"]')).click();   // нажать Назначить ПМС
             await browser.sleep(1500);
@@ -123,27 +135,28 @@ describe('Автотест распределение по ПМС.', function ()
     }, skip);
 
         // 7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок"
-     it('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок". ##can_continue', async done => {
-        const popupTitleSelector = '.uipopup__title.modal-title';
-        const popupSelector = '.uipopup__title.modal-title';
-        const departmentInGridSelector = 'span[data-field="department"]';
-        await errorCatcher(async () => {
-            await browser.wait(EC.presenceOf(element(by.css(popupSelector))), 10000);
-            console.log('Проверяем название окна');
-            expect(await element(by.css(popupTitleSelector)).getText()).toBe(modalPointPMS); // Проверить название окна
-            console.log('Проверяем что есть поле ПМС');
-            expect(await element(by.css(popupSelector + ' [data-field-name="p_dept"]')).isPresent()).toBe(true) // Проверить что есть поле ПМС
-            console.log('Проверяем что есть кнопка "Отмена"');
-            expect(await element(by.css(popupSelector + ' .popup__dialog-btn_secondary')).isPresent()).toBe(true)     // Проверить что есть кнопка "Отмена"
-            await $h.form.setField('p_dept', 'ПМС-181', 'popup');
-            await browser.sleep(1500);
-            await $h.form.submitPopup();
-            await browser.sleep(5000);
-        }, done);
+     it('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-197 из выпадающего списка, нажать "Ок". ##can_continue', async done => {
+         console.log('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-197 из выпадающего списка, нажать "Ок".')
+         const popupTitleSelector = '.uipopup__title.modal-title';
+         const popupSelector = '.uipopup__modal .modal-content';
+         await errorCatcher(async () => {
+             await browser.wait(EC.presenceOf(element(by.css(popupSelector))), defaultWaitTimeout);
+             await browser.sleep(1500);
+             console.log('Проверяем название окна');
+             expect(await element(by.css(popupTitleSelector)).getText()).toBe(modalPointPMS); // Проверить название окна
+             console.log('Проверяем что есть поле ПМС');
+             expect(await element(by.css(popupSelector + ' [data-field-name="p_dept"]')).isPresent()).toBe(true) // Проверить что есть поле ПМС
+             console.log('Проверяем что есть кнопка "Отмена"');
+             expect(await element(by.css(popupSelector + ' .popup__dialog-btn_secondary')).isPresent()).toBe(true)     // Проверить что есть кнопка "Отмена"
+             await $h.form.setField('p_dept', 'ПМС-197', 'popup');
+             await browser.sleep(1500);
+             await $h.form.submitPopup();
+             await browser.sleep(5000);
+         }, done);
     }, skip);
 
     // 8. Выбрать 1 запись из списка уже назначенных на ПМС-181 и переназначить на ПМС-197. Оставить один участок без ПМС, в группе "не указано"
-    it('8. Выбрать 1 запись из списка уже назначенных на ПМС-181 и переназначить на ПМС-197. Оставить один участок без ПМС, в группе "не указано". ##can_continue', async done =>{
+    /* it('8. Выбрать 1 запись из списка уже назначенных на ПМС-181 и переназначить на ПМС-197. Оставить один участок без ПМС, в группе "не указано". ##can_continue', async done =>{
         await errorCatcher(async () => {
             await element(by.css('.k-button.idea-button-select-all')).click();
             await browser.sleep(500);
@@ -173,7 +186,7 @@ describe('Автотест распределение по ПМС.', function ()
             await $h.form.submitPopup();
             await browser.sleep(3000);
         }, done);
-    }, skip);
+    }, skip);*/
 
     /* it('9. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что появилось предупреждение, что не всем участкам назначены пмс. ##can_continue', function (done) {
         const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
@@ -278,23 +291,22 @@ describe('Автотест распределение по ПМС.', function ()
             .then(done);
     }, skip);*/
     it('13. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен". ##can_continue', async done => {
-        const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
+        console.log('13. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен". ');
         await errorCatcher(async () => {
             const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
 
             await browser.driver.close();
             const handles = await browser.driver.getAllWindowHandles();
             await browser.driver.switchTo().window(handles[0]);
-            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), 20000);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), defaultWaitTimeout);
 
             await browser.sleep(1500);
             await $h.form.processButton(['Выполнить'], 'task');
-            await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), 5000);
+            await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), defaultWaitTimeout);
 
             const text = await element(by.css(selector)).getAttribute('value');
             expect(text?.includes('Выполнен')).toBe(true);
             await browser.sleep(1500);
-            await $h.login.logOut();
 
         }, done);
     }, skip);

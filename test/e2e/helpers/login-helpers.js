@@ -1,3 +1,5 @@
+const { defaultWaitTimeout } = protractor.helpers.wait;
+
 function loginToPage(loginPageUrl, user, password) {
     var $h = protractor.helpers;
 
@@ -71,11 +73,13 @@ function getLoginObject(usr) {
 async function logOut() {
     const EC = protractor.ExpectedConditions;
     const profileButton = await element(by.css('.navbar-username'));
-    await browser.wait(EC.elementToBeClickable(profileButton), 10000);
+    await browser.wait(EC.elementToBeClickable(profileButton), defaultWaitTimeout);
     await browser.sleep(500);
     await browser.actions().mouseMove(profileButton).perform();
-    await browser.wait(EC.elementToBeClickable(element(by.css('.button-log-out'))), 10000);
-    return profileButton.element(by.css('.button-log-out')).click();
+    await browser.sleep(500);
+    await browser.wait(EC.elementToBeClickable(element(by.css('.button-log-out'))), defaultWaitTimeout);
+    await browser.sleep(500);
+    await profileButton.element(by.css('.button-log-out')).click();
 }
 
 exports.loginToPage = loginToPage;
