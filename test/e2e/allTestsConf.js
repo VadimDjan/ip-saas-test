@@ -6,8 +6,8 @@ globalConf.specs = [
  // 'specs/managerScenario/stages-and-mode-of-work.js',
  // 'specs/managerScenario/set-stages-and-mode-of-work.js',
  // 'specs/managerScenario/distribution-track-machine-stations-spec.js',
- // 'specs/managerScenario/site-inspection-spec.js',
- 'specs/managerScenario/ppg.spec.js',
+ 'specs/managerScenario/site-inspection-spec.js',
+ // 'specs/managerScenario/ppg.spec.js',
  //'specs/other/remove-service.js',
 
     // 'specs/registration/registration-spec.js',

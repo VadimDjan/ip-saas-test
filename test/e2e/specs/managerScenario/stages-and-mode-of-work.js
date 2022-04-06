@@ -5,8 +5,6 @@ describe('Автотест на создание этапов и режима в
   const { errorCatcher } = $h.common;
   const { defaultWaitTimeout } = $h.wait;
 
-  // $h.dpgAddWorkCompletionStageId = 3748656;
-
   function skip() {
     return !protractor.totalStatus.ok;
   }
@@ -39,9 +37,6 @@ describe('Автотест на создание этапов и режима в
       console.log(currentUrl);
       expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
 
-      const count = await protractor.helpers.grid.main.rowsList().count();
-      console.log(count);
-      expect(count >= 1).toBe(true);
       await browser.sleep(1500);
     }, done)
   }, skip);
@@ -52,18 +47,23 @@ describe('Автотест на создание этапов и режима в
     await errorCatcher(async () => {
       await $h.grid.main.setSearch([
         {
-          type: 'int',
-          operator: 'eq',
-          field: 'taskid',
-          value: $h.dpgAddWorkCompletionStageId,
-        }
+          type: 'string',
+          operator: 'contains',
+          field: 'displayname',
+          value: 'Создать этапы выполнения работ по ДПГ',
+        },
       ]);
       await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
       await browser.sleep(1500);
+      const rows = protractor.helpers.grid.main.rowsList();
+      const count = await rows.count();
+      console.log(`Количество записей: ${count}`);
+      expect(count - 1).toBe(1);
 
-      const webElement = await element.all(by.css('[data-pkfieldid=\"' + String($h.dpgAddWorkCompletionStageId) + '\"]')).first().getWebElement();
+      const webElement = await rows.last().getWebElement();
       await browser.actions().doubleClick(webElement).perform();
       await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), defaultWaitTimeout);
+      await browser.sleep(1500);
     }, done);
   }, skip);
 
@@ -156,6 +156,16 @@ describe('Автотест на создание этапов и режима в
       expect(text?.includes('Выполнен')).toBe(true);
       await browser.sleep(1500);
 
+    }, done);
+  }, skip);
+
+  it('8. Закрыть модальное окно и очистить фильтры', async done => {
+    console.log('8. Закрыть модальное окно и очистить фильтры');
+    await errorCatcher(async () => {
+      await $h.form.closeLastModal();
+      await browser.sleep(500);
+      await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
+      await browser.sleep(500);
     }, done);
   }, skip);
 

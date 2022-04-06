@@ -30,11 +30,6 @@ describe('Автотест распределение по ПМС.', function ()
             console.log(currentUrl);
             expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
 
-            await $h.grid.main.clearFilters();
-
-            const count = await protractor.helpers.grid.main.rowsList().count();
-            console.log(count);
-            expect(count >= 1).toBe(true);
             await browser.sleep(1500);
         }, done)
     }, skip);
@@ -44,18 +39,23 @@ describe('Автотест распределение по ПМС.', function ()
         await errorCatcher(async () => {
             await $h.grid.main.setSearch([
                 {
-                    type: 'int',
-                    operator: 'eq',
-                    field: 'taskid',
-                    value: $h.dpgDistributeTrackId,
-                }
+                    type: 'string',
+                    operator: 'contains',
+                    field: 'displayname',
+                    value: 'Распределить участки ремонта пути по ПМС',
+                },
             ]);
             await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
             await browser.sleep(1500);
+            const rows = protractor.helpers.grid.main.rowsList();
+            const count = await rows.count();
+            console.log(`Количество записей: ${count}`);
+            expect(count - 1).toBe(1);
 
-            const webElement = await element.all(by.css('[data-pkfieldid=\"' + String($h.dpgDistributeTrackId) + '\"]')).first().getWebElement();
+            const webElement = await rows.last().getWebElement();
             await browser.actions().doubleClick(webElement).perform();
             await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), defaultWaitTimeout);
+            await browser.sleep(1500);
         }, done);
     }, skip);
 
@@ -294,6 +294,7 @@ describe('Автотест распределение по ПМС.', function ()
         console.log('13. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен". ');
         await errorCatcher(async () => {
             const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
+            const locator = element(by.css(selector));
 
             await browser.driver.close();
             const handles = await browser.driver.getAllWindowHandles();
@@ -302,12 +303,22 @@ describe('Автотест распределение по ПМС.', function ()
 
             await browser.sleep(1500);
             await $h.form.processButton(['Выполнить'], 'task');
-            await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), defaultWaitTimeout);
+            await browser.wait(EC.textToBePresentInElementValue(locator, 'Выполнен'), defaultWaitTimeout);
 
-            const text = await element(by.css(selector)).getAttribute('value');
+            const text = await locator.getAttribute('value');
             expect(text?.includes('Выполнен')).toBe(true);
             await browser.sleep(1500);
 
+        }, done);
+    }, skip);
+
+    it('14. Закрыть модальное окно и очистить фильтры', async done => {
+        console.log('14. Закрыть модальное окно и очистить фильтры');
+        await errorCatcher(async () => {
+            await $h.form.closeLastModal();
+            await browser.sleep(500);
+            await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
+            await browser.sleep(500);
         }, done);
     }, skip);
 }, !protractor.totalStatus.ok);

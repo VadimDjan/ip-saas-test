@@ -4,6 +4,12 @@ const { defaultWaitTimeout, angularWait, expliciteWait } = $h.wait;
 const EC = protractor.ExpectedConditions;
 const Key = protractor.Key;
 
+let fieldsCache = {};
+const currentModal = {
+    name: '',
+    fieldsCount: 0,
+};
+
 function getFieldSelector(name, mode) {
     if (mode === 'popup') {
         return '.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]';
@@ -183,7 +189,7 @@ function setField(name, value, mode) {
                               const element = field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset'));
                               element.isPresent()
                                   .then(isPresent => {
-                                      if (isPresent) {
+                                      if (isPresent && value !== '$_first') {
                                           const val = value && value.displayValue || value && value.value || value;
                                           return element.clear().sendKeys(val)
                                       }
@@ -197,11 +203,15 @@ function setField(name, value, mode) {
                                 if (field.type === 'autocomplete') {
                                     return element.all(by.css(fieldSelector + selector2)).first().click();
                                 } else {
-                                    return field
-                                        .element
-                                        .all(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value))
-                                        .first()
-                                        .click();
+                                    if (value !== '$_first') {
+                                        return field
+                                            .element
+                                            .all(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value))
+                                            .first()
+                                            .click();
+                                    } else {
+                                        return $$(`${fieldSelector}${selector2} span`).first().click();
+                                    }
                                 }
                             } catch (e) {
                                 console.error('Unknown value ' + value + ' for field ' + name);
@@ -458,7 +468,7 @@ function openNextSection() {
     }
 }
 
-function processForm(_fieldsList, functionToProcess) {
+/* function processForm(_fieldsList, functionToProcess) {
     // console.log('processForm 1', _fieldsList);
     var result = {};
     let fieldsList = [];
@@ -497,19 +507,14 @@ function processForm(_fieldsList, functionToProcess) {
             return element(by.css(nextTabHeaderSelector)).isPresent();
         }
         let nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
-        var currentFieldsList = [], sectionFieldsList = [];
-        var processNextField = function () {
-            if (currentFieldsList.length > 0) {
+        let currentFieldsList = [], sectionFieldsList = [];
 
-                return $h.common.scrollToSelector(getFieldSelector(currentFieldsList[0]))
-                    .then(function () {
-                        return functionToProcess(currentFieldsList[0]);
-                    })
-                    .then(function (fieldResult) {
-                        result[currentFieldsList[0]] = fieldResult;
-                        currentFieldsList = _.rest(currentFieldsList);
-                        return processNextField();
-                    });
+        const processNextField = async function () {
+            if (currentFieldsList.length > 0) {
+                await $h.common.scrollToSelector(getFieldSelector(currentFieldsList[0]));
+                result[currentFieldsList[0]] = await functionToProcess(currentFieldsList[0]);
+                currentFieldsList = _.rest(currentFieldsList);
+                return processNextField();
             } else {
                 return false;
             }
@@ -552,7 +557,8 @@ function processForm(_fieldsList, functionToProcess) {
                                     });
 
                                 } else {
-                                    return console.error('Fields ' + fieldsList.toString() + ' were not found on form');
+                                    console.error('Fields ' + fieldsList.toString() + ' were not found on form');
+                                    return false;
                                 }
                             }));
                 } else {
@@ -595,6 +601,54 @@ function processForm(_fieldsList, functionToProcess) {
         .then(element(by.css('div.modal-content .card .collapse.show')).element(by.xpath('parent::div')).getAttribute('react-key')
             .then(function(key) { processSection(Number(key))}))
         .then(() => result)
+}*/
+
+async function processForm(fieldsList, functionToProcess) {
+    await getSectionFields();
+    const result = {};
+    for (const field of fieldsList) {
+        const sectionName = Object.keys(fieldsCache).find(section => {
+            return fieldsCache[section].includes(field);
+        });
+        if (!sectionName) {
+            console.log(`Поле ${field} не найдено на форме`);
+            return;
+        }
+
+        await $h.form.openSection(sectionName);
+        await browser.sleep(500);
+        result[field] = await functionToProcess(field);
+    }
+    return result;
+}
+
+async function getSectionFields () {
+    const lastModal = $$('.details__modal').last();
+    const lastModalName = await lastModal.$('.form-header__title > span').getText();
+    const totalFieldsCount = await lastModal.$$('.card-body .react-grid-layout .react-grid-item').count();
+
+    if (lastModalName !== currentModal.name || totalFieldsCount !== currentModal.fieldsCount) {
+        fieldsCache = {};
+        currentModal.name = lastModalName;
+        currentModal.fieldsCount = totalFieldsCount;
+    }
+    if (!Object.keys(fieldsCache).length) {
+        const start = new Date().getTime();
+        const visibleSections = lastModal.$$('.modal-body .accordion > div').filter(async section => {
+            return await section.isDisplayed();
+        })
+        const count = await visibleSections.count();
+        for (let i = 0; i < count; i++) {
+            const section = visibleSections.get(i);
+            const allSectionFields = await section.$$('.card-body .react-grid-layout .react-grid-item').map(async widget => {
+                return await widget.getAttribute('data-field-name');
+            });
+            const sectionName = await section.element(by.css('.card-header .accordion-panel')).getText();
+            fieldsCache[sectionName] = allSectionFields;
+        }
+        const end = new Date().getTime();
+        console.log('Fields search performance: ', end - start);
+    }
 }
 
 exports.setForm = function (record) {
@@ -634,7 +688,7 @@ exports.getForm = function (record) {
 };
 exports.processForm = processForm;
 
-function processButton(name, fieldName, allowNoButton) {
+/* function processButton(name, fieldName, allowNoButton) {
     return angularWait()
         .then(expliciteWait)
         .then(function () {
@@ -669,6 +723,30 @@ function processButton(name, fieldName, allowNoButton) {
                     });
             }
         });
+}*/
+
+async function processButton(name, fieldName, allowNoButton) {
+    await browser.sleep(1000);
+    const lastModal = $$('.details__modal ').last();
+    const fieldSelector = (fieldName != null ? '[data-button-detail=\"' + fieldName + '\"]' : '');
+    if (Array.isArray(name)) {
+        if (name.length) {
+            const selector = 'button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
+            const buttonLocator = lastModal.$(selector);
+            const isDisplayed = await buttonLocator.isDisplayed();
+            if (isDisplayed) {
+                await processButton(name[0], fieldName);
+            } else if (!allowNoButton) {
+                console.error('Can\'t find on form button with name = ' + name[0] + ' and selector = ' + selector);
+            }
+            await processButton(name.splice(1), fieldName);
+        }
+    } else {
+        const selector = ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
+        const buttonLocator = lastModal.$(selector);
+        await browser.wait(EC.presenceOf(buttonLocator), defaultWaitTimeout);
+        await browser.actions().mouseMove(buttonLocator).click().perform();
+    }
 }
 
 exports.processButton = processButton;
@@ -728,7 +806,17 @@ exports.closeLastModal = async function() {
 };
 
 exports.openSection = async function(name) {
-    const sectionElement = await element(by.cssContainingText('.card-header .accordion-panel', name));
+    const lastModal = $$('.details__modal').last();
+    let currentSectionText = '';
+    const currentSectionHeader = lastModal
+        .$('.collapse.show')
+        .element(by.xpath('..'))
+        .$('.card-header .accordion-panel');
+    if (await currentSectionHeader.isPresent()) {
+        currentSectionText = await currentSectionHeader.getText();
+    }
+    if (currentSectionText === name) return;
+    const sectionElement = await lastModal.element(by.cssContainingText('.card-header .accordion-panel', name));
     const text = await sectionElement.getText();
     if (text.includes(name)) {
         await browser.actions().mouseMove(sectionElement).click().perform();

@@ -5,6 +5,7 @@ describe('Автотест на получение Титула. ', function () 
     const { defaultWaitTimeout } = $h.wait;
 
     const EC = protractor.ExpectedConditions;
+    // $h.serviceId = 972;
 
     let buttonAdd = 'Добавить запись';
     let buttonUpdate = 'Сохранить';
@@ -14,7 +15,6 @@ describe('Автотест на получение Титула. ', function () 
     const jackdawsCount = 4;  // установить 4 галочки
     let number = 0;
 
-    // protractor.helpers.taksUid = 3746821;
     function skip() {
         return !protractor.totalStatus.ok;
     }
@@ -40,29 +40,39 @@ describe('Автотест на получение Титула. ', function () 
     }, skip);
 
      it('2. Выбираем наряд "Получение титула ремонта" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".  ##can_continue', async done => {
-        await errorCatcher(async () => {
-            console.log('2. Выбираем наряд "Получение титула ремонта" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".');
+         console.log('2. Выбираем наряд "Получение титула ремонта" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".');
+         await errorCatcher(async () => {
             await $h.grid.main.setSearch([
                 {
-                    type: 'int',
-                    operator: 'eq',
-                    field: 'taskid',
-                    value: protractor.helpers.taksUid
-                }
+                    type: 'enums',
+                    field: 'service',
+                    value: $h.serviceId,
+                },
+                {
+                    type: 'string',
+                    operator: 'contains',
+                    field: 'displayname',
+                    value: 'Получение титула ремонта',
+                },
             ]);
             await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
             await browser.sleep(1500);
+            const rows = protractor.helpers.grid.main.rowsList();
+            const count = await rows.count();
+            console.log(`Количество записей: ${count}`);
+            expect(count - 1).toBe(1);
 
-            const webElement = await element.all(by.css('[data-pkfieldid=\"' + String($h.taksUid) + '\"]')).first().getWebElement();
+            const webElement = await rows.last().getWebElement();
             await browser.actions().doubleClick(webElement).perform();
             await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), defaultWaitTimeout);
+            await browser.sleep(1500);
         }, done)
     }, skip);
 
     // 3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение
     it('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение. ##can_continue', async done => {
+        console.log('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение.');
         await errorCatcher(async () => {
-            console.log('3. В наряде указываем исполнителя и жмем на кнопку Сохранить. Убеждаемся, что сохранение произошло. Справа наверху возникло зеленое сообщение.');
             await $h.form.setForm({
                 assignedto: 'Вернер А.А.'
             });
@@ -77,8 +87,8 @@ describe('Автотест на получение Титула. ', function () 
     }, skip);
     // 4. Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось
     it('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось. ##can_continue', async done => {
+        console.log('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось.');
         await errorCatcher(async () => {
-            console.log('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось.');
             const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
             await $h.form.processButton(['В работу']);
             await browser.wait(EC.textToBePresentInElementValue($(selector), 'В работе'), defaultWaitTimeout);
@@ -92,8 +102,8 @@ describe('Автотест на получение Титула. ', function () 
 
     // 5. Переходим по ссылке "Перейти к Титулу ремонта ". Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"
     it('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул" . ##can_continue', async done => {
+        console.log('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"');
         await errorCatcher(async () => {
-            console.log('5. Переходим по ссылке "Перейти к Титулу ремонта. Убеждаемся, что по клику открылась таблица, в ней есть хотя бы 2 записи и кнопки "Добавить запись", "Отменить", "Включить в титул"');
             await $h.form.clickOnLink('link_to_action');
             await browser.sleep(1500);
 
@@ -242,63 +252,46 @@ describe('Автотест на получение Титула. ', function () 
      }, skip);*/
 
     // 11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен"
-     it('11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен". ##can_continue', async done =>{
-       const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
-         await errorCatcher(async () => {
-             console.log('11. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен".');
-             await browser.close();
-             await browser.sleep(500);
+    it('11. Вернуться к задаче. ##can_continue', async done => {
+        await errorCatcher(async () => {
+            console.log('11. Вернуться к задаче.');
+            await browser.close();
+            await browser.sleep(500);
 
-             const handles = await browser.driver.getAllWindowHandles();
-             console.log(`Количество вкладок: ${handles.length}`)
-             expect(handles.length > 0).toBe(true);
-             if (handles.length) {
-                 await browser.driver.switchTo().window(handles[0]);
-                 await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), defaultWaitTimeout);
-                 await $h.form.processButton(['Выполнить'], 'task');   //жмем на кнопку Выполнить
-             }
-             await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), defaultWaitTimeout);
-             const text = await element(by.css(selector)).getAttribute('value');
-             console.log(`Статус workflow: ${text}`);
-             expect(text).not.toBeNull();
-             if (text) {
-                 expect(text.trim()).toBe('Выполнен');
-             }
-             await browser.sleep(3000);
+            const handles = await browser.driver.getAllWindowHandles();
+            console.log(`Количество вкладок: ${handles.length}`)
+            expect(handles.length > 0).toBe(true);
+            await browser.driver.switchTo().window(handles[0]);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), defaultWaitTimeout);
+            await browser.sleep(500);
+        }, done);
+    }, skip);
 
-         }, done)
-     }, skip);
+    it ('12. нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен".', async done => {
+        console.log('12. нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен".');
+        await errorCatcher(async () => {
+            const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
+            await $h.form.processButton(['Выполнить'], 'task');   //жмем на кнопку Выполнить
+            await browser.wait(EC.textToBePresentInElementValue($(selector), 'Выполнен'), defaultWaitTimeout);
+            const text = await element(by.css(selector)).getAttribute('value');
+            console.log(`Статус workflow: ${text}`);
+            expect(text).not.toBeNull();
+            if (text) {
+                expect(text.trim()).toBe('Выполнен');
+            }
+            await browser.sleep(3000);
+        }, done);
+    }, skip);
 
-     it('12. Перейти в услугу и скопировать id всех необходимых нарядов', async done => {
-       await errorCatcher(async () => {
-           console.log('12. Перейти в услугу и скопировать id всех необходимых нарядов');
-           console.log(`Перейти по ссылке /#/service/${$h.serviceId}`);
-           await browser.get($h.url + '/#/service/' + $h.serviceId);
-           const currentUrl = await browser.getCurrentUrl();
-           expect(currentUrl.includes(`/#/service/${$h.serviceId}`)).toBe(true);
-           await browser.wait(EC.presenceOf($('button[data-button-name="UPDATE"]')), defaultWaitTimeout);
-
-           const form = await $h.form.getForm(['tasks']);
-           const tasks = form?.tasks;
-           await browser.sleep(1500);
-
-           if (tasks?.length) {
-               const dpgAddWorkCompletionStage = tasks.find(task => task.displayname.includes('Создать этапы выполнения работ по ДПГ'));
-               expect(dpgAddWorkCompletionStage).not.toBeNull();
-               if (dpgAddWorkCompletionStage) $h.dpgAddWorkCompletionStageId = dpgAddWorkCompletionStage.taskid;
-
-               const dpgSpecifyCompletionStage = tasks.find(task => task.displayname.includes('Указать этапы и режим выполнения участков ремонта пути'));
-               expect(dpgSpecifyCompletionStage).not.toBeNull();
-               if (dpgSpecifyCompletionStage) $h.dpgSpecifyCompletionStageId = dpgSpecifyCompletionStage.taskid;
-
-               const dpgDistributeTrack = tasks.find(task => task.displayname.includes('Распределить участки ремонта пути по ПМС'));
-               expect(dpgDistributeTrack).not.toBeNull();
-               if (dpgDistributeTrack) $h.dpgDistributeTrackId = dpgDistributeTrack.taskid;
-           }
-           console.log($h.dpgAddWorkCompletionStageId, $h.dpgSpecifyCompletionStageId, $h.dpgDistributeTrackId);
-           await browser.sleep(3000);
-       }, done);
-     });
+    it('13. Закрыть модальное окно и очистить фильтры', async done => {
+     console.log('13. Закрыть модальное окно и очистить фильтры');
+     await errorCatcher(async () => {
+         await $h.form.closeLastModal();
+         await browser.sleep(500);
+         await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
+         await browser.sleep(500);
+     }, done);
+    }, skip);
 }, !protractor.totalStatus.ok);
 
 

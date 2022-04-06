@@ -7,6 +7,14 @@ function functionsList(fieldName, isSelector) {
     var prefixSelector = (fieldName) ? (isSelector ? fieldName : $h.form.getFieldSelector(fieldName)) + ' ' : '';
 
     return {
+        dataRowsList: function() {
+            return element.all(by.css(prefixSelector + '.k-grid-content table tr:not(.k-grouping-row)'));
+        },
+
+        groupRowsList: function() {
+            return element.all(by.css(prefixSelector + '.k-grid-content table tr.k-grouping-row'));
+        },
+
         rowsList: function () {
             // console.log('grid-helpers')
             // console.log('prefixSelector**=', prefixSelector, 'prefixSelector**=')
@@ -46,7 +54,7 @@ function functionsList(fieldName, isSelector) {
                 .then(angularWait)
                 .then(expliciteWait);
         },
-        setSearch: function (searchList) {
+        setSearch123: function (searchList) {
             var currentFieldIdx = 0;
             const submitSelector = '.k-animation-container[style*="display: block"] .k-filter-menu button[type="submit"]'
             var setFilter = function (filter) { // {"operator":"eq","value":90,"field":"workflowstepid", type: "enums"}
@@ -120,6 +128,48 @@ function functionsList(fieldName, isSelector) {
                 return;
             }
         },
+
+        setSearch: async function (searchList) {
+            let currentFieldIdx = 0;
+            const submitSelector = '.k-animation-container[style*="display: block"] .k-filter-menu button[type="submit"]';
+            const submitLocator = element(by.css(submitSelector));
+            const setFilter = async function (filter) { // {"operator":"eq","value":90,"field":"workflowstepid", type: "enums"}
+                await browser.sleep(500);
+                const filterButtonElement = element(by.css(`${prefixSelector} [data-field="${filter.field}"] .k-grid-filter`));
+                await browser.actions().mouseMove(filterButtonElement).click().perform();
+                await browser.sleep(1000);
+                if (filter.type === 'enums') {
+                    const checkboxSelector = prefixSelector + ' .k-filter-menu input[type="checkbox"][value*="' + filter.value + '"]';
+                    const checkboxLocator = element(by.css(checkboxSelector));
+                    await element(by.css(prefixSelector + ' .k-filter-menu input[placeholder]')).clear().sendKeys(filter.value);
+                    await browser.sleep(3000);
+                    await browser.wait(EC.visibilityOf(checkboxLocator), defaultWaitTimeout);
+                    await browser.sleep(1000);
+                    await browser.actions().mouseMove(checkboxLocator).click().perform();
+                } else if (filter.type === 'string' && filter.operator === 'contains') {
+                    const stringSelector = prefixSelector + ' input[data-bind="value:filters[0].value"]';
+                    const stringLocator = element(by.css(stringSelector));
+                    await stringLocator.clear().sendKeys(filter.value);
+                } else if (filter.type === 'int' && filter.operator === 'eq') {
+                    const stringSelector = prefixSelector + '[class="k-formatted-value k-input"]';
+                    await element.all(by.css(stringSelector)).first().clear().sendKeys(filter.value);
+                }
+
+                await browser.sleep(500);
+                await browser.actions().mouseMove(submitLocator).click().perform();
+                await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
+                await browser.sleep(1500);
+
+                currentFieldIdx += 1;
+                if (currentFieldIdx < searchList.length) {
+                    return setFilter(searchList[currentFieldIdx]);
+                }
+            };
+            if (searchList.length > 0) {
+                return setFilter(searchList[currentFieldIdx]);
+            }
+        },
+
         getTotalRows: function () {
             return $h.common.scrollToSelector(prefixSelector + ' span.k-pager-info.k-label')
                 .then(function () {
@@ -245,6 +295,25 @@ function functionsList(fieldName, isSelector) {
                 await browser.sleep(1500);
             }
         },
+        selectFieldsInColumnMenu: async fields => {
+            const columnMenuButton = element.all(by.css('div.idea-column-menu')).last();
+            await browser.actions().mouseMove(columnMenuButton).click().perform();
+            await browser.sleep(2000);
+            const columnMenu = await element.all(by.css('div.k-column-menu ul.k-menu-group')).last();
+            if (Array.isArray(fields) && fields.length) {
+                for (const field of fields) {
+                    const fieldLocator = columnMenu.element(by.css(`.k-item[data-field-name="${field}"] input[data-field="${field}"]`));
+                    await browser.actions().mouseMove(fieldLocator).click().perform();
+                    await browser.sleep(500);
+                }
+            } else {
+                const fieldLocator = await columnMenu.element(by.css(`.k-item[data-field-name="${fields}"] input[data-field="${fields}"]`));
+                await browser.actions().mouseMove(fieldLocator).click().perform();
+            }
+            await browser.sleep(1500);
+            await browser.actions().mouseMove(columnMenuButton).click().perform();
+            await browser.sleep(500);
+        }
     };
 }
 

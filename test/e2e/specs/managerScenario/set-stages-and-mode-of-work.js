@@ -38,9 +38,9 @@ describe('Автотест на указание этапов и режима в
     // }, skip);
 
     // 1. Переходим пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись
-    it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
+    it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица ##can_continue', async done => {
         console.log('---------Автотест на указание этапов и режима выполнения участков---------');
-        console.log('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.');
+        console.log('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица.');
         await errorCatcher(async () => {
             await browser.sleep(1000);
             await $h.menu.selectInMenu(['Мои наряды']);
@@ -49,13 +49,6 @@ describe('Автотест на указание этапов и режима в
             const currentUrl = await browser.getCurrentUrl();
             console.log('URL содержит /my_tasks_wc');
             expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
-
-            await $h.grid.main.clearFilters();
-
-            const count = await protractor.helpers.grid.main.rowsList().count();
-            console.log('Количество записей больше 1');
-            expect(count >= 1).toBe(true);
-            await browser.sleep(1500);
         }, done)
     }, skip);
 
@@ -65,18 +58,23 @@ describe('Автотест на указание этапов и режима в
         await errorCatcher(async () => {
             await $h.grid.main.setSearch([
                 {
-                    type: 'int',
-                    operator: 'eq',
-                    field: 'taskid',
-                    value: $h.dpgSpecifyCompletionStageId,
-                }
+                    type: 'string',
+                    operator: 'contains',
+                    field: 'displayname',
+                    value: 'Указать этапы и режим выполнения участков ремонта пути',
+                },
             ]);
             await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
             await browser.sleep(1500);
+            const rows = protractor.helpers.grid.main.rowsList();
+            const count = await rows.count();
+            console.log(`Количество записей: ${count}`);
+            expect(count - 1).toBe(1);
 
-            const webElement = await element.all(by.css('[data-pkfieldid=\"' + String($h.dpgSpecifyCompletionStageId) + '\"]')).first().getWebElement();
+            const webElement = await rows.last().getWebElement();
             await browser.actions().doubleClick(webElement).perform();
-            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), 30000);
+            await browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), defaultWaitTimeout);
+            await browser.sleep(1500);
         }, done);
     }, skip);
 
@@ -236,6 +234,16 @@ describe('Автотест на указание этапов и режима в
             expect(text?.includes('Выполнен')).toBe(true);
             await browser.sleep(1500);
 
+        }, done);
+    }, skip);
+
+    it('11. Закрыть модальное окно и очистить фильтры', async done => {
+        console.log('11. Закрыть модальное окно и очистить фильтры');
+        await errorCatcher(async () => {
+            await $h.form.closeLastModal();
+            await browser.sleep(500);
+            await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
+            await browser.sleep(500);
         }, done);
     }, skip);
 }, !protractor.totalStatus.ok);

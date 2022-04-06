@@ -1,6 +1,7 @@
 const { defaultWaitTimeout } = protractor.helpers.wait;
+const EC = protractor.ExpectedConditions;
 
-function loginToPage(loginPageUrl, user, password) {
+/* function loginToPage(loginPageUrl, user, password) {
     var $h = protractor.helpers;
 
     var expliciteWait = $h.wait.expliciteWait;
@@ -24,7 +25,32 @@ function loginToPage(loginPageUrl, user, password) {
             element(by.css('form[name="NormalForm"] button[value="Войти в систему"]')).click();
             browser.sleep(100); // if your test is outrunning the browser
         })
-        .then(expliciteWait);
+        .then(browser.sleep(2000));
+}*/
+
+async function loginToPage(loginPageUrl, user, password) {
+    const $h = protractor.helpers;
+    if (user == null || password == null) {
+        const loginObject = getLoginObject();
+        user = loginObject.user;
+        password = loginObject.password;
+    }
+    loginPageUrl = loginPageUrl || $h.url + '#/login';
+    console.info('Logging in...')
+    console.info('user =', user)
+    console.info('password =', password)
+
+    await browser.get(loginPageUrl);
+    await browser.sleep(1500);
+    await element(by.css('input[name="user"]')).clear().sendKeys(user);
+    await element(by.css('input[name="password"]')).clear().sendKeys(password);
+    await element(by.css('form[name="NormalForm"] button[value="Войти в систему"]')).click();
+    await browser.wait(EC.stalenessOf(element(by.css('.login-container'))), defaultWaitTimeout);
+    await browser.sleep(1000);
+
+    await browser.wait(EC.presenceOf(element(by.css('.spinner-container'))), defaultWaitTimeout);
+    await browser.wait(EC.stalenessOf(element(by.css('.spinner-container'))), defaultWaitTimeout);
+    await browser.sleep(1500);
 }
 
 function setLoginObject(pathToFile, loginObject) {
@@ -77,7 +103,7 @@ async function logOut() {
     await browser.sleep(500);
     await browser.actions().mouseMove(profileButton).perform();
     await browser.sleep(500);
-    await browser.wait(EC.elementToBeClickable(element(by.css('.button-log-out'))), defaultWaitTimeout);
+    await browser.wait(EC.elementToBeClickable(element(by.css('.button-log-out'))), 2000);
     await browser.sleep(500);
     await profileButton.element(by.css('.button-log-out')).click();
 }

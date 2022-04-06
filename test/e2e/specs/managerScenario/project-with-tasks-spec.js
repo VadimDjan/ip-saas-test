@@ -36,30 +36,6 @@ describe('Автотест на создание ДПГ. ', function () {
     it('1. Переходим по URL /#/service. ##can_continue', async done => {
         console.log('---------Автотест на создание ДПГ---------');
         console.log('1. Автотест на создание ДПГ.  START - Go to path URL -> /#/service');
-        /* return angularWait()
-            .then(function () {
-                browser.get(protractor.helpers.url + '/#/service')
-            })
-            .then(angularWait)
-            .then(expliciteWait)
-            .then(function () {
-                browser.getCurrentUrl().then(function (url) {
-                    let s = url.substring(url.indexOf('#') + 1);
-                    expect(s === '/service').toBe(true);
-                });
-            })
-            .then(angularWait)
-            .then(browser.sleep(1500))
-            .then(function () {
-                protractor.helpers.grid.main.rowsList().count().then(function (res) { //Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна задача
-                    let b = res > 0;
-                    expect(b).toBe(true);
-                })
-            })
-            .then(function () {
-                expect(element(by.css('.k-button.idea-button-add-row')).getText()).toBe('Добавить запись');    // Проверить что есть кнопка Добавить запись
-            })
-            .then(done);*/
         await errorCatcher(async() => {
             await browser.get(protractor.helpers.url + '/#/service');
             await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Услуга'))), defaultWaitTimeout);
@@ -122,27 +98,13 @@ describe('Автотест на создание ДПГ. ', function () {
 
     // 4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.
     it('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', async done => {
-        /* return $h.form.getForm(['tasks'])
-            .then(function (form) {
-                eventUid = form.uid;
-                tasksBefore = form.tasks.length
-                protractor.helpers.taksUid = Number(form.tasks[0].taskid)
-                expect(tasksBefore).toBe(1);    // проверяем что создалась одна запись
-            })
-            .then(expliciteWait)
-            .then(function () {
-                return $h.form.processButton(['UPDATE']);
-            })
-            // .then($h.login.logOut)
-            .then(browser.sleep(6000))
-            .then(done);*/
         await errorCatcher(async () => {
             console.log('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.');
             const form = await $h.form.getForm(['tasks']);
             await browser.sleep(1500);
             eventUid = form.uid;
             tasksBefore = form.tasks.length
-            $h.taksUid = Number(form.tasks[0].taskid)
+            // $h.taksUid = Number(form.tasks[0].taskid)
             expect(tasksBefore).toBe(1);    // проверяем что создалась одна запись
 
             await $h.form.processButton(['UPDATE']);
