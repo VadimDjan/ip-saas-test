@@ -612,7 +612,7 @@ async function processForm(fieldsList, functionToProcess) {
         });
         if (!sectionName) {
             console.log(`Поле ${field} не найдено на форме`);
-            return;
+            continue;
         }
 
         await $h.form.openSection(sectionName);
@@ -750,28 +750,6 @@ async function processButton(name, fieldName, allowNoButton) {
 }
 
 exports.processButton = processButton;
-
-/* function processPopup(action) {
-    const selector = '.modal-footer .popup__dialog-btn_' + action
-    return function () {
-        return angularWait()
-            .then(expliciteWait)
-            .then(function () {
-                return element(by.css(selector)).isPresent();
-            })
-            .then(function (isPresent) {
-                if (isPresent) {
-                    return $h.common.scrollToSelector(selector);
-                } else {
-                    console.error('Can\'t find button on popup for action = ' + action + ' and selector = ' + selector);
-                }
-            })
-            .then(function () {
-                return element(by.css(selector)).click();
-            })
-            .then(browser.sleep(2000));
-    };
-}*/
 
 async function processPopup(action) {
     const selector = '.modal-footer .popup__dialog-btn_' + action;
