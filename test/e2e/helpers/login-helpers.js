@@ -46,9 +46,7 @@ async function loginToPage(loginPageUrl, user, password) {
     await element(by.css('input[name="password"]')).clear().sendKeys(password);
     await element(by.css('form[name="NormalForm"] button[value="Войти в систему"]')).click();
     await browser.wait(EC.stalenessOf(element(by.css('.login-container'))), defaultWaitTimeout);
-    await browser.sleep(1000);
-
-    await browser.wait(EC.presenceOf(element(by.css('.spinner-container'))), defaultWaitTimeout);
+    await browser.wait(EC.presenceOf(element(by.css('.spinner-container'))), 5000);
     await browser.wait(EC.stalenessOf(element(by.css('.spinner-container'))), defaultWaitTimeout);
     await browser.sleep(1500);
 }
