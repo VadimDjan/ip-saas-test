@@ -2,11 +2,13 @@ describe('Автотест на Осмотр участка. ', function () {
     const _ = protractor.libs._;
     const $h = protractor.helpers;
     const { errorCatcher } = $h.common;
+    const { assignAndSaveTask, pressTakeToWorkButton, getIdFromModalTitle } = $h.task;
     const { defaultWaitTimeout } = $h.wait;
     const Key = protractor.Key;
     const EC = protractor.ExpectedConditions;
+    $h.sitesLength = {}; // протяженность участков
 
-    $h.serviceId = 981;
+    const serviceId = 997;
     let numOfRows = 0;
     let start_km_ar = 0;
     let start_pk_ar = 0;
@@ -30,7 +32,6 @@ describe('Автотест на Осмотр участка. ', function () {
     const updateInlineButton = 'toolbar-inline-buttons idea-button-modify idea-button-update k-grid-update';
     const editInlineButton = 'toolbar-inline-buttons idea-button-modify idea-button-edit k-grid-edit';
     const addInlineButton = 'pull-right toolbar-buttons k-button k-grid-add';
-    const alertSuccess = 'alert__wrapper alert__wrapper_success';
     const alertDanger = 'alert__wrapper alert__wrapper_danger';
 
 
@@ -67,7 +68,7 @@ describe('Автотест на Осмотр участка. ', function () {
                 {
                     type: 'enums',
                     field: 'service',
-                    value:  $h.serviceId,
+                    value:  $h.serviceId || serviceId,
                 },
                 {
                     type: 'string',
@@ -93,6 +94,7 @@ describe('Автотест на Осмотр участка. ', function () {
                 await browser.sleep(1500);
 
                 const text = await element(by.css(selector)).getAttribute('value');
+                const requestName = await $h.form.getField('request');
 
                 // Заполнение необходимых данных
                 if (!text.includes('В работе')) {
@@ -102,7 +104,7 @@ describe('Автотест на Осмотр участка. ', function () {
                 await openSiteInspectionTab();
                 await fillCommonInformation();
                 await fillUpperStructureData();
-                await fillSiteLengthData();
+                await fillSiteLengthData(requestName);
                 await fillRailsLengthData();
                 await fillRoadProfileData();
                 await fillSituationData();
@@ -111,6 +113,7 @@ describe('Автотест на Осмотр участка. ', function () {
 
                 // Сохранение
                 await saveSiteInspection();
+                console.log($h.sitesLength);
 
                 await $h.form.closeLastModal();
                 await browser.sleep(3000);
@@ -120,44 +123,6 @@ describe('Автотест на Осмотр участка. ', function () {
         }
         await done();
     }, skip);
-
-    const assignAndSaveTask = async () => {
-        console.log('1. Назначаем текущую задачу на "Волков С.А." и сохраняем запись.');
-        try {
-            await $h.form.setForm({
-                assignedto: 'Волков С.А.',
-            });
-            await browser.sleep(1500);
-            await $h.form.processButton(['UPDATE'], 'task');
-            await browser.wait(EC.presenceOf(element(by.css(`[class="${alertSuccess}"]`))), defaultWaitTimeout);
-            const inWorkButtonIsPresent = await element(by.css('[data-button-name="В работу"]')).isPresent();
-
-            console.log('TEST: на форме после сохранения присутствует кнопка "В работу"');
-            expect(inWorkButtonIsPresent).toBe(true);
-            await browser.sleep(1500);
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
-    const pressTakeToWorkButton = async () => {
-        console.log('2. Переводим наряд в работу и убеждаемся что изменился статус.');
-        try {
-            const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
-            const currentText = await element(by.css(selector)).getAttribute('value');
-            if (!currentText.includes('В работе')) {
-                await $h.form.processButton(['В работу']);
-                await browser.wait(EC.presenceOf(element(by.css('[data-button-name="Выполнить"]'))), defaultWaitTimeout);
-                await browser.sleep(1500);
-            }
-
-            console.log('TEST: статус задачи "В работе"');
-            const textAfterButtonPressed = await element(by.css(selector)).getAttribute('value');
-            expect(textAfterButtonPressed?.trim()).toBe('В работе');
-        } catch (e) {
-            console.error(e);
-        }
-    };
 
     const openSiteInspectionTab = async () => {
         console.log('3. Кликаем по ссылке и убеждаемся что открылась запись');
@@ -178,22 +143,6 @@ describe('Автотест на Осмотр участка. ', function () {
     const fillCommonInformation = async () => {
         console.log('4. Заполнить обязательные поля на вкладке "Общая информация".');
         try {
-            const filledForm = await $h.form.getForm([
-                'railtrack_class',
-                'track_specialization',
-                'temp_amplitude',
-                'powerunit',
-                'track_number',
-                'train_num',
-                'region',
-                'subject_rf',
-                'established_velocity_cargo',
-                'established_velocity',
-                'volume_of_traffic',
-                'tonnage',
-                'rails_weld_department',
-                'rsgrid_build_department',
-            ]);
             const formData = {
                 railtrack_class: '2',
                 track_specialization: 'В',
@@ -209,14 +158,8 @@ describe('Автотест на Осмотр участка. ', function () {
                 tonnage: 1000,
                 rails_weld_department: 'ПМС-197',
                 rsgrid_build_department: 'ПМС-197',
-
             }
-            Object.entries(filledForm).forEach(([key, value]) => {
-                if (formData.hasOwnProperty(key) && formData[key] == value) {
-                    delete formData[key];
-                }
-            });
-            await $h.form.setForm(formData);
+            await $h.form.setFormWithUnfilledFields(formData);
             await browser.sleep(1500);
         } catch (e) {
             console.error(e);
@@ -228,45 +171,24 @@ describe('Автотест на Осмотр участка. ', function () {
         console.log('5. Перейти во вкладку "Верхнее строение пути" поля в разделе "До ремонта", заполнить обязательные поля.');
         try {
             await browser.sleep(1000);
-            const filledForm = await $h.form.getForm([
-                'rail_brand_br',
-                'bug_rail_count',
-                'sleeper_br',
-                'bug_sleeper_count',
-                'clips_br',
-                'ballast_br',
-                'signal_system_br',
-                'dirtyness',
-                'trackform_br',
-                'rail_situation',
-                'sleeper_situation',
-                'clips_situation',
-                'trackform_ar',
-                'rail_brand_ar',
-            ])
             const formData = {
-                rail_brand_br: 'Р65 СГ I',
+                rail_brand_br: '$_first',
                 bug_rail_count: 10,
-                sleeper_br: 'Ш АРС-МК',
+                sleeper_br: '$_first',
                 bug_sleeper_count: 10,
-                clips_br: 'АРС',
-                ballast_br: 'Щебень',
-                signal_system_br: 'Полуавтоматическая',
+                clips_br: '$_first',
+                ballast_br: '$_first',
+                signal_system_br: '$_first',
                 dirtyness: 34,
-                trackform_br: 'Звеньевой',
-                rail_situation: 'Новые',
-                sleeper_situation: 'Новые',
-                clips_situation: 'Новые',
-                trackform_ar: 'Звеньевой',
-                rail_brand_ar: 'Р65 СГ I',
+                trackform_br: '$_first',
+                rail_situation: '$_first',
+                sleeper_situation: '$_first',
+                clips_situation: '$_first',
+                trackform_ar: '$_first',
+                rail_brand_ar: '$_first',
             };
 
-            Object.entries(filledForm).forEach(([key, value]) => {
-                if (formData.hasOwnProperty(key) && formData[key] == value) {
-                    delete formData[key];
-                }
-            });
-            await $h.form.setForm(formData);
+            await $h.form.setFormWithUnfilledFields(formData);
 
             await browser.sleep(1500);
             await $$('.details__modal').last().sendKeys(Key.HOME);
@@ -279,7 +201,7 @@ describe('Автотест на Осмотр участка. ', function () {
     };
 
     // протяженность участка
-    const fillSiteLengthData = async () => {
+    const fillSiteLengthData = async request => {
         console.log('6. Перейти во вкладку "Протяженность участка", заполнить открытые поля и строки таблиц: "Нестандартные километры"/"Нестандартные пикеты".');
         try {
             const form = await $h.form.getForm(['start_km_br', 'start_pk_br', 'finish_km', 'finish_pk_before_repair', 'distance_before_repair']);
@@ -288,7 +210,11 @@ describe('Автотест на Осмотр участка. ', function () {
             finish_km_after_repair = form['finish_km'];
             finish_pk_after_repair = form['finish_pk_before_repair'];
             distance_after_repair = form['distance_before_repair'];
-            await $h.form.setForm({
+
+            $h.sitesLength[request] = distance_after_repair;
+            console.log('distance after repair', distance_after_repair);
+
+            await $h.form.setFormWithUnfilledFields({
                 start_km_ar: start_km_ar,
                 start_pk_ar: start_pk_ar,
                 finish_km_after_repair: finish_km_after_repair,
@@ -838,9 +764,9 @@ describe('Автотест на Осмотр участка. ', function () {
         try {
             await browser.sleep(1500);
 
-            await $h.form.setForm({
-                cargo_loco: '2М62У',
-                shunting_loco: 'ВЛ65',
+            await $h.form.setFormWithUnfilledFields({
+                cargo_loco: '$_first',
+                shunting_loco: '$_first',
             });
 
             await browser.sleep(500);
@@ -874,8 +800,9 @@ describe('Автотест на Осмотр участка. ', function () {
         try {
             const selector = '.modal-body[data-detail="task"] .card .react-grid-item[data-field-name="workflowstepid"] input';
             const locator = $(selector);
+            const lastModal = $$('.details__modal').last();
 
-            await $$('.details__modal').last().sendKeys(Key.HOME);
+            await lastModal.sendKeys(Key.HOME);
             await $h.form.processButton(['UPDATE']);   //жмем на кнопку Сохранить
             await browser.wait(EC.stalenessOf(element(by.css('[data-button-name="UPDATE"] .loader-spinner'))), defaultWaitTimeout);
             await browser.sleep(1500);

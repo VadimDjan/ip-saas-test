@@ -45,7 +45,6 @@ describe('Автотест распределение по ПМС.', function ()
                     value: 'Распределить участки ремонта пути по ПМС',
                 },
             ]);
-            await browser.wait(EC.invisibilityOf(element(by.css('.k-loading-mask'))), defaultWaitTimeout);
             await browser.sleep(1500);
             const rows = protractor.helpers.grid.main.rowsList();
             const count = await rows.count();

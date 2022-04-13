@@ -180,20 +180,25 @@ function setField(name, value, mode) {
                     selector2 = selector + ' li.rw-list-option';
                     return field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click()
                       .then(() => browser.sleep(1500))
-                      .then(function() {
+                      .then(async function() {
                           /* if (field.type === 'autocomplete') {
                               const val = value && value.displayValue || value && value.value || value;
                               return field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
                           }*/
+                          const removeButton = field.element.$(fieldSelector + ' .comboboxfield__remove-btn');
+                          const removeButtonExists = await removeButton.isPresent();
+                          if (removeButtonExists) {
+                              await removeButton.click();
+                              await browser.sleep(500);
+                              await field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click();
+                          }
                           if (['autocomplete', 'no_glass_autocomplete'].includes(field.type)) {
                               const element = field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset'));
-                              element.isPresent()
-                                  .then(isPresent => {
-                                      if (isPresent && value !== '$_first') {
-                                          const val = value && value.displayValue || value && value.value || value;
-                                          return element.clear().sendKeys(val)
-                                      }
-                                  })
+                              const isPresent = await element.isPresent()
+                              if (isPresent && value !== '$_first') {
+                                  const val = value && value.displayValue || value && value.value || value;
+                                  return element.clear().sendKeys(val)
+                              }
                           }
                       })
                         .then(expliciteWait)
@@ -607,16 +612,18 @@ async function processForm(fieldsList, functionToProcess) {
     await getSectionFields();
     const result = {};
     for (const field of fieldsList) {
-        const sectionName = Object.keys(fieldsCache).find(section => {
-            return fieldsCache[section].includes(field);
-        });
-        if (!sectionName) {
-            console.log(`Поле ${field} не найдено на форме`);
-            continue;
-        }
+        if (field !== 'displayname') {
+            const sectionName = Object.keys(fieldsCache).find(section => {
+                return fieldsCache[section].includes(field);
+            });
+            if (!sectionName) {
+                console.log(`Поле ${field} не найдено на форме`);
+                continue;
+            }
 
-        await $h.form.openSection(sectionName);
-        await browser.sleep(500);
+            await $h.form.openSection(sectionName);
+            await browser.sleep(500);
+        }
         result[field] = await functionToProcess(field);
     }
     return result;
@@ -649,6 +656,22 @@ async function getSectionFields () {
         const end = new Date().getTime();
         console.log('Fields search performance: ', end - start);
     }
+}
+
+exports.setFormWithUnfilledFields = async function (formData) {
+    const unfilledForm = {};
+    const filledForm = await $h.form.getForm(Object.keys(formData));
+    Object.entries(filledForm).forEach(([key, value]) => {
+        if (formData.hasOwnProperty(key) && formData[key] != value) {
+            if (formData[key] === '$_first') {
+                if (!value) unfilledForm[key] = formData[key];
+            } else {
+                unfilledForm[key] = formData[key];
+            }
+        }
+    });
+    console.log(unfilledForm);
+    await $h.form.setForm(unfilledForm);
 }
 
 exports.setForm = function (record) {
@@ -744,7 +767,7 @@ async function processButton(name, fieldName, allowNoButton) {
     } else {
         const selector = ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
         const buttonLocator = lastModal.$(selector);
-        await browser.wait(EC.presenceOf(buttonLocator), defaultWaitTimeout);
+        await browser.wait(EC.presenceOf(buttonLocator), defaultWaitTimeout * 2);
         await browser.actions().mouseMove(buttonLocator).click().perform();
     }
 }
@@ -769,8 +792,10 @@ exports.cancelPopup = () => processPopup('cancel');
 
 exports.clickOnLink = async function (fieldName) {
     await browser.sleep(1500);
-    const link = await element.all(by.css(`[data-field-name=${fieldName}] .linkfield__link`)).last();
-    await browser.actions().mouseMove(link).click().perform();
+    const lastModal = $$('.details__modal').last();
+    const linkLocator = lastModal.$(`[data-field-name=${fieldName}] .linkfield__link`);
+    await browser.wait(EC.visibilityOf(linkLocator), defaultWaitTimeout * 2);
+    await browser.actions().mouseMove(linkLocator).click().perform();
 
     const handles = await browser.getAllWindowHandles();
     await browser.driver.switchTo().window(handles[handles.length - 1]);

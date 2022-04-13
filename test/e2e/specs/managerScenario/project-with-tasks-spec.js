@@ -93,6 +93,7 @@ describe('Автотест на создание ДПГ. ', function () {
             await browser.sleep(1500);
             const titleText = await element(by.css('[class="form-header__title"]')).getText();
             $h.serviceId = parseInt(titleText.split('#')[1]);
+            console.log('Новая услуга создана с ID ', $h.serviceId);
         }, done);
     }, skip);
 
@@ -100,13 +101,12 @@ describe('Автотест на создание ДПГ. ', function () {
     it('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', async done => {
         await errorCatcher(async () => {
             console.log('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.');
-            const form = await $h.form.getForm(['tasks']);
+            /* const form = await $h.form.getForm(['tasks']);
             await browser.sleep(1500);
             eventUid = form.uid;
             tasksBefore = form.tasks.length
             // $h.taksUid = Number(form.tasks[0].taskid)
-            expect(tasksBefore).toBe(1);    // проверяем что создалась одна запись
-
+            expect(tasksBefore).toBe(1);    // проверяем что создалась одна запись*/
             await $h.form.processButton(['UPDATE']);
             await browser.wait(EC.stalenessOf(element(by.css('.loader-spinner'))), defaultWaitTimeout);
             await browser.sleep(1500);
