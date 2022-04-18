@@ -8,7 +8,7 @@ describe('Автотест на Осмотр участка. ', function () {
     const EC = protractor.ExpectedConditions;
     $h.sitesLength = {}; // протяженность участков
 
-    const serviceId = 997;
+    const serviceId = 1007;
     let numOfRows = 0;
     let start_km_ar = 0;
     let start_pk_ar = 0;
@@ -45,7 +45,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await $h.login.logOut();
             await browser.sleep(1500);
             const loginObject = $h.login.getLoginObject();
-            await $h.login.loginToPage(null, loginObject.users[1].user, loginObject.users[1].password);
+                await $h.login.loginToPage(null, loginObject.users[3].user, loginObject.users[3].password);
             await browser.sleep(1000);
             const currentUrl = await browser.getCurrentUrl();
             if (!currentUrl.includes('my_tasks_dept')) {
@@ -98,7 +98,7 @@ describe('Автотест на Осмотр участка. ', function () {
 
                 // Заполнение необходимых данных
                 if (!text.includes('В работе')) {
-                    await assignAndSaveTask();
+                    await assignAndSaveTask('Волков С.А.');
                     await pressTakeToWorkButton();
                 }
                 await openSiteInspectionTab();

@@ -21,7 +21,7 @@ describe('Автотест на построение ППГ. ', function () {
     ]
 
     let currentSiteLength = 0;
-    const serviceId = 997;
+    const serviceId = 1007;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -67,7 +67,7 @@ describe('Автотест на построение ППГ. ', function () {
             await $h.login.logOut();
             await browser.sleep(1500);
             const loginObject = $h.login.getLoginObject();
-            await $h.login.loginToPage(null, loginObject.users[1].user, loginObject.users[1].password);
+            await $h.login.loginToPage(null, loginObject.users[3].user, loginObject.users[3].password);
             await browser.sleep(1000);
             const currentUrl = await browser.getCurrentUrl();
             if (!currentUrl.includes('my_tasks_dept')) {
@@ -121,7 +121,7 @@ describe('Автотест на построение ППГ. ', function () {
 
                 const text = await element(by.css(selector)).getAttribute('value');
                 if (!text.includes('В работе')) {
-                    await assignAndSaveTask();
+                    await assignAndSaveTask('Волков С.А.');
                     await pressTakeToWorkButton();
                 }
                 await openRequestWorkingPeriods();
@@ -147,6 +147,7 @@ describe('Автотест на построение ППГ. ', function () {
                 console.error(e);
             }
         }
+        await done();
     });
 
     const openRequestWorkingPeriods = async () => {
@@ -312,7 +313,7 @@ describe('Автотест на построение ППГ. ', function () {
             const locator = $(selector);
 
             await $h.form.processButton(['Выполнить']);
-            await browser.wait(EC.textToBePresentInElementValue(locator, 'Выполнен'), defaultWaitTimeout);
+            await browser.wait(EC.textToBePresentInElementValue(locator, 'Выполнен'), defaultWaitTimeout * 6);
 
             const text = await locator.getAttribute('value');
             expect(text?.includes('Выполнен')).toBe(true);

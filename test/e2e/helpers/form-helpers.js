@@ -435,8 +435,8 @@ function getField(name, mode) {
                     console.log('action not defined,  type =' + field.type)
                     return;
                 case 'subgrid':
-                    selector = fieldSelector + ' [data-grid="ip-kendo-grid"]'
-                     return browser.sleep(2000)
+                    selector = fieldSelector + ' [data-grid="ip-kendo-grid"]';
+                    return browser.wait(EC.presenceOf($(selector)), defaultWaitTimeout)
                         .then( function() {
                             return browser.executeScript(function (_selector) {
                                 // console.log('_selector', _selector.toString())
@@ -700,53 +700,11 @@ exports.getForm = function (record) {
                 })
 
         } else {
-            // console.log('getForm 2', record)
             return getField(fieldName)
         }
     })
-    // .then(result => {
-    //     console.info('result of getForm = ' + JSON.stringify(result || ''))
-    //     return result
-    // })
 };
 exports.processForm = processForm;
-
-/* function processButton(name, fieldName, allowNoButton) {
-    return angularWait()
-        .then(expliciteWait)
-        .then(function () {
-            var fieldSelector = (fieldName != null ? '[data-button-detail=\"' + fieldName + '\"]' : '');
-            if (name instanceof Array) {
-                if (name.length === 0) {
-                    return;
-                } else {
-                    var selector = 'div.modal-content' + ' button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
-                    return $h.common.scrollToSelector(selector)
-                        .then(browser.wait(EC.presenceOf(element(by.css(selector))), defaultWaitTimeout))
-                        .then(() => element(by.css(selector)).isPresent())
-                        .then(function (isPresent) {
-                            if (isPresent) {
-                                return processButton(name[0], fieldName);
-                            } else if (!allowNoButton) { 
-                                console.error('Can\'t find on form button with name = ' + name[0] + ' and selector = ' + selector);
-                            }
-                        })
-                        .then(function () {
-                            return processButton(name.splice(1), fieldName);
-                        });
-                }
-            } else {
-                const selector = 'div .modal-content' + ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
-                return browser.wait(EC.presenceOf(element(by.css(selector))), defaultWaitTimeout)
-                    .then(function(){
-                        // return element(by.css(selector)).click()
-                        return browser.actions()
-                          .mouseMove(element(by.css(selector)))
-                          .click().perform();
-                    });
-            }
-        });
-}*/
 
 async function processButton(name, fieldName, allowNoButton) {
     await browser.sleep(1000);
@@ -804,7 +762,10 @@ exports.clickOnLink = async function (fieldName) {
 
 exports.closeLastModal = async function() {
     await browser.sleep(1500);
-    const lastModalCloseButton = await element.all(by.css('.details__modal .details__close-btn')).last();
+    const lastModal = $$('.details__modal').last();
+    const classList = await lastModal.getAttribute('class');
+    const isSeparate = classList.includes('separate-page');
+    const lastModalCloseButton = isSeparate ? lastModal.$('div.back-button') : lastModal.$('.details__close-btn');
     return await lastModalCloseButton.click();
 };
 

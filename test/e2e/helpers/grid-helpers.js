@@ -327,9 +327,9 @@ function functionsList(fieldName, isSelector) {
 
         },
         clearFilters: async () => { // очистка фильтров на форме списка
-            if (await element(by.css('.idea-button-clear-filters')).isDisplayed()) {
-                await element(by.css('.idea-button-clear-filters')).click();
-                await browser.wait(EC.invisibilityOf(element(by.css('.idea-button-clear-filters'))), defaultWaitTimeout);
+            if (await element(by.css('.idea-icon-button-clear-filters')).isDisplayed()) {
+                await element(by.css('.idea-icon-button-clear-filters')).click();
+                await browser.wait(EC.invisibilityOf(element(by.css('.idea-icon-button-clear-filters'))), defaultWaitTimeout);
                 await browser.sleep(1500);
             }
         },

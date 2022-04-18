@@ -3,11 +3,11 @@ const EC = protractor.ExpectedConditions;
 const alertSuccess = 'alert__wrapper alert__wrapper_success';
 const { defaultWaitTimeout } = $h.wait;
 
-const assignAndSaveTask = async () => {
+const assignAndSaveTask = async assignTo => {
     console.log('1. Назначаем текущую задачу на "Волков С.А." и сохраняем запись.');
     try {
         await $h.form.setForm({
-            assignedto: 'Волков С.А.',
+            assignedto: assignTo,
         });
         await browser.sleep(1500);
         await $h.form.processButton(['UPDATE'], 'task');

@@ -11,8 +11,9 @@ describe('Автотест на получение Титула. ', function () 
     let buttonCancel = 'Отменить участок';
     let buttonIncludeInTitle = 'Включить в титул';
     let linesNumber;
-    const jackdawsCount = 3;
+    const jackdawsCount = 2;
     let number = 0;
+    $h.serviceId = 1000;
 
     function skip() {
         return !protractor.totalStatus.ok;
