@@ -6,6 +6,33 @@ function functionsList(fieldName, isSelector) {
 
     var prefixSelector = (fieldName) ? (isSelector ? fieldName : $h.form.getFieldSelector(fieldName)) + ' ' : '';
 
+    const filters = {
+        selectFilter: async function(filter) {
+            const filterMenu = $$('.k-filter-menu.k-popup.k-group.k-reset').filter(el => el.isDisplayed()).first();
+            const logicInputSelector = 'span.k-widget.k-dropdown.k-header';
+            await filterMenu.$$(logicInputSelector).first().click();
+            await browser.sleep(1000);
+            const filterType = this[filter.type];
+            if (!filterType) {
+                console.error(`No operators found for type "${filter.type}"`);
+            } else {
+                const filterText = this[filter.type][filter.operator];
+                if (!filterText) {
+                    console.error(`No "${filter.operator}" operator found for type "${filter.type}"`)
+                } else {
+                    const listContainer = await $$('.k-list-container.k-popup.k-group.k-reset').filter(el => el.isDisplayed()).first();
+                    const listOption = listContainer.element(by.cssContainingText('li.k-item', filterText));
+                    await listOption.click();
+                    await browser.sleep(1000);
+                }
+            }
+        },
+        'int': {
+            'eq': 'равно',
+            'gte': 'больше или равно',
+        }
+    }
+
     return {
         dataRowsList: function() {
             return element.all(by.css(prefixSelector + '.k-grid-content table tr:not(.k-grouping-row)'));
@@ -146,13 +173,24 @@ function functionsList(fieldName, isSelector) {
                     await browser.wait(EC.visibilityOf(checkboxLocator), defaultWaitTimeout);
                     await browser.sleep(1000);
                     await browser.actions().mouseMove(checkboxLocator).click().perform();
-                } else if (filter.type === 'string' && filter.operator === 'contains') {
-                    const stringSelector = prefixSelector + ' input[data-bind="value:filters[0].value"]';
-                    const stringLocator = element(by.css(stringSelector));
-                    await stringLocator.clear().sendKeys(filter.value);
-                } else if (filter.type === 'int' && filter.operator === 'eq') {
-                    const stringSelector = prefixSelector + '[class="k-formatted-value k-input"]';
-                    await element.all(by.css(stringSelector)).first().clear().sendKeys(filter.value);
+                } else if (filter.type === 'string') {
+                    switch (filter.operator) {
+                        case 'contains':
+                        default:
+                            const stringSelector = prefixSelector + ' input[data-bind="value:filters[0].value"]';
+                            const stringLocator = element(by.css(stringSelector));
+                            await stringLocator.clear();
+                            await browser.sleep(500);
+                            await stringLocator.sendKeys(filter.value);
+                            break;
+                    }
+                } else if (filter.type === 'int') {
+                    await filters.selectFilter(filter);
+                    const intSelector = prefixSelector + '[class="k-formatted-value k-input"]';
+                    const intLocator = element.all(by.css(intSelector)).first()
+                    await intLocator.clear();
+                    await browser.sleep(500);
+                    await intLocator.sendKeys(filter.value);
                 }
 
                 await browser.sleep(500);
@@ -289,9 +327,9 @@ function functionsList(fieldName, isSelector) {
 
         },
         clearFilters: async () => { // очистка фильтров на форме списка
-            if (await element(by.css('.idea-button-clear-filters')).isDisplayed()) {
-                await element(by.css('.idea-button-clear-filters')).click();
-                await browser.wait(EC.invisibilityOf(element(by.css('.idea-button-clear-filters'))), defaultWaitTimeout);
+            if (await element(by.css('.idea-icon-button-clear-filters')).isDisplayed()) {
+                await element(by.css('.idea-icon-button-clear-filters')).click();
+                await browser.wait(EC.invisibilityOf(element(by.css('.idea-icon-button-clear-filters'))), defaultWaitTimeout);
                 await browser.sleep(1500);
             }
         },

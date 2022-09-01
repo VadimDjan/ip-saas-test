@@ -180,20 +180,25 @@ function setField(name, value, mode) {
                     selector2 = selector + ' li.rw-list-option';
                     return field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click()
                       .then(() => browser.sleep(1500))
-                      .then(function() {
+                      .then(async function() {
                           /* if (field.type === 'autocomplete') {
                               const val = value && value.displayValue || value && value.value || value;
                               return field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
                           }*/
+                          const removeButton = field.element.$(fieldSelector + ' .comboboxfield__remove-btn');
+                          const removeButtonExists = await removeButton.isPresent();
+                          if (removeButtonExists) {
+                              await removeButton.click();
+                              await browser.sleep(500);
+                              await field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click();
+                          }
                           if (['autocomplete', 'no_glass_autocomplete'].includes(field.type)) {
                               const element = field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset'));
-                              element.isPresent()
-                                  .then(isPresent => {
-                                      if (isPresent && value !== '$_first') {
-                                          const val = value && value.displayValue || value && value.value || value;
-                                          return element.clear().sendKeys(val)
-                                      }
-                                  })
+                              const isPresent = await element.isPresent()
+                              if (isPresent && value !== '$_first') {
+                                  const val = value && value.displayValue || value && value.value || value;
+                                  return element.clear().sendKeys(val)
+                              }
                           }
                       })
                         .then(expliciteWait)
@@ -430,8 +435,8 @@ function getField(name, mode) {
                     console.log('action not defined,  type =' + field.type)
                     return;
                 case 'subgrid':
-                    selector = fieldSelector + ' [data-grid="ip-kendo-grid"]'
-                     return browser.sleep(2000)
+                    selector = fieldSelector + ' [data-grid="ip-kendo-grid"]';
+                    return browser.wait(EC.presenceOf($(selector)), defaultWaitTimeout)
                         .then( function() {
                             return browser.executeScript(function (_selector) {
                                 // console.log('_selector', _selector.toString())
@@ -607,16 +612,18 @@ async function processForm(fieldsList, functionToProcess) {
     await getSectionFields();
     const result = {};
     for (const field of fieldsList) {
-        const sectionName = Object.keys(fieldsCache).find(section => {
-            return fieldsCache[section].includes(field);
-        });
-        if (!sectionName) {
-            console.log(`Поле ${field} не найдено на форме`);
-            return;
-        }
+        if (field !== 'displayname') {
+            const sectionName = Object.keys(fieldsCache).find(section => {
+                return fieldsCache[section].includes(field);
+            });
+            if (!sectionName) {
+                console.log(`Поле ${field} не найдено на форме`);
+                continue;
+            }
 
-        await $h.form.openSection(sectionName);
-        await browser.sleep(500);
+            await $h.form.openSection(sectionName);
+            await browser.sleep(500);
+        }
         result[field] = await functionToProcess(field);
     }
     return result;
@@ -651,6 +658,22 @@ async function getSectionFields () {
     }
 }
 
+exports.setFormWithUnfilledFields = async function (formData) {
+    const unfilledForm = {};
+    const filledForm = await $h.form.getForm(Object.keys(formData));
+    Object.entries(filledForm).forEach(([key, value]) => {
+        if (formData.hasOwnProperty(key) && formData[key] != value) {
+            if (formData[key] === '$_first') {
+                if (!value) unfilledForm[key] = formData[key];
+            } else {
+                unfilledForm[key] = formData[key];
+            }
+        }
+    });
+    console.log(unfilledForm);
+    await $h.form.setForm(unfilledForm);
+}
+
 exports.setForm = function (record) {
     return processForm(Object.keys(record), fieldName => {
         const fieldValue = record[fieldName]
@@ -677,53 +700,11 @@ exports.getForm = function (record) {
                 })
 
         } else {
-            // console.log('getForm 2', record)
             return getField(fieldName)
         }
     })
-    // .then(result => {
-    //     console.info('result of getForm = ' + JSON.stringify(result || ''))
-    //     return result
-    // })
 };
 exports.processForm = processForm;
-
-/* function processButton(name, fieldName, allowNoButton) {
-    return angularWait()
-        .then(expliciteWait)
-        .then(function () {
-            var fieldSelector = (fieldName != null ? '[data-button-detail=\"' + fieldName + '\"]' : '');
-            if (name instanceof Array) {
-                if (name.length === 0) {
-                    return;
-                } else {
-                    var selector = 'div.modal-content' + ' button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
-                    return $h.common.scrollToSelector(selector)
-                        .then(browser.wait(EC.presenceOf(element(by.css(selector))), defaultWaitTimeout))
-                        .then(() => element(by.css(selector)).isPresent())
-                        .then(function (isPresent) {
-                            if (isPresent) {
-                                return processButton(name[0], fieldName);
-                            } else if (!allowNoButton) { 
-                                console.error('Can\'t find on form button with name = ' + name[0] + ' and selector = ' + selector);
-                            }
-                        })
-                        .then(function () {
-                            return processButton(name.splice(1), fieldName);
-                        });
-                }
-            } else {
-                const selector = 'div .modal-content' + ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
-                return browser.wait(EC.presenceOf(element(by.css(selector))), defaultWaitTimeout)
-                    .then(function(){
-                        // return element(by.css(selector)).click()
-                        return browser.actions()
-                          .mouseMove(element(by.css(selector)))
-                          .click().perform();
-                    });
-            }
-        });
-}*/
 
 async function processButton(name, fieldName, allowNoButton) {
     await browser.sleep(1000);
@@ -744,34 +725,12 @@ async function processButton(name, fieldName, allowNoButton) {
     } else {
         const selector = ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
         const buttonLocator = lastModal.$(selector);
-        await browser.wait(EC.presenceOf(buttonLocator), defaultWaitTimeout);
+        await browser.wait(EC.presenceOf(buttonLocator), defaultWaitTimeout * 2);
         await browser.actions().mouseMove(buttonLocator).click().perform();
     }
 }
 
 exports.processButton = processButton;
-
-/* function processPopup(action) {
-    const selector = '.modal-footer .popup__dialog-btn_' + action
-    return function () {
-        return angularWait()
-            .then(expliciteWait)
-            .then(function () {
-                return element(by.css(selector)).isPresent();
-            })
-            .then(function (isPresent) {
-                if (isPresent) {
-                    return $h.common.scrollToSelector(selector);
-                } else {
-                    console.error('Can\'t find button on popup for action = ' + action + ' and selector = ' + selector);
-                }
-            })
-            .then(function () {
-                return element(by.css(selector)).click();
-            })
-            .then(browser.sleep(2000));
-    };
-}*/
 
 async function processPopup(action) {
     const selector = '.modal-footer .popup__dialog-btn_' + action;
@@ -791,8 +750,10 @@ exports.cancelPopup = () => processPopup('cancel');
 
 exports.clickOnLink = async function (fieldName) {
     await browser.sleep(1500);
-    const link = await element.all(by.css(`[data-field-name=${fieldName}] .linkfield__link`)).last();
-    await browser.actions().mouseMove(link).click().perform();
+    const lastModal = $$('.details__modal').last();
+    const linkLocator = lastModal.$(`[data-field-name=${fieldName}] .linkfield__link`);
+    await browser.wait(EC.visibilityOf(linkLocator), defaultWaitTimeout * 2);
+    await browser.actions().mouseMove(linkLocator).click().perform();
 
     const handles = await browser.getAllWindowHandles();
     await browser.driver.switchTo().window(handles[handles.length - 1]);
@@ -801,7 +762,10 @@ exports.clickOnLink = async function (fieldName) {
 
 exports.closeLastModal = async function() {
     await browser.sleep(1500);
-    const lastModalCloseButton = await element.all(by.css('.details__modal .details__close-btn')).last();
+    const lastModal = $$('.details__modal').last();
+    const classList = await lastModal.getAttribute('class');
+    const isSeparate = classList.includes('separate-page');
+    const lastModalCloseButton = isSeparate ? lastModal.$('div.back-button') : lastModal.$('.details__close-btn');
     return await lastModalCloseButton.click();
 };
 

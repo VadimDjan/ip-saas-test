@@ -5,15 +5,15 @@ describe('Автотест на получение Титула. ', function () 
     const { defaultWaitTimeout } = $h.wait;
 
     const EC = protractor.ExpectedConditions;
-    // $h.serviceId = 972;
 
     let buttonAdd = 'Добавить запись';
     let buttonUpdate = 'Сохранить';
     let buttonCancel = 'Отменить участок';
     let buttonIncludeInTitle = 'Включить в титул';
     let linesNumber;
-    const jackdawsCount = 4;  // установить 4 галочки
+    const jackdawsCount = 2;
     let number = 0;
+    $h.serviceId = 1000;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -126,9 +126,17 @@ describe('Автотест на получение Титула. ', function () 
     }, skip);
 
     // 6. В открывшемся списке нажимаем на кнопку "Выбрать все", убедиться, что все галочки поставились
-    it('6. В открывшемся списке нажимаем на кнопку "Выбрать все". ##can_continue', async done => {
-        console.log('6. В открывшемся списке нажимаем на кнопку "Выбрать все".');
+    it('6. В открывшемся списке устаналиваем фильтр по протяженности и нажимаем на кнопку "Выбрать все". ##can_continue', async done => {
+        console.log('6. В открывшемся списке устанавливаем фильтр по протяженности на кнопку "Выбрать все".');
         await errorCatcher(async () => {
+            await $h.grid.main.setSearch([
+                {
+                    type: 'int',
+                    operator: 'gte',
+                    field: 'distance_before_repair',
+                    value: 3,
+                }
+            ]);
             await browser.sleep(1500);
             await element(by.css('.k-button.idea-button-select-all')).click();
             linesNumber = await element.all(by.css(' .k-grid-content [aria-selected="true"]')).count();
@@ -173,7 +181,7 @@ describe('Автотест на получение Титула. ', function () 
             let childElements = protractor.helpers.grid.main.rowsList();
             let newGroupExists = false;
             // console.log(await childElements);
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < jackdawsCount; i++) {
                 const text = await childElements.get(i).getText();
                 if (text.includes('Не указано')) { //убедиться, что есть группа "Не указано"
                     startNumber = i;
@@ -184,22 +192,15 @@ describe('Автотест на получение Титула. ', function () 
             console.log('Группа "Не указано" присутствует: ', newGroupExists);
             expect(newGroupExists).toBe(true);
             if (newGroupExists) {
-                await childElements.get(startNumber + 1).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);
-
-                await childElements.get(startNumber + 2).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);
-
-                await childElements.get(startNumber + 3).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);
-
-                await childElements.get(startNumber + 4).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);
+                for (let i = 0; i < jackdawsCount; i++) {
+                    await childElements.get(startNumber + i + 1).element(by.css('[class="idea-grid-select"]')).click();
+                    await browser.sleep(500);
+                }
             }
             await element(by.css('[data-button-id="1232"]')).click(); // нажать Включить в титул
             await browser.sleep(5000);
             newGroupExists = false;
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < jackdawsCount; i++) {
                 const text = await childElements.get(i).getText();
                 if (text.includes('Услуга')) { //убедиться, что есть группа "Услуга"
                     startNumber = i;
@@ -209,17 +210,10 @@ describe('Автотест на получение Титула. ', function () 
             }
             expect(newGroupExists).toBe(true);
             if (newGroupExists) {
-                await childElements.get(startNumber + 1).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);
-
-                await childElements.get(startNumber + 2).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);
-
-                await childElements.get(startNumber + 3).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);
-
-                await childElements.get(startNumber + 4).element(by.css('[class="idea-grid-select"]')).click();
-                await browser.sleep(500);
+                for (let i = 0; i < jackdawsCount; i++) {
+                    await childElements.get(startNumber + 1 + i).element(by.css('[class="idea-grid-select"]')).click();
+                    await browser.sleep(500);
+                }
             }
         }, done)
      }, skip);

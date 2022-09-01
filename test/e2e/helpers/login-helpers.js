@@ -63,9 +63,7 @@ function setLoginObject(pathToFile, loginObject) {
         s);
 }
 
-function getLoginObject(usr) {
-    if (usr && usr.password && usr.name)
-        return usr
+function getLoginObject(index) {
     var $h = protractor.helpers;
     // var path = pathToFile || $h.workspaceDirectory + '/login.txt';
     var lines = // $h.file.readFileSync(path).split(/\r?\n/)
@@ -81,9 +79,7 @@ function getLoginObject(usr) {
         user: lines[selectedIndex][0],
         password: lines[selectedIndex][1],
         workspace: lines[selectedIndex][2],
-        users: lines.slice(1).filter(function (line) {
-            return line.length >= 3;
-        }).map(function (line) {
+        users: lines.map(function (line) {
             return {
                 user: line[0],
                 password: line[1],
@@ -98,7 +94,7 @@ async function logOut() {
     const EC = protractor.ExpectedConditions;
     const profileButton = await element(by.css('.navbar-username'));
     await browser.wait(EC.elementToBeClickable(profileButton), defaultWaitTimeout);
-    await browser.sleep(500);
+    await browser.sleep(1500);
     await browser.actions().mouseMove(profileButton).perform();
     await browser.sleep(500);
     await browser.wait(EC.elementToBeClickable(element(by.css('.button-log-out'))), 2000);

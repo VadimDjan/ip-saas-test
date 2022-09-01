@@ -71,6 +71,7 @@ const config = {
         $h.postgres = require('./helpers/postgres-helpers.js');
         $h.menu = require('./helpers/menu-helpers.js');
         $h.scheduler = require('./helpers/scheduler-helpers.js');
+        $h.task = require('./helpers/task-helpers.js');
 
         protractor.constants = {};
         var jasmineReporters = require('jasmine-reporters');
