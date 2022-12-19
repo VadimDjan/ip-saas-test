@@ -1,6 +1,7 @@
 const $h = protractor.helpers;
+
+const { locators } = $h;
 const EC = protractor.ExpectedConditions;
-const alertSuccess = 'alert__wrapper alert__wrapper_success';
 const { defaultWaitTimeout } = $h.wait;
 
 const assignAndSaveTask = async assignTo => {
@@ -11,7 +12,7 @@ const assignAndSaveTask = async assignTo => {
         });
         await browser.sleep(1500);
         await $h.form.processButton(['UPDATE'], 'task');
-        await browser.wait(EC.presenceOf(element(by.css(`[class="${alertSuccess}"]`))), defaultWaitTimeout);
+        await browser.wait(EC.presenceOf(locators.alerts.success), defaultWaitTimeout);
         const inWorkButtonIsPresent = await element(by.css('[data-button-name="В работу"]')).isPresent();
 
         console.log('TEST: на форме после сохранения присутствует кнопка "В работу"');

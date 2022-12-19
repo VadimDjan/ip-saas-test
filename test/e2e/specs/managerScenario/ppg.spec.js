@@ -7,6 +7,8 @@ describe('Автотест на построение ППГ. ', function () {
     const {defaultWaitTimeout} = $h.wait;
     const EC = protractor.ExpectedConditions;
 
+    $h.serviceId = $h.serviceId || 1042;
+
     const testScenario = [
         '1. Переход на вкладку МОИ НАРЯДЫ',
         '2. Находим первый наряд содержащий "построение поминутно-пооперационного графика"',
@@ -21,7 +23,6 @@ describe('Автотест на построение ППГ. ', function () {
     ]
 
     let currentSiteLength = 0;
-    const serviceId = 1007;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -90,7 +91,7 @@ describe('Автотест на построение ППГ. ', function () {
                 {
                     type: 'enums',
                     field: 'service',
-                    value:  $h.serviceId || serviceId,
+                    value:  $h.serviceId,
                 },
                 {
                     type: 'string',

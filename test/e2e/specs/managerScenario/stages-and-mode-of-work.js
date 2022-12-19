@@ -3,6 +3,7 @@ describe('Автотест на создание этапов и режима в
   const $h = protractor.helpers;
   const EC = protractor.ExpectedConditions;
   const { errorCatcher } = $h.common;
+  const { alerts } = $h.locators;
   const { defaultWaitTimeout } = $h.wait;
 
   function skip() {
@@ -77,8 +78,8 @@ describe('Автотест на создание этапов и режима в
       });
       await browser.sleep(1500);
       await $h.form.processButton(['UPDATE'], 'task');
-      await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), defaultWaitTimeout);
-      const alertIsPresent = await element(by.css('[class="alert__wrapper alert__wrapper_success"]')).isPresent();
+      await browser.wait(EC.presenceOf(alerts.success), defaultWaitTimeout);
+      const alertIsPresent = await alerts.success.isPresent();
       expect(alertIsPresent).toBe(true);
     }, done)
   }, skip);

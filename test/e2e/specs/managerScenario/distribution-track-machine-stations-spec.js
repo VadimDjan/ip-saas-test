@@ -2,6 +2,7 @@ describe('Автотест распределение по ПМС.', function ()
     const _ = protractor.libs._;
     const $h = protractor.helpers;
     const { errorCatcher } = $h.common;
+    const { alerts } = $h.locators;
     const { defaultWaitTimeout } = $h.wait;
     const EC = protractor.ExpectedConditions;
 
@@ -68,8 +69,8 @@ describe('Автотест распределение по ПМС.', function ()
             });
             await browser.sleep(1500);
             await $h.form.processButton(['UPDATE'], 'task');
-            await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), defaultWaitTimeout);
-            const alertIsPresent = await element(by.css('[class="alert__wrapper alert__wrapper_success"]')).isPresent();
+            await browser.wait(EC.presenceOf(alerts.success), defaultWaitTimeout);
+            const alertIsPresent = await alerts.success.isPresent();
             expect(alertIsPresent).toBe(true);
         }, done)
     }, skip);

@@ -5,7 +5,8 @@ describe('Автотест на согласование ППГ', function() {
     const { errorCatcher } = $h.common;
     const { defaultWaitTimeout } = $h.wait;
     const { assignAndSaveTask, pressTakeToWorkButton } = $h.task;
-    const serviceId = 1010;
+
+    $h.serviceId = $h.serviceId || 1045;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -37,7 +38,7 @@ describe('Автотест на согласование ППГ', function() {
                 {
                     type: 'enums',
                     field: 'service',
-                    value: $h.serviceId || serviceId,
+                    value: $h.serviceId,
                 },
                 {
                     type: 'string',

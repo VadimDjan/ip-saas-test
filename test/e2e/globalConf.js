@@ -29,8 +29,8 @@ const config = {
     params: {
         jenkins: {
             workspaceDirectory: '.',
-            host: '51.250.3.213', port: 80,
-            // host: 'localhost', port: 8080,
+            // host: '51.250.3.213', port: 80,
+            host: '192.168.65.2', port: 8080,
         },
         specs: ''
     },
@@ -62,6 +62,7 @@ const config = {
         };
         $h.wait = require('./helpers/wait-helpers.js');
         $h.common = require('./helpers/common-helpers.js');
+        $h.locators = require('./helpers/locators');
         $h.grid = require('./helpers/grid-helpers.js');
         $h.form = require('./helpers/form-helpers.js');
         $h.file = require('./helpers/file-helpers.js');

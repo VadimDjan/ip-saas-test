@@ -1,18 +1,9 @@
 describe('Автотест на создание ДПГ. ', function () {
-    var _ = protractor.libs._;
-    var $h = protractor.helpers;
-    var expliciteWait = $h.wait.expliciteWait;
-    var angularWait = $h.wait.angularWait;
+    const _ = protractor.libs._;
+    const $h = protractor.helpers;
     const { errorCatcher } = $h.common;
     const { defaultWaitTimeout } = $h.wait;
-
-    var loginObject = {};
-    var tasksBefore = 0,
-        tasksToAdd = 0;
-    var eventStart = null,
-        eventEnd = null,
-        eventUid = null;
-    var EC = protractor.ExpectedConditions;
+    const EC = protractor.ExpectedConditions;
 
     function skip() {
         return !protractor.totalStatus.ok;

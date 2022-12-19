@@ -2,6 +2,7 @@ describe('Автотест на получение Титула. ', function () 
     const _ = protractor.libs._;
     const $h = protractor.helpers;
     const { errorCatcher } = $h.common;
+    const { alerts } = $h.locators;
     const { defaultWaitTimeout } = $h.wait;
 
     const EC = protractor.ExpectedConditions;
@@ -11,9 +12,9 @@ describe('Автотест на получение Титула. ', function () 
     let buttonCancel = 'Отменить участок';
     let buttonIncludeInTitle = 'Включить в титул';
     let linesNumber;
-    const jackdawsCount = 2;
+    let jackdawsCount = 2;
     let number = 0;
-    $h.serviceId = 1000;
+    $h.serviceId = $h.serviceId || 1044;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -78,12 +79,11 @@ describe('Автотест на получение Титула. ', function () 
             });
             await browser.sleep(1500);
             await $h.form.processButton(['UPDATE'], 'task');   //жмем на кнопку Сохранить
-            await browser.wait(EC.presenceOf(element(by.css('[class="alert__wrapper alert__wrapper_success"]'))), defaultWaitTimeout);
-            const alertIsPresent = await element(by.css('[class="alert__wrapper alert__wrapper_success"]')).isPresent();
+            await browser.wait(EC.presenceOf(alerts.success), defaultWaitTimeout);
+            const alertIsPresent = await alerts.success.isPresent();
             expect(alertIsPresent).toBe(true);
             await browser.sleep(1500);
         }, done);
-
     }, skip);
     // 4. Жмем кнопку В работу. Убеждаемся, что значение поля Статус изменилось
     it('4. Жмем кнопку В работу.Убеждаемся, что значение поля Статус изменилось. ##can_continue', async done => {
@@ -150,12 +150,14 @@ describe('Автотест на получение Титула. ', function () 
         console.log('7. Снять галку с 2-х ремонтов.');
         await errorCatcher(async () => {
             await browser.sleep(1500);
-            const elements = element.all(by.css(' .k-grid-content [class="idea-grid-select"]'));
-            for (let i = 0; i < jackdawsCount; i++) {
+            const elements = $$('.k-grid-content .idea-grid-select');
+            const elementsCount = await elements.count();
+            jackdawsCount = elementsCount > jackdawsCount ? jackdawsCount : elementsCount;
+            for (let i = 0; i < (elementsCount > jackdawsCount ? jackdawsCount : elementsCount); i++) {
                 await elements.get(i).click();
                 await browser.sleep(500);
             }
-            const notSelectedElementsCount = await element.all(by.css(' .k-grid-content [aria-selected="false"]')).count();
+            const notSelectedElementsCount = await $$('.k-grid-content [aria-selected="false"]').count();
             expect(notSelectedElementsCount).toBe(jackdawsCount); //убедиться, что галки снялись
         }, done);
     }, skip);

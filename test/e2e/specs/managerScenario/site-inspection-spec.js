@@ -2,13 +2,14 @@ describe('Автотест на Осмотр участка. ', function () {
     const _ = protractor.libs._;
     const $h = protractor.helpers;
     const { errorCatcher } = $h.common;
+    const { alerts } = $h.locators;
     const { assignAndSaveTask, pressTakeToWorkButton, getIdFromModalTitle } = $h.task;
     const { defaultWaitTimeout } = $h.wait;
     const Key = protractor.Key;
     const EC = protractor.ExpectedConditions;
     $h.sitesLength = {}; // протяженность участков
+    $h.serviceId = $h.serviceId || 1045;
 
-    const serviceId = 1007;
     let numOfRows = 0;
     let start_km_ar = 0;
     let start_pk_ar = 0;
@@ -32,7 +33,6 @@ describe('Автотест на Осмотр участка. ', function () {
     const updateInlineButton = 'toolbar-inline-buttons idea-button-modify idea-button-update k-grid-update';
     const editInlineButton = 'toolbar-inline-buttons idea-button-modify idea-button-edit k-grid-edit';
     const addInlineButton = 'pull-right toolbar-buttons k-button k-grid-add';
-    const alertDanger = 'alert__wrapper alert__wrapper_danger';
 
 
     function skip() {
@@ -68,7 +68,7 @@ describe('Автотест на Осмотр участка. ', function () {
                 {
                     type: 'enums',
                     field: 'service',
-                    value:  $h.serviceId || serviceId,
+                    value:  $h.serviceId,
                 },
                 {
                     type: 'string',
@@ -247,7 +247,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
 
-            let resCount = await element.all(by.css('[class="alert__wrapper alert__wrapper_danger"]')).count();
+            let resCount = await alerts.all.error.count();
             expect(resCount).toBe(countMistakes);
             countMistakes = resCount;
             await browser.sleep(1500);
@@ -295,7 +295,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
 
-            resCount = await element.all(by.css('[class="alert__wrapper alert__wrapper_danger"]')).count();
+            resCount = await alerts.all.error.count();
             expect(resCount).toBe(countMistakes);
             countMistakes = resCount;
 
@@ -359,7 +359,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
 
-            const dangerCount = await  element.all(by.css(`[class="${alertDanger}"]`)).count();
+            const dangerCount = await alerts.all.error.count();
             expect(dangerCount).toBe(countMistakes);
             countMistakes = dangerCount;
 
@@ -420,7 +420,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
 
-            let dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
+            let dangerCount = await alerts.all.error.count();
             console.log(`Количество ошибок: ${dangerCount}`);
             expect(dangerCount).toBe(countMistakes);
             countMistakes = dangerCount;
@@ -486,7 +486,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
 
-            dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
+            dangerCount = await alerts.all.error.count();
             console.log(`Количество ошибок: ${dangerCount}`);
             expect(dangerCount).toBe(countMistakes);
             countMistakes = dangerCount;
@@ -555,7 +555,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
 
-            let dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
+            let dangerCount = await alerts.all.error.count();
             console.log(`Количество ошибок: ${dangerCount}`);
             expect(dangerCount).toBe(countMistakes);
             countMistakes = dangerCount;
@@ -603,7 +603,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(3000);
 
-            dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
+            dangerCount = await alerts.all.error.count();
             console.log(`Количество ошибок: ${dangerCount}`);
             expect(dangerCount).toBe(countMistakes);
             countMistakes = dangerCount;
@@ -666,7 +666,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(2000);
 
-            let dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
+            let dangerCount = await alerts.all.error.count();
             console.log(`Количество ошибок: ${dangerCount}`);
             expect(dangerCount).toBe(countMistakes);
             countMistakes = dangerCount;
@@ -724,7 +724,7 @@ describe('Автотест на Осмотр участка. ', function () {
             await elementMain.element(by.css(`[class="${updateInlineButton}"]`)).click();
             await browser.sleep(3000);
 
-            dangerCount = await element.all(by.css(`[class="${alertDanger}"]`)).count();
+            dangerCount = await alerts.all.error.count();
             console.log(`Количество ошибок: ${dangerCount}`);
             expect(dangerCount).toBe(countMistakes);
             countMistakes = dangerCount;
@@ -780,7 +780,7 @@ describe('Автотест на Осмотр участка. ', function () {
                 await browser.wait(EC.visibilityOf($('[data-button-name="CREATE"]')), defaultWaitTimeout);
                 await browser.sleep(1500);
 
-                await $h.form.setForm(formData[i]);
+                await $h.form.setForm(formData[i + count]);
                 await $h.form.processButton(['CREATE']);
                 await browser.wait(EC.stalenessOf($('.loader-spinner')), defaultWaitTimeout);
                 await browser.sleep(1500);
