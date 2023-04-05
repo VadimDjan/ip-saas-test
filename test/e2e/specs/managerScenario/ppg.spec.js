@@ -7,7 +7,7 @@ describe('Автотест на построение ППГ. ', function () {
     const {defaultWaitTimeout} = $h.wait;
     const EC = protractor.ExpectedConditions;
 
-    $h.serviceId = $h.serviceId || 1042;
+    $h.serviceId = $h.serviceId || 1256;
 
     const testScenario = [
         '1. Переход на вкладку МОИ НАРЯДЫ',
@@ -34,34 +34,6 @@ describe('Автотест на построение ППГ. ', function () {
         const parts = request.split(',');
         return parts[parts.length - 1].split(' ')[1];
     }
-    /* it(testScenario[0], async done => {
-      console.log(testScenario[0]);
-      await errorCatcher(async () => {
-        const currentUrl = await browser.getCurrentUrl();
-        let s = currentUrl.substring(currentUrl.indexOf('#') + 1);
-        if (s !== '/my_tasks_dept') {
-          await browser.get($h.url + `/#/my_tasks_dept`);
-        }
-        expect(s === `/my_tasks_dept`).toBe(true);
-      }, done);
-    }, skip);
-
-    it(testScenario[1], async done => {
-      console.log(testScenario[1]);
-      await errorCatcher(async () => {
-        await $h.grid.main.setSearch(ppgSearchList)
-        await $h.grid.main.openRow(0);
-        await browser.sleep(1500);
-      }, done);
-    }, skip);
-
-    it(testScenario[2], async done => {
-      console.log(testScenario[2]);
-      await errorCatcher(async () => {
-        await $h.form.clickOnLink('link_to_action');
-        await waitForModalOpened();
-      }, done);
-    }, skip);*/
 
     it('0. Заходим в систему под ПМС197_Менеджер. ##can_continue', async done => {
         await errorCatcher(async () => {

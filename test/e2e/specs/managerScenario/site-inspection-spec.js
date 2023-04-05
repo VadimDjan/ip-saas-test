@@ -8,7 +8,7 @@ describe('Автотест на Осмотр участка. ', function () {
     const Key = protractor.Key;
     const EC = protractor.ExpectedConditions;
     $h.sitesLength = {}; // протяженность участков
-    $h.serviceId = $h.serviceId || 1045;
+    $h.serviceId = $h.serviceId || 1258;
 
     let numOfRows = 0;
     let start_km_ar = 0;

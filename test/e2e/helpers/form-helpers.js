@@ -181,16 +181,13 @@ function setField(name, value, mode) {
                     return field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click()
                       .then(() => browser.sleep(1500))
                       .then(async function() {
-                          /* if (field.type === 'autocomplete') {
-                              const val = value && value.displayValue || value && value.value || value;
-                              return field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
-                          }*/
                           const removeButton = field.element.$(fieldSelector + ' .comboboxfield__remove-btn');
                           const removeButtonExists = await removeButton.isPresent();
                           if (removeButtonExists) {
                               await removeButton.click();
                               await browser.sleep(500);
                               await field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click();
+                              await browser.sleep(1000);
                           }
                           if (['autocomplete', 'no_glass_autocomplete'].includes(field.type)) {
                               const element = field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset'));
@@ -485,7 +482,7 @@ function openNextSection() {
             fieldsList = _fieldsList.filter(f => f !== 'displayname')
             return $h.common.scrollToSelector(getFieldSelector('displayname'))
                 .then(() => functionToProcess('displayname'))
-                .then(fieldResult => { 
+                .then(fieldResult => {
                     result['displayname'] = fieldResult
                 })
 

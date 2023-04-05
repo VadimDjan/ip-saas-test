@@ -10,33 +10,21 @@ describe('Автотест на создание этапов и режима в
     return !protractor.totalStatus.ok;
   }
 
-  // it('1. Заходим в систему под пользователем КраснДРП. ##can_continue', (done) => {
-  //     // console.log('START - 1. Заходим в систему под пользователем КраснДРП');
-  //     loginObject = $h.login.getLoginObject();
-  //     // managerUser = 'Менеджер услуги ДРП' // 'Администратор Шаблонов'//loginObject.user
-  //     $h.login.loginToPage()
-  //         .then(angularWait)
-  //         .then(expliciteWait)
-  //         .then(function () {
-  //             return expect(element(by.css('[ng-click=\"$ctrl.openAccount()\"]')).isPresent()).toBe(true);
-  //         })
-  //         .then(done);
-  //     // console.log('END - 1. Заходим в систему под пользователем КраснДРП');
-  // }, skip);
-
   // 1. Переходим пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись
 
-  it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
+  it('1. Переходим по URL /#/my_tasks_wc_for_test. Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
     console.log('---------Автотест на создание этапов и режима выполнения участков---------');
-    console.log('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись. ');
+    console.log('1. Переходим по URL /#/my_tasks_wc_for_test. Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись. ');
     await errorCatcher(async () => {
-      await browser.sleep(1000);
-      await $h.menu.selectInMenu(['Мои наряды']);
-      await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои наряды'))), defaultWaitTimeout);
-
-      const currentUrl = await browser.getCurrentUrl();
+      let currentUrl = await browser.getCurrentUrl();
+      if (!currentUrl.includes('my_tasks_wc_for_test')) {
+        await browser.get($h.url + '/#/my_tasks_wc_for_test');
+        await browser.sleep(500);
+      }
+      await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои задачи'))), defaultWaitTimeout);
+      currentUrl = await browser.getCurrentUrl();
       console.log(currentUrl);
-      expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
+      expect(currentUrl.includes('my_tasks_wc_for_test')).toBe(true);
 
       await browser.sleep(1500);
     }, done)
@@ -104,13 +92,16 @@ describe('Автотест на создание этапов и режима в
   it('5. Переходим по ссылке "К просмотру и созданию этапов ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "+Добавить" и нажимаем на неё ##can_continue', async done => {
     console.log('5. Переходим по ссылке "К просмотру и созданию этапов ДПГ". Убеждаемся, что по клику открылась таблица, в ней есть кнопка "+Добавить" и нажимаем на неё');
     await errorCatcher(async () => {
+      const addButton = $('.toolbar-buttons.k-button.k-grid-add');
+
       await browser.sleep(1500);
       await $h.form.clickOnLink('link_to_action');
-      await browser.wait(EC.presenceOf(element(by.css('.toolbar-buttons.k-button.k-grid-add'))), defaultWaitTimeout);
+      await browser.wait(EC.presenceOf(addButton), defaultWaitTimeout);
+      await browser.sleep(1000);
 
-      const buttonText = await element(by.css('.toolbar-buttons.k-button.k-grid-add')).getText();
+      const buttonText = await addButton.getText();
       expect(buttonText?.includes('Добавить')).toBe(true);
-      await element(by.css('.toolbar-buttons.k-button.k-grid-add')).click();
+      await addButton.click();
     }, done);
   }, skip);
 

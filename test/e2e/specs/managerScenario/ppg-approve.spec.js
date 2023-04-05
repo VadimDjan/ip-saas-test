@@ -21,11 +21,11 @@ describe('Автотест на согласование ППГ', function() {
             await $h.login.loginToPage(null, loginObject.users[0].user, loginObject.users[0].password);
             await browser.sleep(1000);
             const currentUrl = await browser.getCurrentUrl();
-            if (!currentUrl.includes('my_tasks_wc')) {
-                await $h.menu.selectInMenu(['Мои наряды']);
+            if (!currentUrl.includes('my_tasks_wc_for_test')) {
+                await browser.get($h.url + '/#/my_tasks_wc_for_test');
                 await browser.sleep(500);
             }
-            await browser.wait(EC.visibilityOf(element(by.cssContainingText('.k-grid-toolbar .table-name', 'Мои наряды'))), 10000);
+            await browser.wait(EC.visibilityOf(element(by.cssContainingText('.k-grid-toolbar .table-name', 'Мои задачи'))), 10000);
             await browser.sleep(1000);
         }, done);
     }, skip());

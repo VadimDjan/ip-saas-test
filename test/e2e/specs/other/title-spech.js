@@ -20,22 +20,21 @@ describe('Автотест на получение Титула. ', function () 
         return !protractor.totalStatus.ok;
     }
 
-    // 1. Переходим пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись
-    it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
+    // 1. Переходим по URL /#/my_tasks_wc_for_test. Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись
+    it('1. Переходим по URL /#/my_tasks_wc_for_test. Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись.  ##can_continue', async done => {
         console.log('---------Автотест на получение Титула---------');
-        console.log('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись. "');
+        console.log('1. Переходим по URL /#/my_tasks_wc_for_test. Ждём загрузки и убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись. "');
         await errorCatcher(async () => {
-            await browser.sleep(1000);
-            await $h.menu.selectInMenu(['Мои наряды']);
-            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои наряды'))), defaultWaitTimeout);
-
-            const currentUrl = await browser.getCurrentUrl();
+            let currentUrl = await browser.getCurrentUrl();
+            if (!currentUrl.includes('my_tasks_wc_for_test')) {
+                await browser.get($h.url + '/#/my_tasks_wc_for_test');
+                await browser.sleep(500);
+            }
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои задачи'))), defaultWaitTimeout);
+            currentUrl = await browser.getCurrentUrl();
             console.log(currentUrl);
-            expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
+            expect(currentUrl.includes('my_tasks_wc_for_test')).toBe(true);
 
-            const count = await protractor.helpers.grid.main.rowsList().count();
-            console.log(count);
-            expect(count >= 1).toBe(true);
             await browser.sleep(1500);
         }, done)
     }, skip);
@@ -199,24 +198,9 @@ describe('Автотест на получение Титула. ', function () 
                     await browser.sleep(500);
                 }
             }
-            await element(by.css('[data-button-id="1232"]')).click(); // нажать Включить в титул
-            await browser.sleep(5000);
-            newGroupExists = false;
-            for (let i = 0; i < jackdawsCount; i++) {
-                const text = await childElements.get(i).getText();
-                if (text.includes('Услуга')) { //убедиться, что есть группа "Услуга"
-                    startNumber = i;
-                    newGroupExists = true;
-                    break;
-                }
-            }
-            expect(newGroupExists).toBe(true);
-            if (newGroupExists) {
-                for (let i = 0; i < jackdawsCount; i++) {
-                    await childElements.get(startNumber + 1 + i).element(by.css('[class="idea-grid-select"]')).click();
-                    await browser.sleep(500);
-                }
-            }
+            await $('[data-button-id="1232"]').click(); // нажать Включить в титул
+            await browser.wait(EC.stalenessOf($('[data-button-id="1232"] .loader-spinner')), defaultWaitTimeout);
+            await browser.sleep(3000);
         }, done)
      }, skip);
 

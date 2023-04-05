@@ -70,10 +70,11 @@ describe('Автотест на создание ДПГ. ', function () {
         await errorCatcher(async () => {
             console.log('3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ.');
             const today = `[${$h.common.getTodayStr()}] - `
-            const year = $h.common.getFullYear();
+            const year = 2022;
             $h.dpg = today + 'Услуга';
             await $h.form.setForm({
                 displayname: `${today}Услуга`,
+                citype_shortname: 'Ремонт пути',
                 year: year,
                 branch: 'Красноярская дирекция по ремонту пути',
                 description: `${today}Описание услуги`,
@@ -92,12 +93,6 @@ describe('Автотест на создание ДПГ. ', function () {
     it('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта. ##can_continue', async done => {
         await errorCatcher(async () => {
             console.log('4. Переходим на вкладку Наряды и убеждаемся, что в списке создался один наряд с наименованием Получение титула ремонта.');
-            /* const form = await $h.form.getForm(['tasks']);
-            await browser.sleep(1500);
-            eventUid = form.uid;
-            tasksBefore = form.tasks.length
-            // $h.taksUid = Number(form.tasks[0].taskid)
-            expect(tasksBefore).toBe(1);    // проверяем что создалась одна запись*/
             await $h.form.processButton(['UPDATE']);
             await browser.wait(EC.stalenessOf(element(by.css('.loader-spinner'))), defaultWaitTimeout);
             await browser.sleep(1500);

@@ -29,8 +29,9 @@ const config = {
     params: {
         jenkins: {
             workspaceDirectory: '.',
+            host: '158.160.54.131', port: 8080,
             // host: '51.250.3.213', port: 80,
-            host: '192.168.65.2', port: 8080,
+            // host: '192.168.65.2', port: 8080,
         },
         specs: ''
     },

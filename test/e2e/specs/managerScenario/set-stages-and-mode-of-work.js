@@ -18,7 +18,7 @@ describe('Автотест на указание этапов и режима в
     const buttonSelector_1 = '[data-button-id="1337"]'; // указать этап
     const buttonSelector_2 = '[data-button-id="1344"]'; // указать режим выполнения
 
-    // $h.dpgSpecifyCompletionStageId = 3761302;
+    $h.serviceId = $h.serviceId || 1258;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -39,17 +39,21 @@ describe('Автотест на указание этапов и режима в
     // }, skip);
 
     // 1. Переходим пункт меню "Мои задачи". Убеждаемся, что отобразилась таблица и в ней есть хотя бы одна запись
-    it('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица ##can_continue', async done => {
+    it('1. Переходим по URL /#/my_tasks_wc_for_test. Ждём загрузки и убеждаемся, что отобразилась таблица ##can_continue', async done => {
         console.log('---------Автотест на указание этапов и режима выполнения участков---------');
-        console.log('1. Переходим в пункт меню "Мои наряды". Ждём загрузки и убеждаемся, что отобразилась таблица.');
+        console.log('1. Переходим по URL /#/my_tasks_wc_for_test. Ждём загрузки и убеждаемся, что отобразилась таблица.');
         await errorCatcher(async () => {
-            await browser.sleep(1000);
-            await $h.menu.selectInMenu(['Мои наряды']);
-            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои наряды'))), defaultWaitTimeout);
+            let currentUrl = await browser.getCurrentUrl();
+            if (!currentUrl.includes('my_tasks_wc_for_test')) {
+                await browser.get($h.url + '/#/my_tasks_wc_for_test');
+                await browser.sleep(500);
+            }
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.k-header span.table-name', 'Мои задачи'))), defaultWaitTimeout);
+            currentUrl = await browser.getCurrentUrl();
+            console.log(currentUrl);
+            expect(currentUrl.includes('my_tasks_wc_for_test')).toBe(true);
 
-            const currentUrl = await browser.getCurrentUrl();
-            console.log('URL содержит /my_tasks_wc');
-            expect(currentUrl.includes('/my_tasks_wc')).toBe(true);
+            await browser.sleep(1500);
         }, done)
     }, skip);
 
@@ -58,6 +62,11 @@ describe('Автотест на указание этапов и режима в
         console.log('2. Выбираем наряд "Указать этапы и режим выполнения участков ремонта пути" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".');
         await errorCatcher(async () => {
             await $h.grid.main.setSearch([
+                {
+                    type: 'enums',
+                    field: 'service',
+                    value:  $h.serviceId,
+                },
                 {
                     type: 'string',
                     operator: 'contains',
@@ -189,6 +198,7 @@ describe('Автотест на указание этапов и режима в
         const durationInGridSelector = 'span[data-field="reduced_km_window_duration"]';
         await errorCatcher(async () => {
             await browser.sleep(1500);
+            await $('.k-button.idea-button-select-all').click();
             await element(by.css(buttonSelector_2)).click(); // нажать Указать режим выполнения
             await browser.sleep(1500);
             await browser.wait(EC.presenceOf(element(by.css(popupSelector))), defaultWaitTimeout);
@@ -203,13 +213,6 @@ describe('Автотест на указание этапов и режима в
             await browser.sleep(1500);
 
             await $h.form.submitPopup(); // Жмём на кнопку "Да"
-            const typeInGridSelectorText = await element(by.css(typeInGridSelector)).getText();
-            const durationInGridSelectorText = await element(by.css(durationInGridSelector)).getText();
-
-            console.log('Запись содержит "Окна"');
-            // expect(typeInGridSelectorText?.includes('Окна')).toBe(true); // Проверяем появление записи в таблице // TODO
-            console.log('Запись содержит "10"');
-            // expect(durationInGridSelectorText?.includes('10')).toBe(true); // Проверяем появление записи в таблице // TODO
             await browser.sleep(1500);
         }, done);
     }, skip);
