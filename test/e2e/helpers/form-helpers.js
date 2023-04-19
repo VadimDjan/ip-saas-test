@@ -1,9 +1,14 @@
-var _ = protractor.helpers._;
-var $h = protractor.helpers;
-var expliciteWait = $h.wait.expliciteWait;
-var angularWait = $h.wait.angularWait;
-var EC = protractor.ExpectedConditions;
-var Key = protractor.Key;
+const _ = protractor.helpers._;
+const $h = protractor.helpers;
+const { defaultWaitTimeout, angularWait, expliciteWait } = $h.wait;
+const EC = protractor.ExpectedConditions;
+const Key = protractor.Key;
+
+let fieldsCache = {};
+const currentModal = {
+    name: '',
+    fieldsCount: 0,
+};
 
 function getFieldSelector(name, mode) {
     if (mode === 'popup') {
@@ -13,6 +18,7 @@ function getFieldSelector(name, mode) {
 }
 
 var findFieldOnCurrentTab = function (name, mode) {
+    const lastModal = element.all(by.css('.modal-dialog')).last();
     if (mode === 'popup') {
         return protractor.promise.all([
             element(by.css('.modal-dialog.uipopup__modal .react-popup-item[data-field-name="' + name + '"]')),
@@ -25,7 +31,6 @@ var findFieldOnCurrentTab = function (name, mode) {
                 };
             });
     }
-    const lastModal = element.all(by.css('.modal-dialog')).last();
     const currentTab = lastModal.element(by.css('.card .show'));
     return protractor.promise.all([
         currentTab.element(by.css('.react-grid-item[data-field-name="' + name + '"]')),
@@ -43,7 +48,7 @@ exports.getFieldSelector = getFieldSelector;
 function setField(name, value, mode) {
     return findFieldOnCurrentTab(name, mode)
         .then(browser.sleep(2000))
-        .then(function (field) {
+        .then(async function (field) {
             //console.log(name,value, field.type)
             var fieldSelector = getFieldSelector(name, mode),
                 selector,
@@ -52,13 +57,16 @@ function setField(name, value, mode) {
             switch (field.type) {
                 case 'float':
                 case 'number':
-                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
-                    field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(Key.DELETE);
-                    return field.element.element(by.css('div.numberfield__wrapper input')).sendKeys(value)
+                    const fieldElement = field.element.element(by.css(`${fieldSelector} .numberfield__wrapper input`));
+                    await browser.actions().mouseMove(fieldElement).click(fieldElement);
+                    await fieldElement.sendKeys(Key.chord(Key.CONTROL, 'a'));
+                    await fieldElement.sendKeys(Key.DELETE);
+                    await browser.sleep(500);
+                    await fieldElement.sendKeys(value);
+                    await browser.sleep(500);
+                    return field.element.element(by.css(`${fieldSelector} .connector__label`)).click();
                 case 'text':
-                    field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.chord(Key.CONTROL, 'a'))
-                    field.element.element(by.css('div.textfield__wrapper input')).sendKeys(Key.DELETE);
-                    return field.element.element(by.css('div.textfield__wrapper input')).sendKeys(value)
+                    return field.element.element(by.css('div.textfield__wrapper input')).clear().sendKeys(value)
                 case 'input':
                     browser.executeScript('window.scrollTo(0,0);').then(function () {
                         // console.log('++++no_glass_autocomplete++SCROLLED UP+++++');
@@ -92,7 +100,12 @@ function setField(name, value, mode) {
                     }, selector, value);*/
                 case 'richtext':
                     selector = fieldSelector + ' .se-wrapper p';
-                    return field.element.element(by.css(selector)).clear().sendKeys(value);
+                    const richtextElement = field.element.element(by.css(selector));
+                    return richtextElement.click().then(async () => {
+                        await richtextElement.sendKeys(Key.CONTROL, 'a', Key.DELETE);
+                        await browser.sleep(500);
+                        await richtextElement.sendKeys(value);
+                    });
                 case 'comments': //$('textarea.comment-view__editor').data('kendoEditor')
                     selector = fieldSelector + ' textarea.comment-view__editor';
                     selector2 = fieldSelector + ' [ng-click="writeComment(comment)"]';
@@ -121,7 +134,6 @@ function setField(name, value, mode) {
 
                     // console.log('setField11**', field.type)
                     element(by.css(fieldSelector + ' .select2-choice')).click();
-                    val = value;
                     selector = '#select2-drop:not([style*=\"display: none\"])';
                     selector2 = selector + ' .select2-results li.select2-result-selectable';
                     // console.log('**selector**', selector)
@@ -164,59 +176,44 @@ function setField(name, value, mode) {
                 case 'no_glass_autocomplete':
                 case 'addable_autocomplete':
                     // case 'no_glass_autocomplete':
-
-
-                    field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click();
                     selector = ' .rw-popup';
                     selector2 = selector + ' li.rw-list-option';
-                    if (field.type.indexOf('autocomplete') >= 0) {
-                        // console.log('!!!!setField**', field.type)
-                        const val = value && value.displayValue || value && value.value || value
-                        field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset')).clear().sendKeys(val)
-                    }
-
-                    return angularWait()
+                    return field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click()
+                      .then(() => browser.sleep(1500))
+                      .then(async function() {
+                          const removeButton = field.element.$(fieldSelector + ' .comboboxfield__remove-btn');
+                          const removeButtonExists = await removeButton.isPresent();
+                          if (removeButtonExists) {
+                              await removeButton.click();
+                              await browser.sleep(500);
+                              await field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click();
+                              await browser.sleep(1000);
+                          }
+                          if (['autocomplete', 'no_glass_autocomplete'].includes(field.type)) {
+                              const element = field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset'));
+                              const isPresent = await element.isPresent()
+                              if (isPresent && value !== '$_first') {
+                                  const val = value && value.displayValue || value && value.value || value;
+                                  return element.clear().sendKeys(val)
+                              }
+                          }
+                      })
                         .then(expliciteWait)
-                        // .then(function () {
-                        //     return browser.wait(function () {
-                        //
-                        //         console.log('setField**browser.wait val', val)
-                        //         console.log('setField**browser.wait value', value)
-                        //         return browser.isElementPresent(by.css(selector2));
-                        //     });
-                        // })
-                        .then(browser.wait(EC.presenceOf(element(by.css(fieldSelector + selector2))), 7000))
+                        .then(browser.wait(EC.presenceOf(element(by.css(fieldSelector + selector2))), defaultWaitTimeout))
                         .then(function () {
                             try {
-                                if (field.type.indexOf('autocomplete') >= 0) {
+                                if (field.type === 'autocomplete') {
                                     return element.all(by.css(fieldSelector + selector2)).first().click();
-                                } else if (field.type.indexOf('combobox') >= 0) {
-                                    return element.all(by.css(fieldSelector + selector2)).then(function(arr) {
-                                        let i = 0;
-                                        let end = false;
-                                        async function* generate() {
-                                            while(!end) {
-                                               yield  await arr[i].getText();
-                                            }
-                                            return arr[i].click();
-                                        }
-                                        async function cycle() {
-                                            let generator = generate();
-                                            let text = await generator.next();
-                                            while ( text.value !== value && i < arr.length - 1) {
-                                                i += 1;
-                                                text = await generator.next();
-                                            }
-                                            end = true;
-                                            return await generator.next();
-                                        }
-                                        return cycle();
-                                    });
                                 } else {
-                                    // console.log('setField** else val', val)
-                                    // console.log('setField** else value', value)
-                                    // return element.all(by.css(fieldSelector + selector2 + ' [data-value="' + (value && value.value || value) + '"]')).click();
-                                    return field.element.element(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value)).click();
+                                    if (value !== '$_first') {
+                                        return field
+                                            .element
+                                            .all(by.cssContainingText(fieldSelector + selector2 + ' span', value && value.value || value))
+                                            .first()
+                                            .click();
+                                    } else {
+                                        return $$(`${fieldSelector}${selector2} span`).first().click();
+                                    }
                                 }
                             } catch (e) {
                                 console.error('Unknown value ' + value + ' for field ' + name);
@@ -381,6 +378,7 @@ function getField(name, mode) {
                         });
                 case 'float':
                 case 'number':
+                case 'text':
                     // console.log(fieldSelector, field.type);
                     return field.element.element(by.css('input')).getAttribute('value');
                 // case 'float':
@@ -429,13 +427,13 @@ function getField(name, mode) {
                 case 'no_glass_autocomplete':
                     // console.log('getField', field.type)
                     // console.log(field.type, '6')
-                    return field.element.element(by.css('input')).getAttribute('value');
+                    return field.element.all(by.css('input')).first().getAttribute('value');
                 case 'html':
                     console.log('action not defined,  type =' + field.type)
                     return;
                 case 'subgrid':
-                    selector = fieldSelector + ' [data-grid="ip-kendo-grid"]'
-                     return browser.sleep(2000)
+                    selector = fieldSelector + ' [data-grid="ip-kendo-grid"]';
+                    return browser.wait(EC.presenceOf($(selector)), defaultWaitTimeout)
                         .then( function() {
                             return browser.executeScript(function (_selector) {
                                 // console.log('_selector', _selector.toString())
@@ -472,17 +470,19 @@ function openNextSection() {
     }
 }
 
-function processForm(_fieldsList, functionToProcess) {
+/* function processForm(_fieldsList, functionToProcess) {
     // console.log('processForm 1', _fieldsList);
     var result = {};
     let fieldsList = [];
+    const lastModal = element.all(by.css('.details__modal')).last();
+
     function processHeader() {
         // console.log('processHeader 1')
         if (_fieldsList.includes('displayname')) {
             fieldsList = _fieldsList.filter(f => f !== 'displayname')
             return $h.common.scrollToSelector(getFieldSelector('displayname'))
                 .then(() => functionToProcess('displayname'))
-                .then(fieldResult => { 
+                .then(fieldResult => {
                     result['displayname'] = fieldResult
                 })
 
@@ -507,32 +507,27 @@ function processForm(_fieldsList, functionToProcess) {
             }
             nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
             return element(by.css(nextTabHeaderSelector)).isPresent();
-        };
+        }
         let nextTabHeaderSelector = nextTab + ' .card-header .accordion-panel';
-        var currentFieldsList = [], sectionFieldsList = [];
-        var processNextField = function () {
-            if (currentFieldsList.length > 0) {
+        let currentFieldsList = [], sectionFieldsList = [];
 
-                return $h.common.scrollToSelector(getFieldSelector(currentFieldsList[0]))
-                    .then(function () {
-                        return functionToProcess(currentFieldsList[0]);
-                    })
-                    .then(function (fieldResult) {
-                        result[currentFieldsList[0]] = fieldResult;
-                        currentFieldsList = _.rest(currentFieldsList);
-                        return processNextField();
-                    });
+        const processNextField = async function () {
+            if (currentFieldsList.length > 0) {
+                await $h.common.scrollToSelector(getFieldSelector(currentFieldsList[0]));
+                result[currentFieldsList[0]] = await functionToProcess(currentFieldsList[0]);
+                currentFieldsList = _.rest(currentFieldsList);
+                return processNextField();
             } else {
                 return false;
             }
         };
 
-        return element.all(by.css(`div.modal-content .card[data-key="${key}"] .react-grid-item`)).map(function (elm, index) {
+        return lastModal.all(by.css(`div.modal-content .card[data-key="${key}"] .react-grid-item`)).map(function (elm, index) {
                 return elm.getAttribute('data-field-name');
         })
             .then(function (_sectionFieldsList) {
                 sectionFieldsList = _sectionFieldsList;
-                currentFieldsList = _.intersection(sectionFieldsList, fieldsList);
+                currentFieldsList = _.intersection(fieldsList, sectionFieldsList);
                 return processNextField();
             })
             .then(function () {
@@ -542,27 +537,30 @@ function processForm(_fieldsList, functionToProcess) {
                 fieldsList = _.difference(fieldsList, sectionFieldsList);
                 var selector = 'div.modal-content .card .collapse.show';
                 if (fieldsList.length) {
-                    return browser.wait(EC.presenceOf(element(by.css(selector))), 30000)
+                    return browser.wait(EC.presenceOf(element(by.css(selector))), defaultWaitTimeout)
                         .then(element(by.css(selector)).isPresent()
                             .then(function (isPresent) {
                                 if (isPresent) {
-                                    return angularWait().then(function () {
+                                    return angularWait().then(async () => {
                                         try {
-                                            return $h.common.scrollToSelector(nextTabHeaderSelector)
-                                                .then(function () {
-                                                    return element(by.css(nextTabHeaderSelector)).click();
-                                                })
-                                                .then(browser.wait(EC.presenceOf(element(by.css(nextTab + ' .collapse.show'))), 3000))
-                                                .then(function () {
-                                                    return processSection(key+i);
-                                                });
+                                            const isDisplayed = await lastModal.element(by.css(nextTabHeaderSelector)).isDisplayed();
+                                            const text = await lastModal.element(by.css('.displayname__name')).getText();
+
+                                            if (isDisplayed) {
+                                                // await $h.common.scrollToSelector(nextTabHeaderSelector);
+                                                await browser.actions().mouseMove(lastModal.element(by.css(nextTabHeaderSelector))).click().perform();
+                                                await browser.wait(EC.presenceOf(lastModal.element(by.css(nextTab + ' .collapse.show'))), defaultWaitTimeout);
+                                            }
+                                            await processSection(key+i);
+
                                         } catch (e) {
                                             return null;
                                         }
                                     });
 
                                 } else {
-                                    return console.error('Fields ' + fieldsList.toString() + ' were not found on form');
+                                    console.error('Fields ' + fieldsList.toString() + ' were not found on form');
+                                    return false;
                                 }
                             }));
                 } else {
@@ -580,10 +578,7 @@ function processForm(_fieldsList, functionToProcess) {
         return element(by.css('div.modal-content .card[data-key="0"] .collapse.show')).isPresent()
             // .then(console.log( '**********!!!!**'))
             .then(function (isPresentFirstTab) {
-                if (isPresentFirstTab) {
-                    // console.log( '*****isPresentFirstTab*******', isPresentFirstTab)
-                    return;
-                } else {
+                if (!isPresentFirstTab) {
                     // console.log( '*****isPresentFirstTab****FALSE***')
                     return element(by.css(firstTabHeaderSelector)).isPresent()
                         .then(function (isPresentHeader) {
@@ -592,7 +587,7 @@ function processForm(_fieldsList, functionToProcess) {
                                 return $h.common.scrollToSelector(firstTabHeaderSelector)
                                     // .then(console.log( '!!!!!!!!**********!!!!!!!!'))
                                     .then(function () {
-                                        return element(by.css(firstTabHeaderSelector)).click();
+                                        return browser.actions().mouseMove(lastModal.element(by.css(firstTabHeaderSelector))).click().perform();
                                     })
                                     .then(angularWait);
                             }
@@ -604,10 +599,76 @@ function processForm(_fieldsList, functionToProcess) {
     return processHeader()
         // .then(console.log(openFirstTabIfNeeded, 'processHeader in openFirstTabIfNeeded*'))
         .then(openFirstTabIfNeeded)
-        .then(browser.wait(EC.presenceOf(element(by.css('div.modal-content .card .collapse.show'))), 5000))
+        .then(browser.wait(EC.presenceOf(element(by.css('div.modal-content .card .collapse.show'))), defaultWaitTimeout))
         .then(element(by.css('div.modal-content .card .collapse.show')).element(by.xpath('parent::div')).getAttribute('react-key')
             .then(function(key) { processSection(Number(key))}))
         .then(() => result)
+}*/
+
+async function processForm(fieldsList, functionToProcess) {
+    await getSectionFields();
+    const result = {};
+    for (const field of fieldsList) {
+        if (field !== 'displayname') {
+            const sectionName = Object.keys(fieldsCache).find(section => {
+                return fieldsCache[section].includes(field);
+            });
+            if (!sectionName) {
+                console.log(`Поле ${field} не найдено на форме`);
+                continue;
+            }
+
+            await $h.form.openSection(sectionName);
+            await browser.sleep(500);
+        }
+        result[field] = await functionToProcess(field);
+    }
+    return result;
+}
+
+async function getSectionFields () {
+    const lastModal = $$('.details__modal').last();
+    const lastModalName = await lastModal.$('.form-header__title > span').getText();
+    const totalFieldsCount = await lastModal.$$('.card-body .react-grid-layout .react-grid-item').count();
+
+    if (lastModalName !== currentModal.name || totalFieldsCount !== currentModal.fieldsCount) {
+        fieldsCache = {};
+        currentModal.name = lastModalName;
+        currentModal.fieldsCount = totalFieldsCount;
+    }
+    if (!Object.keys(fieldsCache).length) {
+        const start = new Date().getTime();
+        const visibleSections = lastModal.$$('.modal-body .accordion > div').filter(async section => {
+            return await section.isDisplayed();
+        })
+        const count = await visibleSections.count();
+        for (let i = 0; i < count; i++) {
+            const section = visibleSections.get(i);
+            const allSectionFields = await section.$$('.card-body .react-grid-layout .react-grid-item').map(async widget => {
+                return await widget.getAttribute('data-field-name');
+            });
+            const sectionName = await section.element(by.css('.card-header .accordion-panel')).getText();
+            fieldsCache[sectionName] = allSectionFields;
+        }
+        const end = new Date().getTime();
+        console.log('Fields search performance: ', end - start);
+    }
+}
+
+exports.setFormWithUnfilledFields = async function (formData) {
+    const unfilledForm = {};
+    const filledForm = await $h.form.getForm(Object.keys(formData));
+    Object.entries(filledForm).forEach(([key, value]) => {
+        if (formData.hasOwnProperty(key) && formData[key] != value) {
+            if (formData[key] === '$_first') {
+                if (!value) unfilledForm[key] = formData[key];
+            } else {
+                unfilledForm[key] = formData[key];
+            }
+        }
+    });
+    console.log(unfilledForm);
+    await $h.form.setForm(unfilledForm);
 }
 
 exports.setForm = function (record) {
@@ -636,90 +697,97 @@ exports.getForm = function (record) {
                 })
 
         } else {
-            // console.log('getForm 2', record)
             return getField(fieldName)
         }
     })
-    // .then(result => {
-    //     console.info('result of getForm = ' + JSON.stringify(result || ''))
-    //     return result
-    // })
 };
 exports.processForm = processForm;
 
-function processButton(name, fieldName, allowNoButton) {
-    return angularWait()
-        .then(expliciteWait)
-        .then(function () {
-            var fieldSelector = (fieldName != null ? '[data-button-detail=\"' + fieldName + '\"]' : '');
-            if (name instanceof Array) {
-                if (name.length === 0) {
-                    return;
-                } else {
-                    var selector = 'div.modal-content' + ' button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
-                    return  $h.common.scrollToSelector(selector)
-                        .then(browser.wait(EC.presenceOf(element(by.css(selector))), 7000))
-                        .then(() => element(by.css(selector)).isPresent())
-                        .then(function (isPresent) {
-                            if (isPresent) {
-                                return processButton(name[0], fieldName);
-                            } else if (!allowNoButton) { 
-                                console.error('Can\'t find on form button with name = ' + name[0] + ' and selector = ' + selector);
-                            }
-                        })
-                        .then(function () {
-                            return processButton(name.splice(1), fieldName);
-                        });
-                }
-            } else {
-                const selector = 'div .modal-content' + ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
-                return browser.wait(EC.presenceOf(element(by.css(selector))), 5000)
-                    .then(function(){
-                        element(by.css(selector))
-                        .click()
-                    });
+async function processButton(name, fieldName, allowNoButton) {
+    await browser.sleep(1000);
+    const lastModal = $$('.details__modal ').last();
+    const fieldSelector = (fieldName != null ? '[data-button-detail=\"' + fieldName + '\"]' : '');
+    if (Array.isArray(name)) {
+        if (name.length) {
+            const selector = 'button[data-button-name=\"' + name[0] + '\"]' + fieldSelector;
+            const buttonLocator = lastModal.$(selector);
+            const isDisplayed = await buttonLocator.isDisplayed();
+            if (isDisplayed) {
+                await processButton(name[0], fieldName);
+            } else if (!allowNoButton) {
+                console.error('Can\'t find on form button with name = ' + name[0] + ' and selector = ' + selector);
             }
-        });
+            await processButton(name.splice(1), fieldName);
+        }
+    } else {
+        const selector = ' button[data-button-name=\"' + name + '\"]' + fieldSelector;
+        const buttonLocator = lastModal.$(selector);
+        await browser.wait(EC.presenceOf(buttonLocator), defaultWaitTimeout * 2);
+        await browser.actions().mouseMove(buttonLocator).click().perform();
+    }
 }
 
 exports.processButton = processButton;
 
-function processPopup(action) {
-    const selector = '.modal-footer .popup__dialog-btn_' + action
-    return function () {
-        return angularWait()
-            .then(expliciteWait)
-            .then(function () {
-                return element(by.css(selector)).isPresent();
-            })
-            .then(function (isPresent) {
-                if (isPresent) {
-                    return $h.common.scrollToSelector(selector);
-                } else {
-                    console.error('Can\'t find button on popup for action = ' + action + ' and selector = ' + selector);
-                }
-            })
-            .then(function () {
-                element(by.css(selector)).click();
-            })
-            .then(browser.sleep(2000));
-    };
+async function processPopup(action) {
+    const selector = '.modal-footer .popup__dialog-btn_' + action;
+    const isPresent = await element(by.css(selector)).isPresent();
+    if (isPresent) {
+        await $h.common.scrollToSelector(selector);
+        await element(by.css(selector)).click();
+    } else {
+        console.error('Can\'t find button on popup for action = ' + action + ' and selector = ' + selector);
+    }
+    await browser.sleep(1500);
 }
+
 exports.processPopup = processPopup;
-exports.submitPopup = processPopup('submit');
-exports.cancelPopup = processPopup('cancel');
+exports.submitPopup = () => processPopup('primary');
+exports.cancelPopup = () => processPopup('cancel');
 
 exports.clickOnLink = async function (fieldName) {
     await browser.sleep(1500);
-    const link = await element(by.css(`[data-field-name=${fieldName}] .linkfield__link`));
-    await link.click();
+    const lastModal = $$('.details__modal').last();
+    const linkLocator = lastModal.$(`[data-field-name=${fieldName}] .linkfield__link`);
+    await browser.wait(EC.visibilityOf(linkLocator), defaultWaitTimeout * 2);
+    await browser.actions().mouseMove(linkLocator).click().perform();
+
     const handles = await browser.getAllWindowHandles();
     await browser.driver.switchTo().window(handles[handles.length - 1]);
     return browser.sleep(1500);
-}
+};
 
 exports.closeLastModal = async function() {
     await browser.sleep(1500);
-    const lastModalCloseButton = await element.all(by.css('.details__modal .details__close-btn')).last();
+    const lastModal = $$('.details__modal').last();
+    const classList = await lastModal.getAttribute('class');
+    const isSeparate = classList.includes('separate-page');
+    const lastModalCloseButton = isSeparate ? lastModal.$('div.back-button') : lastModal.$('.details__close-btn');
     return await lastModalCloseButton.click();
+};
+
+exports.openSection = async function(name) {
+    const lastModal = $$('.details__modal').last();
+    let currentSectionText = '';
+    const currentSectionHeader = lastModal
+        .$('.collapse.show')
+        .element(by.xpath('..'))
+        .$('.card-header .accordion-panel');
+    if (await currentSectionHeader.isPresent()) {
+        currentSectionText = await currentSectionHeader.getText();
+    }
+    if (currentSectionText === name) return;
+    const sectionElement = await lastModal.element(by.cssContainingText('.card-header .accordion-panel', name));
+    const text = await sectionElement.getText();
+    if (text.includes(name)) {
+        await browser.actions().mouseMove(sectionElement).click().perform();
+    }
+};
+
+exports.collapseCurrentSection = async function() {
+    const lastModal = await element.all(by.css('.details__modal')).last();
+    const body = lastModal.element(by.css('.collapse.show'));
+    const card = body.element(by.xpath('..'));
+    const accordionPanel = card.element(by.css('.card-header .accordion-panel'));
+    await browser.actions().mouseMove(accordionPanel).click().perform();
 }

@@ -1,3 +1,6 @@
+const defaultWaitTimeout = 20000;
+const EC = protractor.ExpectedConditions;
+
 exports.expliciteWait = function(originalData) {
     return browser.sleep(protractor.expliciteWaitTime)
         .then(function(){
@@ -21,9 +24,16 @@ exports.tableLoadWait = function(originalData) {
 };
 
 exports.popupHideWait = originalData => {
-  return browser.wait(protractor.ExpectedConditions.stalenessOf(element(by.css('.uipopup__modal'))));
+  return browser.wait(EC.stalenessOf(element(by.css('.uipopup__modal'))));
 };
 
 exports.waitForModalOpened = () => {
-  return browser.wait(protractor.ExpectedConditions.presenceOf($('.modal-dialog')), 20000);
+  return browser.wait(EC.presenceOf($('.modal-dialog')), defaultWaitTimeout);
 }
+
+exports.waitForUpdateButton = () => {
+    return browser.wait(EC.presenceOf(element(by.css('[data-button-name="UPDATE"]'))), defaultWaitTimeout);
+}
+
+
+exports.defaultWaitTimeout = defaultWaitTimeout;

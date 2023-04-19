@@ -4,38 +4,22 @@ var $h = protractor.helpers;
 var expliciteWait = $h.wait.expliciteWait;
 var angularWait = $h.wait.angularWait;
 
-exports.selectInMenu = function selectInMenu(pathArray){
-    var el = element(by.css(ROOT_SELECTOR));
-    var fullSelector = ROOT_SELECTOR;
-    function sleep(){
-        return angularWait()
+exports.selectInMenu = async (pathArray) => {
+    try {
+        const navBarButtonElement = element(by.css('.navbar-header button.navbar-toggle'));
+        const menuCollapsed = await navBarButtonElement.isPresent();
+        console.log(menuCollapsed);
+        if (menuCollapsed) {
+            await browser.actions().mouseMove(navBarButtonElement).click().perform();
+            await browser.sleep(500);
+        }
+        for (let i = 0; i < pathArray.length; i++) {
+            if (i === 0 && pathArray.length === 1) {
+                const menuItem = await element(by.cssContainingText('.navbar-item ul.navbar-100 li a', pathArray[i]))
+                await menuItem.click();
+            }
+        }
+    } catch (e) {
+        console.error(e);
     }
-    
-    pathArray.forEach(function(currentMenuName, idx){
-        var selector = (idx > 0 ? ' ~ ul ' : '' ) + 'a[data-menu-name=\"' + currentMenuName + '\"] ';
-        fullSelector += selector;
-        $h.common.scrollToSelector(fullSelector);
-        sleep().then(() => {
-            el = element(by.css(fullSelector))
-            if(idx == pathArray.length - 1){
-                
-                el.isDisplayed().then(visibile => {
-                    if (visibile){
-                        el.click().then(sleep)
-                    }
-                    else{
-                        browser.executeScript((selector) => {
-                            $(selector).click()
-                        }, fullSelector).then(sleep)
-                    }
-                })
-            }
-            else{
-                browser.actions().mouseMove(el).perform().then(sleep)
-                
-            }
-        })
-        
-    });
-    return sleep()
 }

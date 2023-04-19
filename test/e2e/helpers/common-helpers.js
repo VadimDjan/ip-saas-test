@@ -1,4 +1,4 @@
-exports.waitForUrlToChange = function (loginPageUrl, user, password) {
+exports.waitForUrlToChange = function (loginPageUrl) {
     // если переход происходит по клику, необходимо выполнить ожидание смены url
     browser.wait(function () {
         return browser.getCurrentUrl().then(function compareCurrentUrl(url) {
@@ -127,3 +127,19 @@ exports.scrollDown = function () {
           return browser.sleep(500);
       });
 }
+
+/**
+ * Оборачивает аргумент callback в блок try-catch и выполняет его
+ * @param callback : function Функция, выполняющаяся внутри блока try-catch
+ * @param finalCallback : function Фукнция, выполняющаяся после блока try-catch, в том числе в случае ошибки
+ */
+exports.errorCatcher = async function(callback, finalCallback) {
+    try {
+        await callback();
+    } catch (error) {
+        console.error(error);
+    }
+    await finalCallback();
+}
+
+exports.defaultWaitTimeout = 20000;
