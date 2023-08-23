@@ -7,8 +7,7 @@ describe('Автотест распределение по ПМС.', function ()
     const EC = protractor.ExpectedConditions;
 
     const modalPointPMS = 'Укажите ПМС';
-
-    let linesNumber;
+    $h.serviceId = $h.serviceId || 1329;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -42,6 +41,11 @@ describe('Автотест распределение по ПМС.', function ()
                     field: 'displayname',
                     value: 'Распределить участки ремонта пути по ПМС',
                 },
+                // {
+                //     type: 'enums',
+                //     field: 'service',
+                //     value: $h.serviceId,
+                // },
             ]);
             await browser.sleep(1500);
             const rows = protractor.helpers.grid.main.rowsList();
@@ -97,7 +101,7 @@ describe('Автотест распределение по ПМС.', function ()
 
             const linesCount = await $h.grid.main.rowsList().count();
             expect(linesCount >= 1).toBe(true);
-            if (linesCount >=1) {
+            if (linesCount >= 1) {
                 linesNumber = linesCount;
                 expect(await element(by.css('[data-button-id="1187"]')).getText()).toBe('Назначить ПМС');   // Проверить что есть кнопка Назначить ПМС
                 expect(await element(by.css('[data-button-id="1370"]')).getText()).toBe('Отменить участки');   // Проверить что есть кнопка Отменить
@@ -117,25 +121,25 @@ describe('Автотест распределение по ПМС.', function ()
         }, done);
     }, skip);
 
-        // 7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок"
-     it('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-197 из выпадающего списка, нажать "Ок". ##can_continue', async done => {
-         console.log('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-197 из выпадающего списка, нажать "Ок".')
-         const popupTitleSelector = '.uipopup__title.modal-title';
-         const popupSelector = '.uipopup__modal .modal-content';
-         await errorCatcher(async () => {
-             await browser.wait(EC.presenceOf(element(by.css(popupSelector))), defaultWaitTimeout);
-             await browser.sleep(1500);
-             console.log('Проверяем название окна');
-             expect(await element(by.css(popupTitleSelector)).getText()).toBe(modalPointPMS); // Проверить название окна
-             console.log('Проверяем что есть поле ПМС');
-             expect(await element(by.css(popupSelector + ' [data-field-name="p_dept"]')).isPresent()).toBe(true) // Проверить что есть поле ПМС
-             console.log('Проверяем что есть кнопка "Отмена"');
-             expect(await element(by.css(popupSelector + ' .popup__dialog-btn_secondary')).isPresent()).toBe(true)     // Проверить что есть кнопка "Отмена"
-             await $h.form.setField('p_dept', 'ПМС-197', 'popup');
-             await browser.sleep(1500);
-             await $h.form.submitPopup();
-             await browser.sleep(5000);
-         }, done);
+    // 7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-181 из выпадающего списка, нажать "Ок"
+    it('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-197 из выпадающего списка, нажать "Ок". ##can_continue', async done => {
+        console.log('7. В открывшемся окне убедится что есть поле "ПМС", кнопки "ОК" и "Отмена" выбрать ПМС-197 из выпадающего списка, нажать "Ок".')
+        const popupTitleSelector = '.uipopup__title.modal-title';
+        const popupSelector = '.uipopup__modal .modal-content';
+        await errorCatcher(async () => {
+            await browser.wait(EC.presenceOf(element(by.css(popupSelector))), defaultWaitTimeout);
+            await browser.sleep(1500);
+            console.log('Проверяем название окна');
+            expect(await element(by.css(popupTitleSelector)).getText()).toBe(modalPointPMS); // Проверить название окна
+            console.log('Проверяем что есть поле ПМС');
+            expect(await element(by.css(popupSelector + ' [data-field-name="p_dept"]')).isPresent()).toBe(true) // Проверить что есть поле ПМС
+            console.log('Проверяем что есть кнопка "Отмена"');
+            expect(await element(by.css(popupSelector + ' .popup__dialog-btn_secondary')).isPresent()).toBe(true)     // Проверить что есть кнопка "Отмена"
+            await $h.form.setField('p_dept', 'ПМС-197', 'popup');
+            await browser.sleep(500);
+            await $h.form.submitPopup();
+            await browser.sleep(5000);
+        }, done);
     }, skip);
 
     it('8. Вернуться к задаче и нажать на кнопку Выполнить. Убедиться, что значение поля статус изменился на "Выполнен". ##can_continue', async done => {

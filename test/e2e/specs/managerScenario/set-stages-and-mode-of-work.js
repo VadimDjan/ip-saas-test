@@ -7,18 +7,15 @@ describe('Автотест на указание этапов и режима в
 
     var EC = protractor.ExpectedConditions;
 
-    let buttonUpdate = 'Сохранить';
     let modalPointStage = 'Укажите этап ДПГ';
-    let stageText = 'Этап 1';
     let buttonPointStage = 'Указать этап';
     let buttonPointMode = 'Указать режим выполнения';
-    let jackdawsCount = 1;
-    let linesNumber;
+    let dropdownButton = $('.toggle-button');
 
     const buttonSelector_1 = '[data-button-id="1337"]'; // указать этап
     const buttonSelector_2 = '[data-button-id="1344"]'; // указать режим выполнения
 
-    $h.serviceId = $h.serviceId || 1258;
+    $h.serviceId = $h.serviceId || 1297;
 
     function skip() {
         return !protractor.totalStatus.ok;
@@ -62,11 +59,11 @@ describe('Автотест на указание этапов и режима в
         console.log('2. Выбираем наряд "Указать этапы и режим выполнения участков ремонта пути" и открываем его. Убеждаемся, что запись открылась, в ней есть вкладки, поля и кнопка "Сохранить".');
         await errorCatcher(async () => {
             await $h.grid.main.setSearch([
-                {
-                    type: 'enums',
-                    field: 'service',
-                    value:  $h.serviceId,
-                },
+                // {
+                //     type: 'enums',
+                //     field: 'service',
+                //     value:  $h.serviceId,
+                // },
                 {
                     type: 'string',
                     operator: 'contains',
@@ -169,6 +166,10 @@ describe('Автотест на указание этапов и режима в
             console.log(`Текст кнопки содержит "${buttonPointMode}"`);
             expect(pointModeElementText?.includes(buttonPointMode)).toBe(true);
             await browser.sleep(1500);
+
+            if (await dropdownButton.isPresent()) {
+                await dropdownButton.click();
+            }
 
             await element(by.css(buttonSelector_1)).click();
         }, done);

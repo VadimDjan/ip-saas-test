@@ -57,7 +57,7 @@ function setField(name, value, mode) {
             switch (field.type) {
                 case 'float':
                 case 'number':
-                    const fieldElement = field.element.element(by.css(`${fieldSelector} .numberfield__wrapper input`));
+                    const fieldElement = field.element.element(by.css(`${fieldSelector} .number-field__wrapper input`));
                     await browser.actions().mouseMove(fieldElement).click(fieldElement);
                     await fieldElement.sendKeys(Key.chord(Key.CONTROL, 'a'));
                     await fieldElement.sendKeys(Key.DELETE);
@@ -178,6 +178,7 @@ function setField(name, value, mode) {
                     // case 'no_glass_autocomplete':
                     selector = ' .rw-popup';
                     selector2 = selector + ' li.rw-list-option';
+                    let searchInputIsPresent = false;
                     return field.element.element(by.css(fieldSelector + ' .rw-widget-input')).click()
                       .then(() => browser.sleep(1500))
                       .then(async function() {
@@ -192,6 +193,8 @@ function setField(name, value, mode) {
                           if (['autocomplete', 'no_glass_autocomplete'].includes(field.type)) {
                               const element = field.element.element(by.css(fieldSelector + selector + ' .rw-input-reset'));
                               const isPresent = await element.isPresent()
+                              isPresent && (searchInputIsPresent = true);
+
                               if (isPresent && value !== '$_first') {
                                   const val = value && value.displayValue || value && value.value || value;
                                   return element.clear().sendKeys(val)
@@ -202,7 +205,7 @@ function setField(name, value, mode) {
                         .then(browser.wait(EC.presenceOf(element(by.css(fieldSelector + selector2))), defaultWaitTimeout))
                         .then(function () {
                             try {
-                                if (field.type === 'autocomplete') {
+                                if (field.type === 'autocomplete' && searchInputIsPresent) {
                                     return element.all(by.css(fieldSelector + selector2)).first().click();
                                 } else {
                                     if (value !== '$_first') {
