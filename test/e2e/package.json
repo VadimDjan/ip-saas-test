@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "ISC",
   "dependencies": {
+    "html-dnd": "^1.2.1",
     "jasmine-reporters": "^2.1.1",
     "lodash": "^3.10.1",
     "moment": "^2.11.1",

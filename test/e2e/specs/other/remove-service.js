@@ -48,7 +48,7 @@ describe('Удаление услуга', function () {
     // });
 
     it('3. Переходим по URL /#/transformer/1. ##can_continue', (done) => {
-        console.log('Автотест на удаление услуги START - Go to path URL -> /#/service');
+        console.log('Автотест на удаление услуги START - Go to path URL -> /#/transformer/1');
         return angularWait()
             .then(function () {
                 browser.get($h.url + '/#/transformer/1')
@@ -64,8 +64,8 @@ describe('Удаление услуга', function () {
             .then(done);
     }, skip);
 
-    // 3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ.
-    it('4. В открывшемся окне заполняем поля (ДРП, Год, Описание) и создаем ДПГ. ##can_continue', function (done) {
+    // 3. В открывшемся окне заполняем поля (ДРП, Год, Описание) и удаляем ДПГ.
+    it('4. В открывшемся окне заполняем поля (ДРП, Год, Описание) и удаляем ДПГ. ##can_continue', function (done) {
         return $h.form.setForm({
             production_year: protractor.helpers.serviceId,
         })
