@@ -11,6 +11,47 @@ globalConf.specs = [
   "specs/managerScenario/ppg-approve.spec.js",
   // 'specs/other/remove-service.js',
 
+  // --------- тесты на мониторинг и создание пространства
+  //  'specs/smOnline/0-opening-sm-online-spec.js',
+  //  'specs/smOnline/1-creating-workspace-spec.js',
+
+  // --------- тесты на создание объектов в новом пространстве
+  /////////////////////////// локальный запуск (необходим для работы drag&drop)
+  // 'specs/smOnline/2-create-setting-spare-table.js',
+  // 'specs/smOnline/2-create-setting-table-order.js',
+  // 'specs/smOnline/3-create-setting-order_punkt.js',
+  // 'specs/smOnline/3-subgrid-in-order_test.js',
+  ////////////////////////// запуск по прямой ссылке
+  // 'specs/smOnline/4-menu-spec.js',
+  // 'specs/smOnline/4-roles-access-groups-spec.js',
+  // 'specs/smOnline/5-access-cards-spec.js',
+  // 'specs/smOnline/workflow-spec.js', // создание ЖЦ
+  // 'specs/smOnline/5-access-map-fields-spec.js',
+  // 'specs/smOnline/6-access-wf-spec.js',
+  // 'specs/smOnline/7-infographics-spec.js',
+  // 'specs/smOnline/7-manager-gistogram-spec.js',
+  // 'specs/smOnline/7-other-spec.js',
+  // 'specs/smOnline/7-test-customers-exp-spec.js',
+  // 'specs/smOnline/8-test-managers-exp-spec.js',
+  // 'specs/smOnline/9-test-managers-exp-spec.js',
+
+  // -------------- тесты на создание объектов для релизов
+  /////////////////////////// локальный запуск (необходим для работы drag&drop)
+  // 'specs/forReleases/2-create-setting-spare-table.js',
+  // 'specs/forReleases/2-create-setting-table-order.js',
+  // 'specs/forReleases/3-create-setting-order_punkt.js',
+  // 'specs/forReleases/3-subgrid-in-order_test.js',
+  ////////////////////////// запуск по прямой ссылке
+  // 'specs/forReleases/5-workflow-spec.js', // создание ЖЦ
+  // 'specs/forReleases/5-access-map-fields-spec.js',
+  // 'specs/forReleases/6-access-wf-spec.js',
+  // 'specs/forReleases/7-infographics-spec.js',
+  // 'specs/forReleases/7-manager-gistogram-spec.js',
+  // 'specs/forReleases/7-other-spec.js',
+
+
+
+
   // 'specs/registration/registration-spec.js',
   // 'specs/registration/invitation-spec.js',
   // 'specs/managerScenario/project-with-tasks-spec.js',
@@ -21,7 +62,7 @@ globalConf.specs = [
   // 'specs/newEntity/form-editor-list-spec.js',
   // 'specs/newEntity/form-editor-details-spec.js',
   // 'specs/removeWorkspace/removeWorkspace-spec.js'
-  // 'specs/form-editor/form-editor-spec.js'
+  // 'specs/form-editor/form-editor-spec.js',
 ];
 
 globalConf.reportOutput = "report";
