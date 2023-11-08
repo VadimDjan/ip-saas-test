@@ -191,13 +191,15 @@ const config = {
         clearDownloads();
     },
     capabilities: {
-        browserName: 'chrome',
         // chromeOptions: {
         //     args: [ "--start-maximized",
         //     "--start-fullscreen"] // to start browser as maximixed
         // },
         // Number of times to run this set of capabilities (in parallel, unless
         // limited by maxSessions). Default is 1.
+        count: 1,
+        // запуск  тестов в Chrome
+        browserName: 'chrome',
         chromeOptions: {
             prefs: {
                 download: {
@@ -205,7 +207,16 @@ const config = {
                 }
             }
         },
-        count: 1,
+        
+        // // запуск тестов в FireFox
+        // browserName: 'firefox',
+        // firefoxOptions: {
+        //     prefs: {
+        //         download: {
+        //             default_directory: downloadsPath,
+        //         }
+        //     }
+        // },
     },
 };
 

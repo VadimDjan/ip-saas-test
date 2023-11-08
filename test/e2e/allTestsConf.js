@@ -1,30 +1,30 @@
-var globalConf = require('./globalConf.js').config;
+var globalConf = require("./globalConf.js").config;
 globalConf.specs = [
-  'specs/other/login-spec.js',
-  'specs/managerScenario/project-with-tasks-spec.js',
-  'specs/other/title-spech.js',
-  'specs/managerScenario/stages-and-mode-of-work.js',
-  'specs/managerScenario/set-stages-and-mode-of-work.js',
-  'specs/managerScenario/distribution-track-machine-stations-spec.js',
-  'specs/managerScenario/site-inspection-spec.js',
-  'specs/managerScenario/ppg.spec.js',
-  'specs/managerScenario/ppg-approve.spec.js',
+  "specs/other/login-spec.js",
+  "specs/managerScenario/project-with-tasks-spec.js",
+  "specs/other/title-spech.js",
+  "specs/managerScenario/stages-and-mode-of-work.js",
+  "specs/managerScenario/set-stages-and-mode-of-work.js",
+  "specs/managerScenario/distribution-track-machine-stations-spec.js",
+  "specs/managerScenario/site-inspection-spec.js",
+  "specs/managerScenario/ppg.spec.js",
+  "specs/managerScenario/ppg-approve.spec.js",
   // 'specs/other/remove-service.js',
 
-    // 'specs/registration/registration-spec.js',
-    // 'specs/registration/invitation-spec.js',
-    // 'specs/managerScenario/project-with-tasks-spec.js',
-    // 'specs/userScenario/tasks-for-user-spec.js',
-    // 'specs/newEntity/list-view-spec.js',
-    // 'specs/newEntity/new-entity-spec.js',
-    // 'specs/newEntity/save-new-entity-data-spec.js',
-    // 'specs/newEntity/form-editor-list-spec.js',
-    // 'specs/newEntity/form-editor-details-spec.js',
-    // 'specs/removeWorkspace/removeWorkspace-spec.js'
-    // 'specs/form-editor/form-editor-spec.js'
+  // 'specs/registration/registration-spec.js',
+  // 'specs/registration/invitation-spec.js',
+  // 'specs/managerScenario/project-with-tasks-spec.js',
+  // 'specs/userScenario/tasks-for-user-spec.js',
+  // 'specs/newEntity/list-view-spec.js',
+  // 'specs/newEntity/new-entity-spec.js',
+  // 'specs/newEntity/save-new-entity-data-spec.js',
+  // 'specs/newEntity/form-editor-list-spec.js',
+  // 'specs/newEntity/form-editor-details-spec.js',
+  // 'specs/removeWorkspace/removeWorkspace-spec.js'
+  // 'specs/form-editor/form-editor-spec.js'
 ];
 
-globalConf.reportOutput = 'report';
+globalConf.reportOutput = "report";
 exports.config = globalConf;
 
 /*
