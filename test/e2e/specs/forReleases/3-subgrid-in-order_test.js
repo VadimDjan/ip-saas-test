@@ -38,11 +38,12 @@ describe('Регистрация пространства', function () {
         // // листаем список,чтоб добраться до таблицы
         // await element.all(by.css('.k-pager-numbers li')).last().click();
         // await browser.sleep(2000);
-        // переключаем сортировку по ID, чтоб добраться до нужной таблицы
-        await element(by.css('th[data-title="ID"]')).click();
-        await browser.sleep(2000);
-        await element(by.css('th[data-title="ID"]')).click();
-        await browser.sleep(2000);
+
+        // // переключаем сортировку по ID, чтоб добраться до нужной таблицы
+        // await element(by.css('th[data-title="ID"]')).click();
+        // await browser.sleep(2000);
+        // await element(by.css('th[data-title="ID"]')).click();
+        // await browser.sleep(2000);
 
         const row4 = await element(by.cssContainingText('tr', 'Заказ'));
         await browser.actions().doubleClick(row4).perform();

@@ -198,25 +198,25 @@ const config = {
         // Number of times to run this set of capabilities (in parallel, unless
         // limited by maxSessions). Default is 1.
         count: 1,
-        // запуск  тестов в Chrome
-        browserName: 'chrome',
-        chromeOptions: {
-            prefs: {
-                download: {
-                    default_directory: downloadsPath,
-                }
-            }
-        },
-        
-        // // запуск тестов в FireFox
-        // browserName: 'firefox',
-        // firefoxOptions: {
+        // // запуск  тестов в Chrome
+        // browserName: 'chrome',
+        // chromeOptions: {
         //     prefs: {
         //         download: {
         //             default_directory: downloadsPath,
         //         }
         //     }
         // },
+        
+        // запуск тестов в FireFox
+        browserName: 'firefox',
+        firefoxOptions: {
+            prefs: {
+                download: {
+                    default_directory: downloadsPath,
+                }
+            }
+        },
     },
 };
 

@@ -253,7 +253,7 @@ describe('Workflow', function () {
             await browser.sleep(2000);
             await element(by.cssContainingText('.accordion-panel', 'Пользователи')).click();
             await browser.sleep(2000);
-            await element(by.cssContainingText('.k-grid-add', '+ Добавить')).click();
+            await element(by.cssContainingText('.idea-button-add-row', '+ Добавить')).click();
             await browser.sleep(2000);
             await element(by.css('table tr td input')).sendKeys('demo');
             await browser.sleep(2000);
