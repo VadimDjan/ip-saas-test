@@ -114,10 +114,14 @@ describe('Регистрация пространства', function () {
   
         // Поле Запчасть
         // пишем название в заголовке
-        const spare = await element.all(by.css('.form-designer__control-wrapper')).first();
+        await sidebar[4].click();
+        await browser.sleep(2000);
+        const spare = await element.all(by.css('.form-designer__sidebar-group[open] .form-designer__control-wrapper')).get(3);
         await browser.executeScript(dnd, spare, form);
         await browser.wait(EC.presenceOf(element(by.cssContainingText('.form-header__title', 'Поле'))), defaultWaitTimeout);
         await browser.sleep(1000);
+        await element(by.css('.displayname__name')).click();
+        await browser.sleep(200);
         await element(by.css('.displayname__name_active')).sendKeys('Запчасть');
         await browser.sleep(200);
         await element(by.css('.displayname .glyphicon-ok')).click();
@@ -125,12 +129,29 @@ describe('Регистрация пространства', function () {
         // задаем полю системное имя
         await element(by.css('div[data-field-name="fieldname"] input')).sendKeys('spare_link');
         await browser.sleep(200);
-        // выбор Формат поля
-        await element(by.css('div[data-field-name="fieldformatid"] .rw-dropdown-list-input')).click();
+        // выбор Связанный формат
+        await element(by.css('div[data-field-name="_$_FF/lookupviewname"] .rw-dropdown-list-input')).click();
         await browser.sleep(2000);
-        await element(by.css('.rw-popup-container .rw-input-reset')).sendKeys('Запчасть');
+        await element(by.css('.rw-popup-container .rw-input-reset')).sendKeys('spare');
         await browser.sleep(4000);
-        await element(by.cssContainingText('.rw-popup-transition ul li', 'Запчасть')).click();
+        await element(by.cssContainingText('.rw-popup-transition ul li', 'spare')).click();
+        await browser.sleep(2000);
+        // укажем таблицу
+        await element(by.css('div[data-field-name="_$_FF/lookupentity"] .rw-dropdown-list-input')).click();
+        await browser.sleep(2000);
+        await element(by.css('div[data-field-name="_$_FF/lookupentity"] .rw-popup-container .rw-input-reset')).sendKeys('Запчасть');
+        await browser.sleep(4000);
+        await element(by.cssContainingText('div[data-field-name="_$_FF/lookupentity"] .rw-popup-transition ul li', 'Запчасть')).click();
+        await browser.sleep(2000);
+        // укажем Поле с хранимым значением
+        await element(by.css('div[data-field-name="_$_FF/lookupfield"] .rw-dropdown-list-input')).click();
+        await browser.sleep(2000);
+        await element(by.cssContainingText('div[data-field-name="_$_FF/lookupfield"] .rw-popup-transition ul li', 'spareid')).click();
+        await browser.sleep(2000);
+        // укажем Поле с отображаемым значением
+        await element(by.css('div[data-field-name="_$_FF/lookupfielddisplay"] .rw-dropdown-list-input')).click();
+        await browser.sleep(2000);
+        await element(by.cssContainingText('div[data-field-name="_$_FF/lookupfielddisplay"] .rw-popup-transition ul li', 'displayname')).click();
         await browser.sleep(2000);
         // check isRequired
         await element(by.css('div[data-detail="entityfield"] div[data-field-name="isrequired"] .checkboxfield__checkbox')).click();
@@ -144,6 +165,9 @@ describe('Регистрация пространства', function () {
         await browser.wait(EC.stalenessOf($('.details-fade')), defaultWaitTimeout);
         await browser.sleep(1000);
         
+        // закрыть секцию бокового меню
+        await element.all(by.css('.form-designer__sidebar-group[open] summary')).click();
+        await browser.sleep(100);
         // Сохранить форму
         await element(by.cssContainingText('button', 'Сохранить')).click();
         await browser.sleep(2000);
@@ -329,6 +353,18 @@ describe('Регистрация пространства', function () {
         await browser.sleep(2000);
         await element.all(by.css('div[data-field-name="spare_link"] .rw-popup ul li')).first().click();
         await browser.sleep(2000);
+        // Проверка кнопок фильтрации и лупы у автокомплита
+        await element(by.css('div[data-field-name="spare_link"] .comboboxfield__filter-btn')).click();
+        await browser.wait(EC.presenceOf((element(by.cssContainingText('.filter-list-modal .table-name', 'Запчасть')))), defaultWaitTimeout);
+        await browser.sleep(2000);
+        await element(by.css('.filter-list-modal .details__close-btn')).click();
+        await browser.wait(EC.stalenessOf(element(by.css('.filter-list-modal'))), defaultWaitTimeout);
+        await browser.sleep(2000);
+        await element(by.css('div[data-field-name="spare_link"] .comboboxfield__open-btn')).click();
+        await browser.wait(EC.presenceOf(element(by.cssContainingText('div[data-field-name="price"]', 'Цена'))), defaultWaitTimeout);
+        await browser.sleep(2000);
+        await element.all(by.css('.details__close-btn')).last().click();
+        await browser.wait(EC.stalenessOf(element(by.cssContainingText('.form-header__title', 'Запчасть #'))), defaultWaitTimeout);
         await element(by.css('button[data-button-detail="order_punkt"]')).click();
         await browser.sleep(2000);
         await element(by.css('.modal-content .details__close-btn')).click();

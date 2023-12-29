@@ -29,6 +29,26 @@ describe('Регистрация пространства', function () {
         }, done);
     }, skip());
 
+    it("Проверить работу личного кабинета", async (done) => {
+        console.log("Проверить работу личного кабинета");
+        await errorCatcher(async () => {
+          await browser.actions().mouseMove(element(by.className("username"))).perform();
+          await browser.sleep(1000);
+          const userProfileBtn = await element(by.cssContainingText(".dropdown-menu li", "Личный кабинет"));
+          const hasUserProfileBtn = await userProfileBtn.isPresent();
+          if (hasUserProfileBtn) await userProfileBtn.click();
+          await browser.wait(EC.presenceOf(element(by.cssContainingText(".form-header__title", "Личный кабинет пользователя"))), defaultWaitTimeout);
+    
+          await browser.wait(EC.stalenessOf($(".loader-spinner")), defaultWaitTimeout);
+          await browser.sleep(1000);
+          await element(by.cssContainingText(".details__modal .accordion-panel", "Моя рабочая область")).click();
+          await browser.wait(EC.visibilityOf(element(by.css(".dashboard-item__wrapper_subgrid"))), defaultWaitTimeout);
+          await element(by.css(".details__close-btn")).click();
+          await browser.wait(EC.stalenessOf(element(by.cssContainingText(".form-header__title", "Личный кабинет пользователя"))), defaultWaitTimeout);
+          await browser.sleep(500);
+        }, done);
+      }, skip());
+
     it('Добавить таблицу Запчасть', async done => {
         console.log('Добавить таблицу Запчасть');
         await errorCatcher(async () => {
@@ -336,6 +356,80 @@ describe('Регистрация пространства', function () {
             await element(by.css('.details__close-btn')).click();
             await browser.wait(EC.stalenessOf($('.details-fade')), defaultWaitTimeout);
             await browser.sleep(1000);
+            // закрыть секцию бокового меню
+            await element.all(by.css(".form-designer__sidebar-group[open] summary")).click();
+            await browser.sleep(100);
+            // Сохранить форму
+            await element(by.cssContainingText("button", "Сохранить")).click();
+            await browser.sleep(2000);
+
+            // поле Url field
+            await sidebar[5].click();
+            await browser.sleep(2000);
+            const urlField = await element.all(by.css(".form-designer__sidebar-group[open] .form-designer__control-wrapper")).last();
+            await browser.executeScript(dnd, urlField, form);
+            await browser.sleep(2000);
+            // задаем полю системное имя
+            await element(by.css('div[data-field-name="fieldname"] input')).sendKeys("url_field_test");
+            await browser.sleep(200);
+            // кн Создать поле
+            await element(by.cssContainingText("button", "Создать поле")).click();
+            await browser.wait(EC.stalenessOf($('[data-button-name="CREATE"] .loader-spinner')), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // close modal
+            await element(by.css(".details__close-btn")).click();
+            await browser.wait(EC.stalenessOf($(".details-fade")), defaultWaitTimeout);
+            await browser.sleep(1000);
+
+            // поле рейтинг
+            const rating = await element.all(by.css(".form-designer__control-item-block .form-designer__control-wrapper")).first();
+            await browser.executeScript(dnd, rating, form);
+            await browser.sleep(2000);
+            // задаем полю системное имя
+            await element(by.css('div[data-field-name="fieldname"] input')).sendKeys("rating_test");
+            await browser.sleep(200);
+            await element(by.css('div[data-field-name="fieldformatid"] .comboboxfield__container')).click();
+            await browser.sleep(2000);
+            await element(by.css('div[data-field-name="fieldformatid"] .rw-popup-container input')).sendKeys('test rating');
+            await browser.sleep(1000);
+            await element(by.cssContainingText('div[data-field-name="fieldformatid"] .rw-popup-container ul li', 'Test Rating')).click();
+            await browser.sleep(1500);
+            // кн Создать поле
+            await element(by.cssContainingText("button", "Создать поле")).click();
+            await browser.wait(EC.stalenessOf($('[data-button-name="CREATE"] .loader-spinner')), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // close modal
+            await element(by.css(".details__close-btn")).click();
+            await browser.wait(EC.stalenessOf($(".details-fade")), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // Сохранить форму
+            await element(by.cssContainingText("button", "Сохранить")).click();
+            await browser.sleep(2000);
+
+            // поле qrcode
+            const qrcode = await element.all(by.css(".form-designer__control-item-block .form-designer__control-wrapper")).first();
+            await browser.executeScript(dnd, qrcode, form);
+            await browser.sleep(2000);
+            // задаем полю системное имя
+            await element(by.css('div[data-field-name="fieldname"] input')).sendKeys("qrcode_test");
+            await browser.sleep(200);
+            await element(by.css('div[data-field-name="fieldformatid"] .comboboxfield__container')).click();
+            await browser.sleep(2000);
+            await element(by.css('div[data-field-name="fieldformatid"] .rw-popup-container input')).sendKeys('qr code');
+            await browser.sleep(1000);
+            await element(by.cssContainingText('div[data-field-name="fieldformatid"] .rw-popup-container ul li', 'QR Code')).click();
+            await browser.sleep(1500);
+            // кн Создать поле
+            await element(by.cssContainingText("button", "Создать поле")).click();
+            await browser.wait(EC.stalenessOf($('[data-button-name="CREATE"] .loader-spinner')), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // close modal
+            await element(by.css(".details__close-btn")).click();
+            await browser.wait(EC.stalenessOf($(".details-fade")), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // Сохранить форму
+            await element(by.cssContainingText("button", "Сохранить")).click();
+            await browser.sleep(2000);
 
             // подвинем на форме поле Цена
             const priceRow = await element(by.css('div[data-field-name="price"]'));
@@ -358,6 +452,208 @@ describe('Регистрация пространства', function () {
 
             // switch to the 1st tab
             await browser.switchTo().window(tabs[0]);
+            await browser.sleep(2000);
+            await element.all(by.css('.details__close-btn')).last().click();
+            await browser.sleep(1500);
+
+            // добавление схлопывающихся полей
+            await element(by.css('div[data-field-name="relateddisplaylist"] .idea-button-add-row-modal')).click();
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.form-header__title', 'Настройки отображения:'))), defaultWaitTimeout);
+            // пишем название в заголовке
+            // await element.all(by.css(".form-header__title .glyphicon-pencil")).last().click();
+            await browser.sleep(200);
+            await element(by.css(".displayname__name_active")).sendKeys("Другие характеристики");
+            await browser.sleep(200);
+            await element(by.css(".displayname .glyphicon-ok")).click();
+            await browser.sleep(200);
+            // задаем полю системное имя
+            await element.all(by.css('div[data-field-name="viewname"] input')).last().sendKeys("concattest");
+            await browser.sleep(200);
+            await element(by.css('div[data-field-name="displaytype"] input')).click();
+            await browser.sleep(500);
+            await element(by.cssContainingText('div[data-field-name="displaytype"] .rw-popup-container ul li', 'DETAILS')).click();
+            await browser.sleep(500);
+            await element(by.css('button[data-button-name="CREATE"]')).click();
+            await browser.wait(EC.presenceOf(element(by.css('div[data-field-name="label_base"]'))), defaultWaitTimeout);
+            await browser.sleep(200);
+            // переход в конструктор
+            await element(by.css('.htmlfield__wrapper a')).click();
+            const tabs2 = await browser.getAllWindowHandles();
+            await browser.switchTo().window(tabs2[1]);
+            await browser.wait(EC.presenceOf(element(by.css('div[data-field-name="price"]'))), defaultWaitTimeout);
+            await browser.sleep(200);
+            // удалить все поля Активно
+            await browser.actions().mouseDown(element(by.css('div[data-field-name="isactive"]'))).perform();
+            await browser.sleep(500);
+            await element(by.css('div[data-field-name="isactive"] .form-designer__layout-item-delete')).click();
+            await browser.sleep(500);
+            await element(by.cssContainingText('.form-designer__remove-footer button', 'Удалить')).click();
+            await browser.sleep(2000);
+            // Сохранить форму
+            await element(by.cssContainingText("button", "Сохранить")).click();
+            await browser.sleep(2000);
+            // удалить все поля Цена
+            await browser.actions().mouseDown(element(by.css('div[data-field-name="price"]'))).perform();
+            await browser.sleep(500);
+            await element(by.css('div[data-field-name="price"] .form-designer__layout-item-delete')).click();
+            await browser.sleep(5000);
+            await element(by.cssContainingText('.form-designer__remove-footer button', 'Удалить')).click();
+            await browser.sleep(2000);
+            // Сохранить форму
+            await element(by.cssContainingText("button", "Сохранить")).click();
+            await browser.sleep(2000);
+            // удалить все поля Описание
+            await browser.actions().mouseDown(element(by.css('div[data-field-name="descriptiontest"]'))).perform();
+            await browser.sleep(500);
+            await element(by.css('div[data-field-name="descriptiontest"] .form-designer__layout-item-delete')).click();
+            await browser.sleep(5000);
+            await element(by.cssContainingText('.form-designer__remove-footer button', 'Удалить')).click();
+            await browser.sleep(2000);
+            // удалить все поля Картинка
+            await browser.actions().mouseDown(element(by.css('div[data-field-name="imgtest"]'))).perform();
+            await browser.sleep(500);
+            await element(by.css('div[data-field-name="imgtest"] .form-designer__layout-item-delete')).click();
+            await browser.sleep(5000);
+            await element(by.cssContainingText('.form-designer__remove-footer button', 'Удалить')).click();
+            await browser.sleep(2000);
+            // удалить все поля Переработка
+            await browser.actions().mouseDown(element(by.css('div[data-field-name="is_recycle"]'))).perform();
+            await browser.sleep(500);
+            await element(by.css('div[data-field-name="is_recycle"] .form-designer__layout-item-delete')).click();
+            await browser.sleep(5000);
+            await element(by.cssContainingText('.form-designer__remove-footer button', 'Удалить')).click();
+            await browser.sleep(2000);
+            // удалить все поля Материалы
+            await browser.actions().mouseDown(element(by.css('div[data-field-name="materialtest"]'))).perform();
+            await browser.sleep(500);
+            await element(by.css('div[data-field-name="materialtest"] .form-designer__layout-item-delete')).click();
+            await browser.sleep(5000);
+            await element(by.cssContainingText('.form-designer__remove-footer button', 'Удалить')).click();
+            await browser.sleep(2000);
+            // Сохранить форму
+            await element(by.cssContainingText("button", "Сохранить")).click();
+            await browser.sleep(2000);
+            // Добавим 2 строковых поля
+            // Drag&Drop settings
+            const sidebar2 = await element.all(by.css(".form-designer__sidebar-group"));
+            const form2 = await element.all(by.css(".react-grid-layout")).first();
+            const dnd = require("html-dnd").code;
+            // Поле 1
+            await sidebar2[0].click();
+            await browser.sleep(2000);
+            const str1 = await element.all(by.css(".form-designer__sidebar-group[open] .form-designer__control-wrapper")).get(1);
+            await browser.executeScript(dnd, str1, form2);
+            await browser.wait(EC.presenceOf(element(by.cssContainingText(".form-header__title", "Поле"))), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // пишем название в заголовке
+            await element(by.css(".form-header__title .glyphicon-pencil")).click();
+            await browser.sleep(2000);
+            await element(by.css(".displayname__name_active")).sendKeys("Поле 1");
+            await browser.sleep(200);
+            await element(by.css(".displayname .glyphicon-ok")).click();
+            await browser.sleep(200);
+            // задаем полю системное имя
+            await element(by.css('div[data-field-name="fieldname"] input')).sendKeys("field1");
+            await browser.sleep(200);
+            // кн Создать поле
+            await element(by.cssContainingText("button", "Создать поле")).click();
+            await browser.wait(EC.stalenessOf($('[data-button-name="CREATE"] .loader-spinner')), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // close modal
+            await element(by.css(".details__close-btn")).click();
+            await browser.wait(EC.stalenessOf($(".details-fade")), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // Сохранить форму
+            await element(by.cssContainingText("button", "Сохранить")).click();
+            await browser.sleep(2000);
+            // Поле 2
+            await sidebar2[0].click();
+            await browser.sleep(2000);
+            const str2 = await element.all(by.css(".form-designer__sidebar-group[open] .form-designer__control-wrapper")).get(1);
+            await browser.executeScript(dnd, str2, form2);
+            await browser.wait(EC.presenceOf(element(by.cssContainingText(".form-header__title", "Поле"))), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // пишем название в заголовке
+            await element(by.css(".form-header__title .glyphicon-pencil")).click();
+            await browser.sleep(2000);
+            await element(by.css(".displayname__name_active")).sendKeys("Поле 2");
+            await browser.sleep(200);
+            await element(by.css(".displayname .glyphicon-ok")).click();
+            await browser.sleep(200);
+            // задаем полю системное имя
+            await element(by.css('div[data-field-name="fieldname"] input')).sendKeys("field2");
+            await browser.sleep(200);
+            // кн Создать поле
+            await element(by.cssContainingText("button", "Создать поле")).click();
+            await browser.wait(EC.stalenessOf($('[data-button-name="CREATE"] .loader-spinner')), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // close modal
+            await element(by.css(".details__close-btn")).click();
+            await browser.wait(EC.stalenessOf($(".details-fade")), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // Сохранить форму
+            await element(by.cssContainingText("button", "Сохранить")).click();
+            await browser.sleep(2000);
+            // Создадм новый формат поля
+            await browser.get("http://localhost:8081/#/fieldformat/");
+            await browser.wait(EC.presenceOf(element(by.cssContainingText(".table-name", "Формат Поля"))), defaultWaitTimeout);
+            await browser.sleep(200);
+
+            await element(by.css('.idea-button-add-row-modal')).click();
+            await browser.wait(EC.presenceOf(element(by.cssContainingText(".form-header__title", "Формат Поля:"))), defaultWaitTimeout);
+            await browser.sleep(500);
+            await element(by.css('.displayname__name')).sendKeys('Concatformat');
+            await element(by.css('.modal-content .glyphicon-ok')).click();
+            await browser.sleep(200);
+            await element(by.css('div[data-field-name="widgettype"] .comboboxfield__container')).click();
+            await browser.sleep(1000);
+            await element(by.css('div[data-field-name="widgettype"] .rw-popup-container .rw-input-reset')).sendKeys('concatenation');
+            await browser.sleep(200);
+            await element(by.cssContainingText('div[data-field-name="widgettype"] .rw-popup-container ul li', 'concatenation')).click();
+            await browser.sleep(500);
+            await element(by.css('div[data-field-name="lookupviewname"] .comboboxfield__container')).click();
+            await browser.sleep(1000);
+            await element(by.css('div[data-field-name="lookupviewname"] .rw-popup-container .rw-input-reset')).sendKeys('concattest');
+            await browser.sleep(200);
+            await element(by.cssContainingText('div[data-field-name="lookupviewname"] .rw-popup-container ul li', 'concattest')).click();
+            await browser.sleep(500);
+            // кн Создать формат
+            await element(by.cssContainingText("button", "Создать")).click();
+            await browser.wait(EC.stalenessOf($('[data-button-name="CREATE"] .loader-spinner')), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // close modal
+            await element(by.css(".details__close-btn")).click();
+            await browser.wait(EC.stalenessOf($(".details-fade")), defaultWaitTimeout);
+            await browser.sleep(1000);
+            // Возвращаемся на 1 вкладку
+            await browser.switchTo().window(tabs2[0]);
+            await browser.sleep(2000);
+            await element.all(by.css('.details__close-btn')).last().click();
+            await browser.sleep(1200);
+            await element(by.cssContainingText(".accordion-panel", "Поля")).click();
+            // await browser.wait(EC.presenceOf(element(by.cssContainingText('.accordion-panel', 'Настройки отображения'))), defaultWaitTimeout);
+            await browser.sleep(3000);
+            await element(by.css('div[data-field-name="entityfieldlist"] .idea-button-add-row-modal')).click();
+            await browser.wait(EC.presenceOf(element(by.cssContainingText(".form-header__title", "Поле"))), defaultWaitTimeout);
+            await browser.sleep(200);
+            await element.all(by.css('.displayname__name')).last().sendKeys('Доп.характеристики');
+            await element.all(by.css('.modal-content .glyphicon-ok')).last().click();
+            await browser.sleep(200);
+            await element(by.css('div[data-field-name="fieldname"] input')).sendKeys('test_details');
+            await browser.sleep(200);
+            await element(by.css('div[data-field-name="fieldformatid"]')).click();
+            await browser.sleep(5000);
+            await element(by.css('div[data-field-name="fieldformatid"] .rw-input-reset')).sendKeys("Concatformat");
+            await browser.sleep(4000);
+            await element(by.cssContainingText('div[data-field-name="fieldformatid"] .rw-popup ul li', 'Concatformat')).click();
+            await browser.sleep(1500);
+            // кн Создать поле
+            await element(by.cssContainingText('button', 'Создать поле')).click();
+            await browser.wait(EC.stalenessOf($('[data-button-name="CREATE"] .loader-spinner')), defaultWaitTimeout);
+            await browser.sleep(1000);
+
+            // switch to the 1st tab
+            await browser.switchTo().window(tabs2[0]);
             await browser.sleep(2000);
 
             await browser.get('http://localhost:8081/#/spare/'); // https://service-manager.online/app/#/spare
@@ -383,87 +679,118 @@ describe('Регистрация пространства', function () {
 
             // добавление записей в справочник Запчасти
             // 1
-            await element(by.cssContainingText('a', 'Добавить запись')).click();
-            await browser.wait(EC.presenceOf(element(by.cssContainingText('.form-header__title span', 'Запчасть'))), defaultWaitTimeout);
+            await element(by.cssContainingText("a", "Добавить запись")).click(); // в модальном окне
+            await browser.wait(EC.presenceOf(element(by.cssContainingText(".form-header__title span", "Запчасть"))), defaultWaitTimeout);
             await browser.sleep(200);
-            await element(by.css('.displayname__name')).sendKeys('Запчасть 2');
+            await element(by.css(".displayname__name")).sendKeys("Запчасть 2");
             await browser.sleep(2000);
-            await element(by.css('div[data-field-name="price"] input')).sendKeys('11.55');
+            await element(by.css('div[data-field-name="price"] input')).sendKeys("11.55");
             await browser.sleep(2000);
-            await element(by.css('div[data-field-name="descriptiontest"] .sun-editor-editable')).sendKeys('Тут есть буква и');
+            await element(by.css('div[data-field-name="descriptiontest"] .sun-editor-editable')).sendKeys("Тут есть буква и");
             await browser.sleep(80);
-            await element(by.cssContainingText('div[data-field-name="is_recycle"] ul li', 'Полностью перерабатывается')).click();
+            await element(by.cssContainingText('div[data-field-name="is_recycle"] ul li', "Полностью перерабатывается")).click();
             await browser.sleep(80);
-            await element(by.css('div[data-field-name="recycle_class"]')).click();
-            await browser.sleep(2000);
-            await element(by.cssContainingText('div[data-field-name="recycle_class"] ul li', 'A')).click();
-            await browser.sleep(2000);
             await element(by.css('div[data-field-name="materialtest"]')).click();
             await browser.sleep(2000);
-            await element(by.cssContainingText('.rw-popup-container ul li span', 'Металл')).click();
+            await element(by.cssContainingText(".rw-popup-container ul li span", "Металл")).click();
             await browser.sleep(2000);
             const imageField = await element(by.css('div[data-field-name="imgtest"] input'));
-            let imgToUpload = './sign.jpg';
+            let imgToUpload = "./sign.jpg";
             const absolutePath = path.resolve(__dirname, imgToUpload);
             imageField.sendKeys(absolutePath);
             await browser.sleep(5000);
+            // добавление схлопывающегося поля
+            console.log('добавление схлопывающегося поля');
+            await element(by.css('div[data-field-name="test_details"] .concatenation__edit-btn')).click();
+            await browser.wait(EC.presenceOf(element(by.css('.concatenation-popup__text'))), defaultWaitTimeout);
+            await browser.sleep(200);
+            await element.all(by.css('.concatenation-popup__widget-container input')).first().sendKeys('параметр 1');
+            await browser.sleep(200);
+            await element.all(by.css('.concatenation-popup__widget-container input')).last().sendKeys('параметр 2');
+            await browser.sleep(200);
+            await element(by.cssContainingText('.concatenation-popup__container .concatenation-popup__btn_primary', 'Сохранить')).click();
+            await browser.wait(EC.stalenessOf(element(by.css('.concatenation-popup'))), defaultWaitTimeout);
+            await browser.sleep(200);
             await element(by.css('button[data-button-detail="spare"]')).click();
             await browser.sleep(2000);
-            await element(by.css('.modal-content .details__close-btn')).click();
+            // проверка заполненности полей в схлопывающихся полях
+            console.log('проверка заполненности полей в схлопывающихся полях');
+            await element(by.css('div[data-field-name="test_details"] .concatenation__edit-btn')).click();
+            await browser.wait(EC.presenceOf(element(by.css('.concatenation-popup__text'))), defaultWaitTimeout);
+            await browser.sleep(200);
+            await element(by.cssContainingText('.concatenation-popup__container .concatenation-popup__btn_primary', 'Отмена')).click();
+            await browser.wait(EC.stalenessOf(element(by.css('.concatenation-popup'))), defaultWaitTimeout);
+            await browser.sleep(200);
+            await element(by.css(".modal-content .details__close-btn")).click();
             await browser.sleep(1500);
 
             // 2
-            await element(by.cssContainingText('a', 'Добавить запись')).click();
-            await browser.wait(EC.presenceOf(element(by.cssContainingText('.form-header__title span', 'Запчасть'))), defaultWaitTimeout);
+            await element(by.cssContainingText("a", "Добавить запись")).click(); // в модальном окне
+            await browser.wait(EC.presenceOf(element(by.cssContainingText(".form-header__title span", "Запчасть"))), defaultWaitTimeout);
             await browser.sleep(200);
-            await element(by.css('.displayname__name')).sendKeys('Запчасть 1');
+            await element(by.css(".displayname__name")).sendKeys("Запчасть 1");
             await browser.sleep(2000);
-            await element(by.css('div[data-field-name="price"] input')).sendKeys('2.01');
+            await element(by.css('div[data-field-name="price"] input')).sendKeys("2.01");
             await browser.sleep(2000);
-            await element(by.css('div[data-field-name="descriptiontest"] .sun-editor-editable')).sendKeys('Тут нет');
+            await element(by.css('div[data-field-name="descriptiontest"] .sun-editor-editable')).sendKeys("Тут нет");
             await browser.sleep(80);
-            await element(by.cssContainingText('div[data-field-name="is_recycle"] ul li', 'Частично перерабатывается')).click();
+            await element(by.cssContainingText('div[data-field-name="is_recycle"] ul li', "Частично перерабатывается")).click();
             await browser.sleep(80);
-            await element(by.css('div[data-field-name="recycle_class"]')).click();
-            await browser.sleep(2000);
-            await element(by.cssContainingText('div[data-field-name="recycle_class"] ul li', 'B')).click();
-            await browser.sleep(2000);
             await element(by.css('div[data-field-name="materialtest"]')).click();
             await browser.sleep(2000);
-            await element(by.cssContainingText('.rw-popup-container ul li span', 'Пластик')).click();
-            await browser.sleep(2000);
+            await element(by.cssContainingText(".rw-popup-container ul li span", "Пластик")).click();
+            await browser.sleep(1000);
+            // добавим ссылку
+            await element(by.css('div[data-field-name="url_field_test"] .url-btn')).click();
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.url-modal__header-text', 'Добавление ссылки'))), defaultWaitTimeout);
+            await browser.sleep(200);
+            await element(by.id('urlField')).sendKeys('rbc.ru');
+            await browser.sleep(200);
+            await element(by.cssContainingText('.url-btn', 'Подтвердить')).click();
+            await browser.wait(EC.stalenessOf(element(by.css('.url-modal-modal__backdrop'))), defaultWaitTimeout);
+            await browser.sleep(200);
             const imageField2 = await element(by.css('div[data-field-name="imgtest"] input'));
-            let imgToUpload2 = './sign.jpg';
+            let imgToUpload2 = "./sign.jpg";
             const absolutePath2 = path.resolve(__dirname, imgToUpload2);
             imageField2.sendKeys(absolutePath2);
             await browser.sleep(5000);
             await element(by.css('button[data-button-detail="spare"]')).click();
             await browser.sleep(2000);
-            await element(by.css('.modal-content .details__close-btn')).click();
+            // проверим ссылку
+            await element(by.css('div[data-field-name="url_field_test"] .url-btn')).click();
+            await browser.wait(EC.presenceOf(element(by.cssContainingText('.url-modal__header-text', 'Добавление ссылки'))), defaultWaitTimeout);
+            await browser.sleep(200);
+            await element(by.css('.url-modal-close-btn')).click();
+            await browser.wait(EC.stalenessOf(element(by.css('.url-modal-modal__backdrop'))), defaultWaitTimeout);
+            await browser.sleep(200);
+            await element(by.css(".modal-content .details__close-btn")).click();
             await browser.sleep(1500);
 
             // 3
-            await element(by.cssContainingText('a', 'Добавить запись')).click();
-            await browser.wait(EC.presenceOf(element(by.cssContainingText('.form-header__title span', 'Запчасть'))), defaultWaitTimeout);
+            await element(by.cssContainingText("a", "Добавить запись")).click(); // в модальном окне
+            await browser.wait(EC.presenceOf(element(by.cssContainingText(".form-header__title span", "Запчасть"))), defaultWaitTimeout);
             await browser.sleep(200);
-            await element(by.css('.displayname__name')).sendKeys('Запчасть 3');
+            await element(by.css(".displayname__name")).sendKeys("Запчасть 3");
             await browser.sleep(2000);
-            await element(by.css('div[data-field-name="price"] input')).sendKeys('10');
+            await element(by.css('div[data-field-name="price"] input')).sendKeys("10");
             await browser.sleep(2000);
-            await element(by.css('div[data-field-name="descriptiontest"] .sun-editor-editable')).sendKeys('Тут нет');
+            await element(by.css('div[data-field-name="descriptiontest"] .sun-editor-editable')).sendKeys("Тут нет");
             await browser.sleep(80);
             await element(by.css('div[data-field-name="materialtest"]')).click();
             await browser.sleep(2000);
-            await element(by.cssContainingText('.rw-popup-container ul li span', 'Дерево')).click();
+            await element(by.cssContainingText(".rw-popup-container ul li span", "Дерево")).click();
             await browser.sleep(2000);
+            // добавим рейтинг
+            await element(by.css('div[data-field-name="rating_test"] .rating__wrapper > span > span')).click();
+            await browser.sleep(200);
             const imageField3 = await element(by.css('div[data-field-name="imgtest"] input'));
-            let imgToUpload3 = './sign.jpg';
+            let imgToUpload3 = "./sign.jpg";
             const absolutePath3 = path.resolve(__dirname, imgToUpload3);
             imageField3.sendKeys(absolutePath3);
             await browser.sleep(5000);
             await element(by.css('button[data-button-detail="spare"]')).click();
             await browser.sleep(2000);
-            await element(by.css('.modal-content .details__close-btn')).click();
+            await element(by.css(".modal-content .details__close-btn")).click();
             await browser.sleep(1500);
 
             // сортировка по полю Цена
