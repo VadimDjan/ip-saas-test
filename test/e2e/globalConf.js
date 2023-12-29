@@ -1,4 +1,23 @@
-const useLocal = false
+const useLocal = false;
+const path = require('path');
+const fs = require('fs');
+const downloadsPath = path.resolve(__dirname, './downloads');
+
+const clearDownloads = () => {
+    const directory = 'downloads';
+    try {
+        fs.readdir(directory, (err, files) => {
+            if (err) throw err;
+            for (const file of files) {
+                fs.unlink(path.join(directory, file), err => {
+                    if (err) throw err;
+                });
+            }
+        });
+    } catch (e) {
+        console.log(e);
+    }
+}
 const config = {
     framework: 'jasmine2',
     jasmineNodeOpts: {
@@ -10,9 +29,9 @@ const config = {
     params: {
         jenkins: {
             workspaceDirectory: '.',
-            host: '127.0.0.1',
-            // hostDB: null,
-            port: 8080
+            host: '51.250.15.24', port: 8080,
+            // host: '51.250.3.213', port: 80,
+            // host: '192.168.65.2', port: 8080,
         },
         specs: ''
     },
@@ -22,6 +41,7 @@ const config = {
         protractor.expliciteWaitTime = 500;
         // browser.driver.manage().window().setSize(width, height);
         browser.driver.manage().window().maximize();
+        browser.ignoreSynchronization = true;
         protractor.helpers = {};
         var $h = protractor.helpers;
         $h.workspaceDirectory = browser.params.jenkins.workspaceDirectory;
@@ -43,6 +63,7 @@ const config = {
         };
         $h.wait = require('./helpers/wait-helpers.js');
         $h.common = require('./helpers/common-helpers.js');
+        $h.locators = require('./helpers/locators');
         $h.grid = require('./helpers/grid-helpers.js');
         $h.form = require('./helpers/form-helpers.js');
         $h.file = require('./helpers/file-helpers.js');
@@ -52,6 +73,7 @@ const config = {
         $h.postgres = require('./helpers/postgres-helpers.js');
         $h.menu = require('./helpers/menu-helpers.js');
         $h.scheduler = require('./helpers/scheduler-helpers.js');
+        $h.task = require('./helpers/task-helpers.js');
 
         protractor.constants = {};
         var jasmineReporters = require('jasmine-reporters');
@@ -165,9 +187,10 @@ const config = {
             };
 
         }(global));
+
+        clearDownloads();
     },
     capabilities: {
-        browserName: 'chrome',
         // chromeOptions: {
         //     args: [ "--start-maximized",
         //     "--start-fullscreen"] // to start browser as maximixed
@@ -175,6 +198,25 @@ const config = {
         // Number of times to run this set of capabilities (in parallel, unless
         // limited by maxSessions). Default is 1.
         count: 1,
+        // // запуск  тестов в Chrome
+        // browserName: 'chrome',
+        // chromeOptions: {
+        //     prefs: {
+        //         download: {
+        //             default_directory: downloadsPath,
+        //         }
+        //     }
+        // },
+        
+        // запуск тестов в FireFox
+        browserName: 'firefox',
+        firefoxOptions: {
+            prefs: {
+                download: {
+                    default_directory: downloadsPath,
+                }
+            }
+        },
     },
 };
 
